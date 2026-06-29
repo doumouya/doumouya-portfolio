@@ -1,0 +1,5 @@
+# Stable only — polars breaks on nightly-internal unicode imports, and nothing
+# here needs nightly. wasm32 target required from day one (CI gates on it).
+[toolchain]
+channel = "stable"
+targets = ["wasm32-unknown-unknown"]

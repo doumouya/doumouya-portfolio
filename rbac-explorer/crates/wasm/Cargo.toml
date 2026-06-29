@@ -1,0 +1,12 @@
+[package]
+name = "rbac-wasm"
+version = "0.1.0"
+edition = "2021"
+description = "wasm-bindgen binding exposing rbac-core to JavaScript (the browser-side reach resolver)."
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+rbac-core = { path = "../core" }
+wasm-bindgen = "0.2"

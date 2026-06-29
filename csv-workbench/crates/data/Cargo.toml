@@ -1,0 +1,35 @@
+[package]
+name = "data"
+version = "0.1.0"
+edition = "2021"
+
+# Pure compute — no io/networking/threads/time, so it compiles to
+# wasm32-unknown-unknown unchanged ("one engine, two surfaces"). crate-type
+# yields both an rlib and the browser .wasm cdylib.
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+shared = { path = "../shared" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+chardetng = { workspace = true }
+encoding_rs = { workspace = true }
+chrono = { workspace = true }
+# csv writes to a Vec<u8> (steps/structure unwrap_csv) — pure compute, rides both targets.
+csv = { workspace = true }
+
+# Native build: full polars (fmt default -> DataFrame Debug) + xlsx export.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+polars = { workspace = true }
+rust_xlsxwriter = { workspace = true }
+
+# WASM build: polars with default-features = false (no fmt -> no comfy-table ->
+# no crossterm terminal IO), plus the wasm RNG + bindgen wiring. getrandom needs
+# RUSTFLAGS='--cfg getrandom_backend="wasm_js"' at build (set in tools/build-wasm.sh).
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+polars = { version = "0.54", default-features = false, features = ["lazy", "csv", "strings", "dtype-full", "regex", "concat_str", "sql"] }
+getrandom = { version = "0.3", features = ["wasm_js"] }
+wasm-bindgen = "0.2"
+console_error_panic_hook = "0.1"

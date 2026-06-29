@@ -1,0 +1,11 @@
+# node + intermediate build artifacts
+/node_modules
+/.build
+*.tsbuildinfo
+
+# The built index.html and apps/*/index.html ARE committed (they are the deployable,
+# downloadable, offline site).
+
+# OS cruft
+.DS_Store
+*~

@@ -1,0 +1,35 @@
+/* Front-door styles — built on web-kit's design tokens (inlined at build). */
+body { margin: 0; font: var(--font-body); background: var(--surface); color: var(--text); }
+a { color: var(--accent); }
+
+.hero { max-width: var(--container); margin: 0 auto; padding: clamp(2rem, 6vw, 4rem) var(--space-6) var(--space-8); }
+.hero h1 { margin: 0; font-size: var(--text-3xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); }
+.hero .sub { margin: var(--space-4) 0 0; color: var(--text-muted); font-size: var(--text-lg); line-height: var(--leading); max-width: 42rem; }
+.hero .note { margin: var(--space-4) 0 0; color: var(--text-subtle); font-size: var(--text-sm); }
+
+main { max-width: var(--container); margin: 0 auto; padding: 0 var(--space-6) var(--space-12); }
+#grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr)); gap: var(--space-5); }
+
+.card { border: var(--border-width) solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5);
+        background: var(--surface-subtle); display: flex; flex-direction: column; gap: var(--space-3); }
+.card-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.card-head h3 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-semibold); }
+.kind { font-size: var(--text-2xs); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-muted);
+        border: var(--border-width) solid var(--border); border-radius: var(--radius-full); padding: 0.1rem 0.5rem; white-space: nowrap; }
+.blurb { margin: 0; font-size: var(--text-md); line-height: var(--leading); }
+.stack { margin: 0; color: var(--text-muted); font: var(--font-code); font-size: var(--text-xs); }
+.links { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: auto; padding-top: var(--space-2); }
+.lnk { font: var(--font-body); font-weight: var(--weight-medium); font-size: var(--text-sm); text-decoration: none;
+       padding: var(--pad-control-y) var(--pad-control-x); border: var(--border-width) solid var(--border);
+       border-radius: var(--radius); background: var(--surface); color: var(--text); transition: var(--transition-control); }
+.lnk:hover { border-color: var(--accent); }
+.lnk-primary { background: var(--accent); border-color: var(--accent); color: var(--text-on-accent); }
+.lnk-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.method { margin-top: var(--space-10); padding-top: var(--space-6); border-top: var(--border-width) solid var(--border);
+          color: var(--text-muted); font-size: var(--text-md); line-height: var(--leading); max-width: 42rem; }
+.method h2 { color: var(--text); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: var(--tracking-wide); font-weight: var(--weight-semibold); }
+.method strong { color: var(--text); font-weight: var(--weight-semibold); }
+
+footer { max-width: var(--container); margin: 0 auto; padding: var(--space-6); color: var(--text-subtle);
+         font-size: var(--text-sm); border-top: var(--border-width) solid var(--border); }

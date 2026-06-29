@@ -1,0 +1,1222 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>rbac-explorer</title><style>/* ============================================================
+   Datacore — Base layer
+   ------------------------------------------------------------
+   A minimal, token-driven reset. Mirrors the source UI's
+   `* { box-sizing }` + body font/color/background, plus sensible
+   defaults for the elements components and kits rely on. Kept
+   deliberately small — this is a foundation, not a normalize.
+   ============================================================ */
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font: var(--font-body);
+  color: var(--text);
+  background: var(--surface);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--selection-bg); }
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+code, kbd, samp, pre {
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+}
+
+/* Data surfaces get tabular figures by default */
+table { font-variant-numeric: var(--numeric-tabular); }
+
+/* Consistent, visible focus everywhere (accessibility is a brand value) */
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+hr {
+  border: 0;
+  border-top: var(--border-line);
+  margin: var(--space-4) 0;
+}
+
+::placeholder { color: var(--text-subtle); }
+/* ============================================================
+   Datacore — Colors
+   ------------------------------------------------------------
+   Source of truth: advanced-datatable `web/style.css`, which
+   uses a cool neutral (gray/slate) palette + a single blue
+   accent, with a hand-authored dark theme via prefers-color-
+   scheme. We formalize that into base ramps + semantic aliases,
+   and add restrained status hues for the build-engine work
+   tracker (backlog / in_progress / in_review / done, close-check
+   pass/fail, reject states).
+
+   Layer 1 = base ramps (raw hues). Layer 2 = semantic aliases
+   (what UI code should reference). Dark theme remaps Layer 2 only.
+   ============================================================ */
+
+:root {
+  /* --- Layer 1: base neutral ramp (cool gray) --- */
+  --neutral-0:   #ffffff;
+  --neutral-50:  #f9fafb;  /* source --head (table head / subtle surface) */
+  --neutral-100: #f3f4f6;
+  --neutral-200: #e5e7eb;  /* source --line (hairline border) */
+  --neutral-300: #d1d5db;
+  --neutral-400: #9ca3af;
+  --neutral-500: #6b7280;  /* source --muted */
+  --neutral-600: #4b5563;
+  --neutral-700: #374151;
+  --neutral-800: #1f2937;  /* source --fg (body text) */
+  --neutral-900: #111827;
+  --neutral-950: #0b1120;
+
+  /* dark surfaces use the slate sub-family, matching the source dark theme */
+  --slate-400:   #94a3b8;  /* source dark --muted */
+  --slate-700:   #334155;
+  --slate-800:   #1e293b;  /* source dark --line */
+  --slate-900:   #0f172a;  /* source dark --bg */
+  --slate-950:   #020617;
+
+  /* --- Layer 1: accent (blue) --- */
+  --blue-50:  #eff6ff;
+  --blue-100: #dbeafe;
+  --blue-400: #60a5fa;  /* source dark --accent */
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;  /* source --accent */
+  --blue-700: #1d4ed8;
+
+  /* --- Layer 1: status hues (restrained, Tailwind-keyed to the blue) --- */
+  --green-50:  #f0fdf4;  --green-500: #22c55e;  --green-600: #16a34a;  --green-700: #15803d;
+  --amber-50:  #fffbeb;  --amber-500: #f59e0b;  --amber-600: #d97706;  --amber-700: #b45309;
+  --red-50:    #fef2f2;  --red-500:   #ef4444;  --red-600:   #dc2626;  --red-700:   #b91c1c;
+
+  /* ============================================================
+     Layer 2: semantic aliases — reference THESE in components
+     ============================================================ */
+
+  /* surfaces */
+  --surface:        var(--neutral-0);    /* page / card background */
+  --surface-subtle: var(--neutral-50);   /* table head, toolbars, zebra base */
+  --surface-sunken: var(--neutral-100);  /* wells, inset areas */
+  --surface-overlay:var(--neutral-0);    /* popovers, dialogs */
+
+  /* text */
+  --text:        var(--neutral-800);  /* primary body */
+  --text-muted:  var(--neutral-500);  /* secondary / captions / counts */
+  --text-subtle: var(--neutral-400);  /* tertiary / kind labels / placeholders */
+  --text-on-accent: var(--neutral-0);
+
+  /* lines & borders (the brand's primary structural device) */
+  --border:        var(--neutral-200);  /* default hairline */
+  --border-strong: var(--neutral-300);
+  --border-subtle: var(--neutral-100);
+
+  /* accent — exactly one, for active sort/filter, focus, primary actions */
+  --accent:        var(--blue-600);
+  --accent-hover:  var(--blue-700);
+  --accent-tint:   var(--blue-50);   /* faint accent wash (selected row, active filter bg) */
+  --accent-border: var(--blue-600);
+  --focus:         var(--accent);
+
+  /* status — semantic + the build-engine workflow states */
+  --success:       var(--green-600);  --success-tint: var(--green-50);   /* close-check passed, done */
+  --warning:       var(--amber-600);  --warning-tint: var(--amber-50);   /* in_review, attention */
+  --danger:        var(--red-600);    --danger-tint:  var(--red-50);     /* reject, check unmet, 4xx */
+
+  --status-backlog:    var(--neutral-500);
+  --status-progress:   var(--blue-600);
+  --status-review:     var(--amber-600);
+  --status-done:       var(--green-600);
+
+  /* selection */
+  --selection-bg: var(--blue-100);
+}
+
+/* ============================================================
+   Dark theme — remaps Layer 2 to the source's slate + blue-400.
+   Available two ways: OS preference, and an explicit
+   [data-theme="dark"] scope for forcing it in cards / kits.
+   ============================================================ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface:        var(--slate-900);   /* #0f172a */
+    --surface-subtle: var(--neutral-900); /* #111827  (source dark --head) */
+    --surface-sunken: var(--slate-950);
+    --surface-overlay:var(--slate-800);
+
+    --text:        var(--neutral-200);   /* #e5e7eb */
+    --text-muted:  var(--slate-400);     /* #94a3b8 */
+    --text-subtle: var(--slate-700);
+    --text-on-accent: var(--slate-950);
+
+    --border:        var(--slate-800);   /* #1e293b */
+    --border-strong: var(--slate-700);
+    --border-subtle: var(--slate-900);
+
+    --accent:        var(--blue-400);    /* #60a5fa */
+    --accent-hover:  var(--blue-500);
+    --accent-tint:   color-mix(in srgb, var(--blue-400) 14%, transparent);
+    --accent-border: var(--blue-400);
+
+    --success: var(--green-500); --success-tint: color-mix(in srgb, var(--green-500) 14%, transparent);
+    --warning: var(--amber-500); --warning-tint: color-mix(in srgb, var(--amber-500) 14%, transparent);
+    --danger:  var(--red-500);   --danger-tint:  color-mix(in srgb, var(--red-500) 14%, transparent);
+
+    --status-backlog:  var(--slate-400);
+    --status-progress: var(--blue-400);
+    --status-review:   var(--amber-500);
+    --status-done:     var(--green-500);
+
+    --selection-bg: color-mix(in srgb, var(--blue-400) 30%, transparent);
+  }
+}
+
+/* explicit, forced dark scope (single-selector, so tokens still compile) */
+[data-theme="dark"] {
+  --surface:        var(--slate-900);
+  --surface-subtle: var(--neutral-900);
+  --surface-sunken: var(--slate-950);
+  --surface-overlay:var(--slate-800);
+
+  --text:        var(--neutral-200);
+  --text-muted:  var(--slate-400);
+  --text-subtle: var(--slate-700);
+  --text-on-accent: var(--slate-950);
+
+  --border:        var(--slate-800);
+  --border-strong: var(--slate-700);
+  --border-subtle: var(--slate-900);
+
+  --accent:        var(--blue-400);
+  --accent-hover:  var(--blue-500);
+  --accent-tint:   color-mix(in srgb, var(--blue-400) 14%, transparent);
+  --accent-border: var(--blue-400);
+
+  --success: var(--green-500); --success-tint: color-mix(in srgb, var(--green-500) 14%, transparent);
+  --warning: var(--amber-500); --warning-tint: color-mix(in srgb, var(--amber-500) 14%, transparent);
+  --danger:  var(--red-500);   --danger-tint:  color-mix(in srgb, var(--red-500) 14%, transparent);
+
+  --status-backlog:  var(--slate-400);
+  --status-progress: var(--blue-400);
+  --status-review:   var(--amber-500);
+  --status-done:     var(--green-500);
+
+  --selection-bg: color-mix(in srgb, var(--blue-400) 30%, transparent);
+}
+/* ============================================================
+   Datacore — Typography
+   ------------------------------------------------------------
+   The brand is a privacy / local-first developer tool: by design
+   it ships ZERO webfonts (the front-end brief mandates "no
+   external CDN fonts/scripts ... keep assets inlineable"). So the
+   type system is the platform's own UI font + a system monospace
+   for data, identifiers, code and JSON. No @font-face exists in
+   this design system — that absence is intentional and on-brand.
+
+   Base size is 0.875rem / 14px with a 1.5 rhythm, lifted directly
+   from the source UI. Numeric data is rendered with tabular-nums.
+   ============================================================ */
+
+:root {
+  /* --- families --- */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco,
+               Consolas, "Liberation Mono", monospace;
+
+  /* --- type scale (rem; relative-units-only is a brand rule) --- */
+  --text-2xs: 0.7rem;    /* 11.2px — column-kind chips, dense meta */
+  --text-xs:  0.75rem;   /* 12px   — table filter inputs, fine print */
+  --text-sm:  0.8rem;    /* 12.8px — muted captions, row counts */
+  --text-md:  0.875rem;  /* 14px   — BODY DEFAULT */
+  --text-lg:  1rem;      /* 16px   — H1 / view title */
+  --text-xl:  1.125rem;  /* 18px   — empty-state lead */
+  --text-2xl: 1.375rem;  /* 22px   — section heading */
+  --text-3xl: 1.75rem;   /* 28px   — page hero (sparingly) */
+
+  /* --- line-height --- */
+  --leading-tight: 1.25;
+  --leading:       1.5;   /* source default */
+  --leading-loose: 1.7;
+
+  /* --- weight (system fonts carry these reliably) --- */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* --- tracking --- */
+  --tracking-tight:  -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.02em;   /* small-caps-ish labels */
+  --tracking-mono:   0;        /* mono stays at 0 */
+
+  /* --- numerics: opt-in tabular figures for all data surfaces --- */
+  --numeric-tabular: tabular-nums;  /* @kind other */
+
+  /* --- composed shorthands (font: shorthand, matching source) --- */
+  --font-body:  var(--weight-regular) var(--text-md)/var(--leading) var(--font-sans);
+  --font-title: var(--weight-semibold) var(--text-lg)/var(--leading-tight) var(--font-sans);
+  --font-code:  var(--weight-regular) var(--text-sm)/var(--leading) var(--font-mono);
+}
+
+/* Utility classes kept minimal — components reference the tokens directly.
+   These exist so specimen cards and ad-hoc HTML can opt into the data look. */
+.dc-tabular { font-variant-numeric: var(--numeric-tabular); }
+.dc-mono    { font-family: var(--font-mono); font-variant-numeric: var(--numeric-tabular); }
+/* ============================================================
+   Datacore — Spacing, sizing, radii, borders, focus, z-index
+   ------------------------------------------------------------
+   The source UI is DENSE: small rem paddings (0.2–0.75rem),
+   hairline 1px borders as the structural device, and modest
+   radii (inputs 0.3rem, buttons 0.4rem). Relative units only;
+   px is reserved for hairlines and the focus ring. Everything
+   here is calibrated to a 14-inch laptop as the primary target.
+   ============================================================ */
+
+:root {
+  /* --- spacing scale (0.25rem base step) --- */
+  --space-0:  0;
+  --space-px: 1px;
+  --space-1:  0.25rem;  /*  4px */
+  --space-2:  0.5rem;   /*  8px */
+  --space-3:  0.75rem;  /* 12px */
+  --space-4:  1rem;     /* 16px */
+  --space-5:  1.25rem;  /* 20px */
+  --space-6:  1.5rem;   /* 24px */
+  --space-8:  2rem;     /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+
+  /* --- source-calibrated micro-paddings (the table & control rhythm) --- */
+  --pad-cell-y:    0.3rem;   /* td / th vertical   */
+  --pad-cell-x:    0.5rem;   /* td / th horizontal */
+  --pad-input-y:   0.2rem;   /* filter input       */
+  --pad-input-x:   0.3rem;
+  --pad-control-y: 0.4rem;   /* buttons / labels   */
+  --pad-control-x: 0.7rem;
+  --pad-section-x: 1rem;     /* header / toolbar gutter */
+  --pad-section-y: 0.75rem;
+
+  /* --- control sizing (generous hit targets per the brief) --- */
+  --control-h-sm: 1.75rem;   /* ~28px — compact (filter inputs) */
+  --control-h:    2.125rem;  /* ~34px — default */
+  --control-h-lg: 2.5rem;    /* ~40px — comfortable */
+  --tap-min:      2.25rem;   /* ~36px minimum interactive target */
+
+  /* --- radii (small; never pill except true pills) --- */
+  --radius-xs:   0.2rem;   /* hairline chips */
+  --radius-sm:   0.3rem;   /* inputs */
+  --radius:      0.4rem;   /* buttons, cards (default) */
+  --radius-lg:   0.5rem;   /* dialogs, larger panels */
+  --radius-full: 9999px;   /* avatars, status dots, true pills */
+
+  /* --- borders (THE structural device — flat, hairline-driven) --- */
+  --border-width:  1px;
+  --border-line:   var(--border-width) solid var(--border);
+  --border-strong-line: var(--border-width) solid var(--border-strong);
+
+  /* --- focus ring (visible, deliberate; from source: 2px accent, inset) --- */
+  --focus-width:  2px;
+  --focus-offset: -1px;
+  --focus-ring:   var(--focus-width) solid var(--focus);
+
+  /* --- layered surfaces / stacking --- */
+  --z-base:    0;    /* @kind other */
+  --z-sticky:  2;    /* @kind other */
+  --z-dropdown:50;   /* @kind other */
+  --z-popover: 60;   /* @kind other */
+  --z-dialog:  100;  /* @kind other */
+  --z-toast:   200;  /* @kind other */
+
+  /* --- layout maxima --- */
+  --container:     72rem;   /* 1152px content cap for marketing-ish views */
+  --measure:       42rem;   /* readable prose measure */
+  --sidebar-w:     15rem;   /* work-tracker side rail */
+}
+/* ============================================================
+   Datacore — Elevation & Motion
+   ------------------------------------------------------------
+   The brand is FLAT. Base surfaces carry NO drop shadow — depth
+   is communicated with hairline borders and subtle surface-color
+   steps, exactly as the source UI does. Shadows exist ONLY for
+   genuinely floating layers (filter popovers, dropdowns, dialogs,
+   toasts) and stay soft and low.
+
+   Motion is near-instant: the source has no transitions at all.
+   We add only the smallest tasteful easing for hover/border and
+   overlay fade — no bounces, no parallax, no decorative loops.
+   ============================================================ */
+
+:root {
+  /* --- elevation --- */
+  --shadow-none:    none;                       /* base surfaces, cards, table */
+  --shadow-popover: 0 4px 12px -2px rgba(15, 23, 42, 0.12),
+                    0 2px 4px  -2px rgba(15, 23, 42, 0.08);   /* dropdowns, filter pops */
+  --shadow-dialog:  0 16px 40px -8px rgba(15, 23, 42, 0.22),
+                    0 4px 10px  -4px rgba(15, 23, 42, 0.10);  /* modal dialogs */
+  --shadow-focus:   0 0 0 3px var(--accent-tint);            /* soft accent halo (optional) */
+
+  /* hairline "elevation" — the brand's real depth cue */
+  --ring-hairline:  inset 0 0 0 1px var(--border);
+
+  /* --- motion --- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);   /* @kind other */
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);   /* @kind other */
+  --ease-in-out:   cubic-bezier(0.65, 0, 0.35, 1);  /* @kind other */
+
+  --dur-instant: 0ms;     /* @kind other */
+  --dur-fast:    100ms;   /* @kind other */
+  --dur:         150ms;   /* @kind other */
+  --dur-slow:    240ms;   /* @kind other */
+
+  /* common composed transitions */
+  --transition-control: border-color var(--dur-fast) var(--ease-standard),
+                        background-color var(--dur-fast) var(--ease-standard),
+                        color var(--dur-fast) var(--ease-standard);  /* @kind other */
+  --transition-overlay: opacity var(--dur) var(--ease-out),
+                        transform var(--dur) var(--ease-out);  /* @kind other */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;  /* @kind other */
+    --dur:      0ms;  /* @kind other */
+    --dur-slow: 0ms;  /* @kind other */
+  }
+}
+/* ============================================================
+   Datacore — Chart palette
+   ------------------------------------------------------------
+   The one new foundation the echarts-dashboard product needs: a
+   categorical series palette. It is NOT a rainbow — it is anchored
+   on the brand blue accent and extended with harmonious, mutually
+   distinguishable hues (reusing the cyan/violet already used by
+   KindLabel for Int/Float). Light values are the 600-weight hues;
+   dark remaps to the 400/500 weights so series stay legible on the
+   slate-900 surface.
+
+   The Chart component reads these custom properties at runtime
+   (getComputedStyle) to build the ECharts theme, so charts always
+   track the active theme and any token overrides.
+
+   Series order is deliberate: 1 = accent (the default single series),
+   then cool → warm so adjacent categories never collide.
+   ============================================================ */
+
+:root {
+  --chart-1: #2563eb;  /* accent blue   */
+  --chart-2: #0891b2;  /* cyan-600      */
+  --chart-3: #7c3aed;  /* violet-600    */
+  --chart-4: #16a34a;  /* green-600     */
+  --chart-5: #d97706;  /* amber-600     */
+  --chart-6: #dc2626;  /* red-600       */
+  --chart-7: #db2777;  /* pink-600      */
+  --chart-8: #475569;  /* slate-600     */
+
+  /* structural chart tokens (axes, grid, tooltip) — alias the
+     semantic surface/line/text tokens so they flip with the theme */
+  --chart-axis:    var(--text-muted);   /* axis labels, legend text */
+  --chart-grid:    var(--border);       /* split / grid lines       */
+  --chart-track:   var(--surface-sunken); /* empty bar track / base */
+  --chart-tooltip-bg:     var(--surface-overlay);
+  --chart-tooltip-border: var(--border);
+  --chart-tooltip-text:   var(--text);
+
+  /* a single-hue sequential ramp (the accent), for one-measure
+     intensity encodings (heat, choropleth, gradients) */
+  --chart-seq-1: var(--blue-100);
+  --chart-seq-2: #93c5fd;
+  --chart-seq-3: var(--blue-500);
+  --chart-seq-4: var(--blue-700);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --chart-1: #60a5fa;  /* blue-400  */
+    --chart-2: #22d3ee;  /* cyan-400  */
+    --chart-3: #a78bfa;  /* violet-400 */
+    --chart-4: #4ade80;  /* green-400 */
+    --chart-5: #fbbf24;  /* amber-400 */
+    --chart-6: #f87171;  /* red-400   */
+    --chart-7: #f472b6;  /* pink-400  */
+    --chart-8: #94a3b8;  /* slate-400 */
+
+    --chart-seq-1: #1e3a5f;
+    --chart-seq-2: #2563eb;
+    --chart-seq-3: #60a5fa;
+    --chart-seq-4: #bfdbfe;
+  }
+}
+
+[data-theme="dark"] {
+  --chart-1: #60a5fa;
+  --chart-2: #22d3ee;
+  --chart-3: #a78bfa;
+  --chart-4: #4ade80;
+  --chart-5: #fbbf24;
+  --chart-6: #f87171;
+  --chart-7: #f472b6;
+  --chart-8: #94a3b8;
+
+  --chart-seq-1: #1e3a5f;
+  --chart-seq-2: #2563eb;
+  --chart-seq-3: #60a5fa;
+  --chart-seq-4: #bfdbfe;
+}
+/* ============================================================
+   web-kit — Responsive layer
+   ------------------------------------------------------------
+   Breakpoints are aligned to real device logical viewports, and
+   device CLASS is judged by pointer/hover/orientation — not width
+   alone. Width alone misclassifies: a landscape phone is wide but
+   short, and a narrow desktop window is not a phone. Prefer fluid
+   sizing (clamp(), min(), max()) and @container queries; reach for
+   these media rules only when a layout must truly change.
+
+   Width steps (min-width): xs 360 · sm 480 · md 600 · lg 768 ·
+   xl 1024 · 2xl 1280. Height: short ≤480, tall ≥900. The numeric
+   values are also exported from responsive.ts.
+   ============================================================ */
+
+:root {
+  /* Breakpoint values, for reference + JS parity (CSS @media cannot read vars). */
+  --bp-xs: 360;
+  --bp-sm: 480;
+  --bp-md: 600;
+  --bp-lg: 768;
+  --bp-xl: 1024;
+  --bp-2xl: 1280;
+  --bp-short: 480;
+  --bp-tall: 900;
+}
+
+/* ---- Touch devices: enlarge hit targets, regardless of width ----
+   A coarse pointer means fingers; honour the WCAG ~44px target. */
+@media (pointer: coarse) {
+  :root {
+    --tap-min: 2.75rem; /* ≥44px */
+    --control-h: 2.5rem; /* roomier default control */
+  }
+}
+
+/* ---- Landscape phones (wide but short): reclaim vertical space ----
+   Catches e.g. 844×390 — desktop-ish width, phone-ish height. */
+@media (max-height: 480px) and (pointer: coarse) {
+  :root {
+    --pad-section-y: 0.4rem;
+  }
+}
+
+/* ---- Visibility utilities (use sparingly; prefer fluid layout) ---- */
+.wk-hide-below-md {
+  display: none !important;
+}
+@media (min-width: 600px) {
+  .wk-hide-below-md {
+    display: revert !important;
+  }
+}
+.wk-show-below-md {
+  display: revert !important;
+}
+@media (min-width: 600px) {
+  .wk-show-below-md {
+    display: none !important;
+  }
+}
+
+/* ---- Foldables (Viewport Segments API): keep content in one pane ----
+   When the viewport is split by a hinge (book mode), single-pane content
+   shouldn't straddle the fold. Progressive — ignored where unsupported. */
+@media (horizontal-viewport-segments: 2) {
+  .wk-pane {
+    max-width: env(viewport-segment-width 0 0, 100%);
+  }
+}
+
+/* ---- Stack helper: a row that collapses to a column on narrow widths ---- */
+.wk-stack-sm {
+  display: flex;
+  gap: var(--space-3);
+}
+@media (max-width: 599px) {
+  .wk-stack-sm {
+    flex-direction: column;
+  }
+}
+/* rbac-explorer styles (chrome comes from web-kit components; tokens from web-kit). */
+body { margin: 0; font: var(--font-body); color: var(--text); background: var(--surface); }
+.app-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-3) var(--space-4);
+             border-bottom: var(--border-width) solid var(--border); }
+.app-header h1 { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin: 0; }
+.muted { color: var(--text-muted); font-size: var(--text-sm); }
+.spacer { flex: 1; }
+.actor-field { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-muted); }
+
+.legend { display: flex; gap: var(--space-4); flex-wrap: wrap; padding: var(--space-3) var(--space-4);
+          font-size: var(--text-sm); color: var(--text-muted); border-bottom: var(--border-width) solid var(--border); }
+.legend b { color: var(--text); }
+.legend .swatch { font-style: normal; font-weight: var(--weight-regular); }
+.legend .sw-reached { color: var(--success); }
+.legend .sw-dim { opacity: 0.4; }
+.legend .sw-member { box-shadow: inset 0 0 0 2px var(--accent); padding: 0 0.35rem; border-radius: var(--radius-sm); }
+
+main { display: grid; grid-template-columns: 1fr 18rem; gap: var(--space-4); padding: var(--space-4); align-items: start; }
+@media (max-width: 40rem) { main { grid-template-columns: 1fr; } }
+
+#tree .children { margin-left: 1.4rem; border-left: var(--border-width) dashed var(--border); padding-left: var(--space-4); }
+.node { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2);
+        border: var(--border-width) solid var(--border); border-radius: var(--radius); padding: var(--space-2) var(--space-3); margin: var(--space-2) 0;
+        cursor: pointer; background: var(--surface-subtle); transition: opacity 0.15s, border-color 0.15s, background 0.15s; }
+.node:hover { border-color: var(--accent); }
+.node.dim { opacity: 0.4; }
+.node.reached { border-color: var(--success); background: color-mix(in srgb, var(--success) 14%, var(--surface-subtle)); }
+.node.member { box-shadow: inset 0 0 0 2px var(--accent); }
+.nlabel { font-weight: var(--weight-semibold); }
+.kind { font-weight: var(--weight-regular); color: var(--text-muted); font-size: var(--text-xs); margin-left: var(--space-2); }
+.badges { display: flex; gap: var(--space-1); }
+
+#panel { border: var(--border-width) solid var(--border); border-radius: var(--radius); padding: var(--space-4);
+         background: var(--surface-subtle); position: sticky; top: var(--space-4); }
+#panel .reach-stat { margin-bottom: var(--space-4); }
+#panel p { margin: 0 0 var(--space-3); font-size: var(--text-sm); }
+#panel i { color: var(--text-muted); }
+</style></head><body><div id="root"></div>
+<script>let wasm_bindgen = (function(exports) {
+    let script_src;
+    if (typeof document !== 'undefined' && document.currentScript !== null) {
+        script_src = new URL(document.currentScript.src, location.href).toString();
+    }
+
+    class WasmGraph {
+        __destroy_into_raw() {
+            const ptr = this.__wbg_ptr;
+            this.__wbg_ptr = 0;
+            WasmGraphFinalization.unregister(this);
+            return ptr;
+        }
+        free() {
+            const ptr = this.__destroy_into_raw();
+            wasm.__wbg_wasmgraph_free(ptr, 0);
+        }
+        /**
+         * Build from aligned `ids` and `parents` (an empty string = a root node).
+         * @param {string[]} ids
+         * @param {string[]} parents
+         */
+        constructor(ids, parents) {
+            const ptr0 = passArrayJsValueToWasm0(ids, wasm.__wbindgen_malloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passArrayJsValueToWasm0(parents, wasm.__wbindgen_malloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.wasmgraph_new(ptr0, len0, ptr1, len1);
+            this.__wbg_ptr = ret;
+            WasmGraphFinalization.register(this, this.__wbg_ptr, this);
+            return this;
+        }
+        /**
+         * The node ids reachable from `seed` (the nodes an actor is a member of), descending the tree.
+         * @param {string[]} seed
+         * @returns {string[]}
+         */
+        reachable(seed) {
+            const ptr0 = passArrayJsValueToWasm0(seed, wasm.__wbindgen_malloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.wasmgraph_reachable(this.__wbg_ptr, ptr0, len0);
+            var v2 = getArrayJsValueFromWasm0(ret[0], ret[1]).slice();
+            wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+            return v2;
+        }
+    }
+    if (Symbol.dispose) WasmGraph.prototype[Symbol.dispose] = WasmGraph.prototype.free;
+    exports.WasmGraph = WasmGraph;
+    function __wbg_get_imports() {
+        const import0 = {
+            __proto__: null,
+            __wbg___wbindgen_string_get_b0ca35b86a603356: function(arg0, arg1) {
+                const obj = arg1;
+                const ret = typeof(obj) === 'string' ? obj : undefined;
+                var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+                var len1 = WASM_VECTOR_LEN;
+                getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+                getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+            },
+            __wbg___wbindgen_throw_344f42d3211c4765: function(arg0, arg1) {
+                throw new Error(getStringFromWasm0(arg0, arg1));
+            },
+            __wbindgen_cast_0000000000000001: function(arg0, arg1) {
+                // Cast intrinsic for `Ref(String) -> Externref`.
+                const ret = getStringFromWasm0(arg0, arg1);
+                return ret;
+            },
+            __wbindgen_init_externref_table: function() {
+                const table = wasm.__wbindgen_externrefs;
+                const offset = table.grow(4);
+                table.set(0, undefined);
+                table.set(offset + 0, undefined);
+                table.set(offset + 1, null);
+                table.set(offset + 2, true);
+                table.set(offset + 3, false);
+            },
+        };
+        return {
+            __proto__: null,
+            "./rbac_wasm_bg.js": import0,
+        };
+    }
+
+    const WasmGraphFinalization = (typeof FinalizationRegistry === 'undefined')
+        ? { register: () => {}, unregister: () => {} }
+        : new FinalizationRegistry(ptr => wasm.__wbg_wasmgraph_free(ptr, 1));
+
+    function addToExternrefTable0(obj) {
+        const idx = wasm.__externref_table_alloc();
+        wasm.__wbindgen_externrefs.set(idx, obj);
+        return idx;
+    }
+
+    function getArrayJsValueFromWasm0(ptr, len) {
+        ptr = ptr >>> 0;
+        const mem = getDataViewMemory0();
+        const result = [];
+        for (let i = ptr; i < ptr + 4 * len; i += 4) {
+            result.push(wasm.__wbindgen_externrefs.get(mem.getUint32(i, true)));
+        }
+        wasm.__externref_drop_slice(ptr, len);
+        return result;
+    }
+
+    let cachedDataViewMemory0 = null;
+    function getDataViewMemory0() {
+        if (cachedDataViewMemory0 === null || cachedDataViewMemory0.buffer.detached === true || (cachedDataViewMemory0.buffer.detached === undefined && cachedDataViewMemory0.buffer !== wasm.memory.buffer)) {
+            cachedDataViewMemory0 = new DataView(wasm.memory.buffer);
+        }
+        return cachedDataViewMemory0;
+    }
+
+    function getStringFromWasm0(ptr, len) {
+        return decodeText(ptr >>> 0, len);
+    }
+
+    let cachedUint8ArrayMemory0 = null;
+    function getUint8ArrayMemory0() {
+        if (cachedUint8ArrayMemory0 === null || cachedUint8ArrayMemory0.byteLength === 0) {
+            cachedUint8ArrayMemory0 = new Uint8Array(wasm.memory.buffer);
+        }
+        return cachedUint8ArrayMemory0;
+    }
+
+    function isLikeNone(x) {
+        return x === undefined || x === null;
+    }
+
+    function passArrayJsValueToWasm0(array, malloc) {
+        const ptr = malloc(array.length * 4, 4) >>> 0;
+        for (let i = 0; i < array.length; i++) {
+            const add = addToExternrefTable0(array[i]);
+            getDataViewMemory0().setUint32(ptr + 4 * i, add, true);
+        }
+        WASM_VECTOR_LEN = array.length;
+        return ptr;
+    }
+
+    function passStringToWasm0(arg, malloc, realloc) {
+        if (realloc === undefined) {
+            const buf = cachedTextEncoder.encode(arg);
+            const ptr = malloc(buf.length, 1) >>> 0;
+            getUint8ArrayMemory0().subarray(ptr, ptr + buf.length).set(buf);
+            WASM_VECTOR_LEN = buf.length;
+            return ptr;
+        }
+
+        let len = arg.length;
+        let ptr = malloc(len, 1) >>> 0;
+
+        const mem = getUint8ArrayMemory0();
+
+        let offset = 0;
+
+        for (; offset < len; offset++) {
+            const code = arg.charCodeAt(offset);
+            if (code > 0x7F) break;
+            mem[ptr + offset] = code;
+        }
+        if (offset !== len) {
+            if (offset !== 0) {
+                arg = arg.slice(offset);
+            }
+            ptr = realloc(ptr, len, len = offset + arg.length * 3, 1) >>> 0;
+            const view = getUint8ArrayMemory0().subarray(ptr + offset, ptr + len);
+            const ret = cachedTextEncoder.encodeInto(arg, view);
+
+            offset += ret.written;
+            ptr = realloc(ptr, len, offset, 1) >>> 0;
+        }
+
+        WASM_VECTOR_LEN = offset;
+        return ptr;
+    }
+
+    let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
+    cachedTextDecoder.decode();
+    function decodeText(ptr, len) {
+        return cachedTextDecoder.decode(getUint8ArrayMemory0().subarray(ptr, ptr + len));
+    }
+
+    const cachedTextEncoder = new TextEncoder();
+
+    if (!('encodeInto' in cachedTextEncoder)) {
+        cachedTextEncoder.encodeInto = function (arg, view) {
+            const buf = cachedTextEncoder.encode(arg);
+            view.set(buf);
+            return {
+                read: arg.length,
+                written: buf.length
+            };
+        };
+    }
+
+    let WASM_VECTOR_LEN = 0;
+
+    let wasmModule, wasmInstance, wasm;
+    function __wbg_finalize_init(instance, module) {
+        wasmInstance = instance;
+        wasm = instance.exports;
+        wasmModule = module;
+        cachedDataViewMemory0 = null;
+        cachedUint8ArrayMemory0 = null;
+        wasm.__wbindgen_start();
+        return wasm;
+    }
+
+    async function __wbg_load(module, imports) {
+        if (typeof Response === 'function' && module instanceof Response) {
+            if (typeof WebAssembly.instantiateStreaming === 'function') {
+                try {
+                    return await WebAssembly.instantiateStreaming(module, imports);
+                } catch (e) {
+                    const validResponse = module.ok && expectedResponseType(module.type);
+
+                    if (validResponse && module.headers.get('Content-Type') !== 'application/wasm') {
+                        console.warn("`WebAssembly.instantiateStreaming` failed because your server does not serve Wasm with `application/wasm` MIME type. Falling back to `WebAssembly.instantiate` which is slower. Original error:\n", e);
+
+                    } else { throw e; }
+                }
+            }
+
+            const bytes = await module.arrayBuffer();
+            return await WebAssembly.instantiate(bytes, imports);
+        } else {
+            const instance = await WebAssembly.instantiate(module, imports);
+
+            if (instance instanceof WebAssembly.Instance) {
+                return { instance, module };
+            } else {
+                return instance;
+            }
+        }
+
+        function expectedResponseType(type) {
+            switch (type) {
+                case 'basic': case 'cors': case 'default': return true;
+            }
+            return false;
+        }
+    }
+
+    function initSync(module) {
+        if (wasm !== undefined) return wasm;
+
+
+        if (module !== undefined) {
+            if (Object.getPrototypeOf(module) === Object.prototype) {
+                ({module} = module)
+            } else {
+                console.warn('using deprecated parameters for `initSync()`; pass a single object instead')
+            }
+        }
+
+        const imports = __wbg_get_imports();
+        if (!(module instanceof WebAssembly.Module)) {
+            module = new WebAssembly.Module(module);
+        }
+        const instance = new WebAssembly.Instance(module, imports);
+        return __wbg_finalize_init(instance, module);
+    }
+
+    async function __wbg_init(module_or_path) {
+        if (wasm !== undefined) return wasm;
+
+
+        if (module_or_path !== undefined) {
+            if (Object.getPrototypeOf(module_or_path) === Object.prototype) {
+                ({module_or_path} = module_or_path)
+            } else {
+                console.warn('using deprecated parameters for the initialization function; pass a single object instead')
+            }
+        }
+
+        if (module_or_path === undefined && script_src !== undefined) {
+            module_or_path = script_src.replace(/\.js$/, "_bg.wasm");
+        }
+        const imports = __wbg_get_imports();
+
+        if (typeof module_or_path === 'string' || (typeof Request === 'function' && module_or_path instanceof Request) || (typeof URL === 'function' && module_or_path instanceof URL)) {
+            module_or_path = fetch(module_or_path);
+        }
+
+        const { instance, module } = await __wbg_load(await module_or_path, imports);
+
+        return __wbg_finalize_init(instance, module);
+    }
+
+    return Object.assign(__wbg_init, { initSync }, exports);
+})({ __proto__: null });
+</script>
+<script>const WASM_B64="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AgghGiAAIAI2AgAgAEEEaiAaNwIAIABBDGohACABQQFqIQEMAQsLIAMgATYCQCADQfAAahAvAn8gCUUEQEEAIRNBAAwBCyADIBE2AowBIAMgCTYCiAEgA0EANgKEASADIBE2AnwgAyAJNgJ4IANBADYCdEEBCyEAIAMgEzYCkAEgAyAANgKAASADIAA2AnAgA0HwAGoQLyASIBIoAgBBAWs2AgAgFiAWKAIAQQFrIgA2AgAgAEUEQCAWEC0LIANBIGogA0E4ahAmIAMgAygCICICIAMoAiQiCEEMbGoiBTYCfCADIAg2AnggAyACNgJ0IAIhASAIBEAgAiEAA0AgACgCACAAQQRqKAIAIgYgAEEIaigCABADIR0QFiIEIB0mASAGQQFBARAlIAEgBDYCACABQQRqIQEgAEEMaiIAIAVHDQALIAMgBTYCdAsgA0HwAGoiABAqIAMgCEEDbDYClAEgAyACNgKYASADIAEgAmtBAnY2ApwBIAAQKyADQRhqIANBlAFqECcgFSADKQMYNwIAIANBoAFqJAAMAgtBgI7AABBMAAtB8I3AABBMAAsgFSgCACAVKAIEIBVBEGokAAscACAAIAIQESAAQTBqIAJBMGoQESACQQggARATCxoBAX8gACgCACIBQQBKBEAgACgCBCABECkLCxcBAX8gACgCACIBBEAgACgCBCABECkLCxkAIAAEQBBQAAtB/YnAAEEjQZCKwAAQNgALFAEBf0GQAhAEIgBFBEAQUAALIAALFAEBf0HAAhAEIgBFBEAQUAALIAALFAEBf0GMARAEIgBFBEAQUAALIAALFAEBf0G8ARAEIgBFBEAQUAALIAALHAAgASgCACAAKAIAIAAoAgQgASgCBCgCDBECAAsRACAAIAFBAXRBAXIgAhA2AAscACAAQaSQwAApAgA3AgggAEGckMAAKQIANwIACxwAIABBtJDAACkCADcCCCAAQayQwAApAgA3AgALDQAgAQRAIAAgARApCwsQACABIAAoAgAgACgCBBAICxMAIABB6JHAADYCBCAAIAE2AgALDgBBoIrAAEErIAAQRgALDwAgAEHMj8AAIAEgAhAMCwwAQeiSwABBGxBPAAsJACAAIAEQAQALDQBB1JfAAEEBOgAAAAsNACABQfCMwABBGBAICwwAIAAgASkCADcDAAsJACAAQQA2AgALAgALC4gUAgBBgIDAAAvxE3sDEACEAAAAWAIAADAAAABhc3NlcnRpb24gZmFpbGVkOiBsZW4gPiAwAAAAAAQQAIAAAABvAQAACQAAAGFzc2VydGlvbiBmYWlsZWQ6IG9sZF9sZWZ0X2xlbiA+PSBjb3VudAAABBAAgAAAAAIGAAANAAAAYXR0ZW1wdGVkIHRvIHRha2Ugb3duZXJzaGlwIG9mIFJ1c3QgdmFsdWUgd2hpbGUgaXQgd2FzIGJvcnJvd2VkFnNsaWNlIGluZGV4IHN0YXJ0cyBhdCDADSBidXQgZW5kcyBhdCDAABJyYW5nZSBzdGFydCBpbmRleCDAIiBvdXQgb2YgcmFuZ2UgZm9yIHNsaWNlIG9mIGxlbmd0aCDAABByYW5nZSBlbmQgaW5kZXggwCIgb3V0IG9mIHJhbmdlIGZvciBzbGljZSBvZiBsZW5ndGggwAAvaG9tZS9tYW5zYS8ucnVzdHVwL3Rvb2xjaGFpbnMvbmlnaHRseS14ODZfNjQtdW5rbm93bi1saW51eC1nbnUvbGliL3J1c3RsaWIvc3JjL3J1c3QvbGlicmFyeS9hbGxvYy9zcmMvY29sbGVjdGlvbnMvYnRyZWUvbWFwL2VudHJ5LnJzAC9ydXN0Yy9iMzU0MTMzZmIxMjYzNTI4NzFiZWE0YjQwNzk1YTQ1NzM5YWRmZjJiL2xpYnJhcnkvY29yZS9zcmMvc2xpY2Uvc29ydC9zaGFyZWQvc21hbGxzb3J0LnJzAC9ob21lL21hbnNhLy5ydXN0dXAvdG9vbGNoYWlucy9uaWdodGx5LXg4Nl82NC11bmtub3duLWxpbnV4LWdudS9saWIvcnVzdGxpYi9zcmMvcnVzdC9saWJyYXJ5L2NvcmUvc3JjL3NsaWNlL3NvcnQvc3RhYmxlL3F1aWNrc29ydC5ycwAvcnVzdGMvYjM1NDEzM2ZiMTI2MzUyODcxYmVhNGI0MDc5NWE0NTczOWFkZmYyYi9saWJyYXJ5L3N0ZC9zcmMvc3lzL3N5bmMvcndsb2NrL25vX3RocmVhZHMucnMAL2hvbWUvbWFuc2EvLmNhcmdvL3JlZ2lzdHJ5L3NyYy9pbmRleC5jcmF0ZXMuaW8tMTk0OWNmOGM2YjViNTU3Zi93YXNtLWJpbmRnZW4tMC4yLjEyNi9zcmMvZXh0ZXJucmVmLnJzAC9ob21lL21hbnNhLy5ydXN0dXAvdG9vbGNoYWlucy9uaWdodGx5LXg4Nl82NC11bmtub3duLWxpbnV4LWdudS9saWIvcnVzdGxpYi9zcmMvcnVzdC9saWJyYXJ5L2FsbG9jL3NyYy9jb2xsZWN0aW9ucy9idHJlZS9uYXZpZ2F0ZS5ycwAvaG9tZS9tYW5zYS8ucnVzdHVwL3Rvb2xjaGFpbnMvbmlnaHRseS14ODZfNjQtdW5rbm93bi1saW51eC1nbnUvbGliL3J1c3RsaWIvc3JjL3J1c3QvbGlicmFyeS9hbGxvYy9zcmMvY29sbGVjdGlvbnMvYnRyZWUvbm9kZS5ycwAvcnVzdGMvYjM1NDEzM2ZiMTI2MzUyODcxYmVhNGI0MDc5NWE0NTczOWFkZmYyYi9saWJyYXJ5L2FsbG9jL3NyYy9yYXdfdmVjL21vZC5ycwAvcnVzdC9kZXBzL2RsbWFsbG9jLTAuMi4xMy9zcmMvZGxtYWxsb2MucnMAY2FwYWNpdHkgb3ZlcmZsb3cAAIEEEABQAAAAHAAAAAUAAABjYWxsZWQgYE9wdGlvbjo6dW53cmFwKClgIG9uIGEgYE5vbmVgIHZhbHVlMDAwMTAyMDMwNDA1MDYwNzA4MDkxMDExMTIxMzE0MTUxNjE3MTgxOTIwMjEyMjIzMjQyNTI2MjcyODI5MzAzMTMyMzMzNDM1MzYzNzM4Mzk0MDQxNDI0MzQ0NDU0NjQ3NDg0OTUwNTE1MjUzNTQ1NTU2NTc1ODU5NjA2MTYyNjM2NDY1NjY2NzY4Njk3MDcxNzI3Mzc0NzU3Njc3Nzg3OTgwODE4MjgzODQ4NTg2ODc4ODg5OTA5MTkyOTM5NDk1OTY5Nzk4OTl1c2VyLXByb3ZpZGVkIGNvbXBhcmlzb24gZnVuY3Rpb24gZG9lcyBub3QgY29ycmVjdGx5IGltcGxlbWVudCBhIHRvdGFsIG9yZGVyANEBEABfAAAAVgMAAAUAAABSZWZDZWxsIGFscmVhZHkgYm9ycm93ZWQABBAAgAAAAPAAAABNAAAAAAQQAIAAAAATBQAAJAAAAGFzc2VydGlvbiBmYWlsZWQ6IHNyYy5sZW4oKSA9PSBkc3QubGVuKCkABBAAgAAAAFQHAAAFAAAASwEQAIUAAACPAQAALgAAAHsDEACEAAAAFgIAAC8AAAB7AxAAhAAAAKEAAAAkAAAAAAQQAIAAAADQBAAAIwAAAGFzc2VydGlvbiBmYWlsZWQ6IGlkeCA8IENBUEFDSVRZYXNzZXJ0aW9uIGZhaWxlZDogZWRnZS5oZWlnaHQgPT0gc2VsZi5oZWlnaHQgLSAxAAQQAIAAAAC2AgAACQAAAAAEEACAAAAAugIAAAkAAAAxAhAAhAAAAE0AAAAfAAAAMQIQAIQAAABHAAAAFwAAAG1pZCA+IGxlbgAAAHsDEACEAAAAxgAAACcAAAAFAAAADAAAAAQAAAAGAAAABwAAAAgAAAAAAAAACAAAAAQAAAAJAAAACgAAAAsAAAAMAAAADQAAABAAAAAEAAAADgAAAA8AAAAQAAAAEQAAAFz26V/cAva58cFwbPJhwSRJZRitFKAANj4B1wAsxyxXYXNzZXJ0aW9uIGZhaWxlZDogcHNpemUgPj0gc2l6ZSArIG1pbl9vdmVyaGVhZAAA0gQQACoAAACxBAAACQAAAGFzc2VydGlvbiBmYWlsZWQ6IHBzaXplIDw9IHNpemUgKyBtYXhfb3ZlcmhlYWQAANIEEAAqAAAAtwQAAA0AAAByd2xvY2sgb3ZlcmZsb3dlZCByZWFkIGxvY2tztgIQAF0AAAAVAAAALAAAAAAAAAAIAAAABAAAABIAAAAFAAAADAAAAAQAAAATAAAAcndsb2NrIGhhcyBub3QgYmVlbiBsb2NrZWQgZm9yIHJlYWRpbmcAALYCEABdAAAAPgAAAAkAAABhcnJheSBjb250YWlucyBhIHZhbHVlIG9mIHRoZSB3cm9uZyB0eXBlbnVsbCBwb2ludGVyIHBhc3NlZCB0byBydXN0cmVjdXJzaXZlIHVzZSBvZiBhbiBvYmplY3QgZGV0ZWN0ZWQgd2hpY2ggd291bGQgbGVhZCB0byB1bnNhZmUgYWxpYXNpbmcgaW4gcnVzdAAAFAMQAGYAAACEAAAAEQAAABQDEABmAAAAkgAAABEAQfSTwAALBRQAAAAEAIQBCXByb2R1Y2VycwIIbGFuZ3VhZ2UBBFJ1c3QADHByb2Nlc3NlZC1ieQMFcnVzdGMlMS45OC4wLW5pZ2h0bHkgKGIzNTQxMzNmYiAyMDI2LTA2LTAzKQZ3YWxydXMGMC4yNi40DHdhc20tYmluZGdlbhMwLjIuMTI2ICgyMWFjODA0YTkpAGsPdGFyZ2V0X2ZlYXR1cmVzBisPbXV0YWJsZS1nbG9iYWxzKxNub250cmFwcGluZy1mcHRvaW50KwtidWxrLW1lbW9yeSsIc2lnbi1leHQrD3JlZmVyZW5jZS10eXBlcysKbXVsdGl2YWx1ZQ==";</script>
+<script>"use strict";
+(() => {
+  // ../web-kit/src/el.ts
+  function el(tag, attrs = {}, ...children) {
+    const node = document.createElement(tag);
+    for (const [key, value] of Object.entries(attrs)) {
+      if (value === null || value === void 0 || value === false) continue;
+      if (key === "class") node.className = String(value);
+      else if (key === "text") node.textContent = String(value);
+      else if (key.startsWith("on") && typeof value === "function") {
+        node.addEventListener(key.slice(2).toLowerCase(), value);
+      } else if (value === true) {
+        node.setAttribute(key, "");
+      } else {
+        node.setAttribute(key, String(value));
+      }
+    }
+    append(node, children);
+    return node;
+  }
+  function append(parent, children) {
+    for (const child of children) {
+      if (child === null || child === void 0 || child === false) continue;
+      parent.appendChild(child instanceof Node ? child : document.createTextNode(String(child)));
+    }
+  }
+  var injected = /* @__PURE__ */ new Set();
+  function ensureStyles(name, css) {
+    if (injected.has(name) || typeof document === "undefined") return;
+    injected.add(name);
+    const style = document.createElement("style");
+    style.dataset["dc"] = name;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  // ../web-kit/src/components/select.ts
+  var CSS = `
+.dc-select{ display:inline-flex; flex-direction:column; gap:var(--space-1); }
+.dc-select--block{ display:flex; width:100%; }
+.dc-select__label{ font-size:var(--text-sm); font-weight:var(--weight-medium); color:var(--text); }
+.dc-select__shell{ position:relative; display:inline-flex; align-items:center; }
+.dc-select--block .dc-select__shell{ display:flex; width:100%; }
+.dc-select select{
+  appearance:none; -webkit-appearance:none;
+  font:var(--font-body); color:var(--text);
+  height:var(--control-h); width:100%;
+  padding:0 calc(var(--space-6)) 0 var(--pad-control-x);
+  border:var(--border-width) solid var(--border); border-radius:var(--radius-sm);
+  background:var(--surface); cursor:pointer;
+  transition:var(--transition-control);
+}
+.dc-select select:hover{ border-color:var(--border-strong); }
+.dc-select select:focus-visible{ outline:var(--focus-ring); outline-offset:var(--focus-offset); border-color:var(--accent); }
+.dc-select select:disabled{ opacity:.55; background:var(--surface-subtle); cursor:not-allowed; }
+.dc-select--sm select{ height:var(--control-h-sm); font-size:var(--text-sm); padding-right:var(--space-5); }
+.dc-select__chevron{
+  position:absolute; right:var(--space-2); pointer-events:none;
+  color:var(--text-subtle); font-size:.7em; line-height:1;
+}
+`;
+  function select(opts = {}) {
+    ensureStyles("select", CSS);
+    const { label, options = [], size = "md", block, id, children } = opts;
+    const fieldId = id || (label ? `dc-${Math.random().toString(36).slice(2, 8)}` : void 0);
+    const classes = [
+      "dc-select",
+      size !== "md" && `dc-select--${size}`,
+      block && "dc-select--block",
+      opts.class
+    ].filter(Boolean).join(" ");
+    const selectEl = el("select", fieldId ? { id: fieldId } : {});
+    if (opts.attrs) for (const [k, v] of Object.entries(opts.attrs)) selectEl.setAttribute(k, v);
+    if (children && children.length > 0) {
+      append(selectEl, children);
+    } else {
+      for (const o of options) {
+        const opt = typeof o === "string" ? { value: o, label: o } : o;
+        append(selectEl, [el("option", { value: opt.value }, opt.label)]);
+      }
+    }
+    return el(
+      "div",
+      { class: classes },
+      label ? el("label", { class: "dc-select__label", ...fieldId ? { for: fieldId } : {} }, label) : null,
+      el(
+        "span",
+        { class: "dc-select__shell" },
+        selectEl,
+        el("span", { class: "dc-select__chevron", "aria-hidden": "true" }, "\u25BC")
+      )
+    );
+  }
+
+  // ../web-kit/src/components/badge.ts
+  var CSS2 = `
+.dc-badge{
+  --tone: var(--text-muted);
+  display:inline-flex; align-items:center; gap:var(--space-1);
+  height:1.4rem; padding:0 var(--space-2);
+  font-size:var(--text-2xs); font-weight:var(--weight-medium); line-height:1;
+  letter-spacing:var(--tracking-wide); white-space:nowrap;
+  border:var(--border-width) solid transparent; border-radius:var(--radius-full);
+}
+.dc-badge--square{ border-radius:var(--radius-xs); letter-spacing:0; }
+.dc-badge--mono{ font-family:var(--font-mono); letter-spacing:0; text-transform:none; }
+.dc-badge__dot{ width:.42rem; height:.42rem; border-radius:var(--radius-full); background:var(--tone); flex:none; }
+
+/* fills */
+.dc-badge--soft{ background:color-mix(in srgb, var(--tone) 13%, var(--surface)); color:var(--tone); border-color:color-mix(in srgb, var(--tone) 22%, transparent); }
+.dc-badge--solid{ background:var(--tone); color:#fff; border-color:var(--tone); }
+.dc-badge--outline{ background:transparent; color:var(--tone); border-color:color-mix(in srgb, var(--tone) 45%, transparent); }
+
+/* tones */
+.dc-badge--neutral{ --tone: var(--text-muted); }
+.dc-badge--accent{ --tone: var(--accent); }
+.dc-badge--success{ --tone: var(--success); }
+.dc-badge--warning{ --tone: var(--warning); }
+.dc-badge--danger{ --tone: var(--danger); }
+.dc-badge--backlog{ --tone: var(--status-backlog); }
+.dc-badge--progress{ --tone: var(--status-progress); }
+.dc-badge--review{ --tone: var(--status-review); }
+.dc-badge--done{ --tone: var(--status-done); }
+.dc-badge--neutral.dc-badge--soft{ background:var(--surface-subtle); border-color:var(--border); color:var(--text-muted); }
+`;
+  function badge(label, opts = {}) {
+    ensureStyles("badge", CSS2);
+    const { tone = "neutral", variant = "soft", dot, square, mono } = opts;
+    const classes = [
+      "dc-badge",
+      `dc-badge--${tone}`,
+      `dc-badge--${variant}`,
+      square && "dc-badge--square",
+      mono && "dc-badge--mono",
+      opts.class
+    ].filter(Boolean).join(" ");
+    const node = el(
+      "span",
+      { class: classes },
+      dot ? el("span", { class: "dc-badge__dot", "aria-hidden": "true" }) : null,
+      label
+    );
+    if (opts.attrs) for (const [k, v] of Object.entries(opts.attrs)) node.setAttribute(k, v);
+    return node;
+  }
+
+  // ../web-kit/src/components/stat.ts
+  var CSS3 = `
+.dc-stat{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+.dc-stat--bordered{ padding:var(--space-3) var(--space-4); border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); }
+.dc-stat__label{ font-size:var(--text-xs); color:var(--text-muted); font-weight:var(--weight-medium); letter-spacing:var(--tracking-wide); text-transform:uppercase; white-space:nowrap; }
+.dc-stat__value{ font-size:var(--text-3xl); font-weight:var(--weight-bold); line-height:1.05; color:var(--text); font-variant-numeric:var(--numeric-tabular); letter-spacing:var(--tracking-tight); }
+.dc-stat--accent .dc-stat__value{ color:var(--accent); }
+.dc-stat--success .dc-stat__value{ color:var(--success); }
+.dc-stat--sm .dc-stat__value{ font-size:var(--text-2xl); }
+.dc-stat__unit{ font-size:.5em; font-weight:var(--weight-medium); color:var(--text-muted); margin-left:.25em; letter-spacing:0; }
+.dc-stat__foot{ display:flex; align-items:center; gap:var(--space-2); margin-top:1px; }
+.dc-stat__caption{ font-size:var(--text-xs); color:var(--text-subtle); }
+.dc-stat__delta{ display:inline-flex; align-items:center; gap:2px; font-size:var(--text-xs); font-weight:var(--weight-medium); font-variant-numeric:var(--numeric-tabular); }
+.dc-stat__delta--up{ color:var(--success); }
+.dc-stat__delta--down{ color:var(--danger); }
+.dc-stat__delta--flat{ color:var(--text-muted); }
+`;
+  function stat(value, opts = {}) {
+    ensureStyles("stat", CSS3);
+    const { label, unit, caption, delta, tone = "default", size = "md", bordered } = opts;
+    const classes = [
+      "dc-stat",
+      tone !== "default" && `dc-stat--${tone}`,
+      size !== "md" && `dc-stat--${size}`,
+      bordered && "dc-stat--bordered",
+      opts.class
+    ].filter(Boolean).join(" ");
+    const dir = delta === null || delta === void 0 ? null : delta > 0 ? "up" : delta < 0 ? "down" : "flat";
+    const footer = caption !== null && caption !== void 0 && caption !== false ? true : delta !== null && delta !== void 0;
+    const node = el(
+      "div",
+      { class: classes },
+      label !== null && label !== void 0 && label !== false ? el("div", { class: "dc-stat__label" }, label) : null,
+      el(
+        "div",
+        { class: "dc-stat__value" },
+        value,
+        unit !== null && unit !== void 0 && unit !== false ? el("span", { class: "dc-stat__unit" }, unit) : null
+      ),
+      footer ? el(
+        "div",
+        { class: "dc-stat__foot" },
+        dir !== null ? el(
+          "span",
+          { class: `dc-stat__delta dc-stat__delta--${dir}` },
+          `${dir === "up" ? "\u25B2" : dir === "down" ? "\u25BC" : "\u2014"} ${Math.abs(delta)}%`
+        ) : null,
+        caption !== null && caption !== void 0 && caption !== false ? el("span", { class: "dc-stat__caption" }, caption) : null
+      ) : null
+    );
+    if (opts.attrs) for (const [k, v] of Object.entries(opts.attrs)) node.setAttribute(k, v);
+    return node;
+  }
+
+  // web/app.ts
+  var NODES = [
+    { id: "acme", label: "Acme Corp", kind: "Company", parent: "" },
+    { id: "eng", label: "Engineering", kind: "Department", parent: "acme" },
+    { id: "apollo", label: "Project Apollo", kind: "Project", parent: "eng" },
+    { id: "zephyr", label: "Project Zephyr", kind: "Project", parent: "eng" },
+    { id: "sales", label: "Sales", kind: "Department", parent: "acme" },
+    { id: "eu", label: "Region EU", kind: "Team", parent: "sales" },
+    { id: "us", label: "Region US", kind: "Team", parent: "sales" }
+  ];
+  var ACTORS = ["Alice", "Bob", "Carol", "Dave", "Erin"];
+  var memberships = {
+    Alice: /* @__PURE__ */ new Set(["acme"]),
+    // company-wide
+    Bob: /* @__PURE__ */ new Set(["eng"]),
+    //     engineering
+    Carol: /* @__PURE__ */ new Set(["apollo"]),
+    // one project
+    Dave: /* @__PURE__ */ new Set(["sales"]),
+    //  sales
+    Erin: /* @__PURE__ */ new Set()
+    //   none
+  };
+  var WasmGraph;
+  var graph;
+  var actor = "Bob";
+  var byId = (id) => document.getElementById(id);
+  function b64ToBytes(b64) {
+    const s = atob(b64);
+    const u = new Uint8Array(s.length);
+    for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+    return u;
+  }
+  var labelOf = (id) => NODES.find((n) => n.id === id)?.label ?? id;
+  var childrenOf = (pid) => NODES.filter((n) => n.parent === pid);
+  var membersAt = (id) => ACTORS.filter((a) => memberships[a].has(id));
+  function nodeFrag(n, reach) {
+    const frag = document.createDocumentFragment();
+    const isMember = memberships[actor].has(n.id);
+    const reached = reach.has(n.id);
+    const cls = ["node", reached ? "reached" : "dim", isMember && "member"].filter(Boolean).join(" ");
+    const memberBadges = membersAt(n.id).map(
+      (a) => badge(a.slice(0, 1), {
+        tone: a === actor ? "accent" : "neutral",
+        variant: a === actor ? "solid" : "soft",
+        attrs: { title: a }
+      })
+    );
+    const row = el(
+      "div",
+      { class: cls, title: `click to ${isMember ? "revoke" : "grant"} ${actor}'s membership here` },
+      el("span", { class: "nlabel" }, n.label, el("span", { class: "kind" }, n.kind)),
+      el("span", { class: "badges" }, ...memberBadges)
+    );
+    row.addEventListener("click", () => {
+      const set = memberships[actor];
+      if (set.has(n.id)) set.delete(n.id);
+      else set.add(n.id);
+      render();
+    });
+    frag.append(row);
+    const kids = childrenOf(n.id);
+    if (kids.length) {
+      const wrap = el("div", { class: "children" });
+      kids.forEach((k) => wrap.append(nodeFrag(k, reach)));
+      frag.append(wrap);
+    }
+    return frag;
+  }
+  function render() {
+    const reach = new Set(graph.reachable([...memberships[actor]]));
+    byId("tree").replaceChildren(...NODES.filter((n) => !n.parent).map((n) => nodeFrag(n, reach)));
+    const reachable = NODES.filter((n) => reach.has(n.id));
+    const memberOf = [...memberships[actor]];
+    byId("panel").replaceChildren(
+      stat(String(reachable.length), {
+        unit: `/ ${NODES.length}`,
+        caption: "reachable nodes",
+        tone: "success",
+        size: "sm",
+        class: "reach-stat"
+      }),
+      el(
+        "p",
+        {},
+        el("b", {}, actor),
+        " is a member of:",
+        el("br"),
+        memberOf.length ? memberOf.map(labelOf).join(", ") : el("i", {}, "nothing")
+      ),
+      el(
+        "p",
+        {},
+        "Reaches:",
+        el("br"),
+        reachable.length ? reachable.map((n) => labelOf(n.id)).join(", ") : el("i", {}, "nothing")
+      )
+    );
+  }
+  function buildChrome() {
+    const actorField = select({ size: "sm", children: ACTORS.map((a) => el("option", { selected: a === actor }, a)) });
+    const sel = actorField.querySelector("select");
+    sel.addEventListener("change", () => {
+      actor = sel.value;
+      render();
+    });
+    const header = el(
+      "header",
+      { class: "app-header" },
+      el("h1", {}, "rbac-explorer"),
+      el("span", { class: "muted" }, "scoped-ownership access, resolved in your browser"),
+      el("span", { class: "spacer" }),
+      el("label", { class: "actor-field" }, "Actor", actorField)
+    );
+    const legend = el(
+      "div",
+      { class: "legend" },
+      el("span", {}, el("b", { class: "swatch sw-reached" }, "\u25CF"), " reachable"),
+      el("span", {}, el("b", { class: "swatch sw-member" }, "\u25A2"), " direct membership"),
+      el("span", {}, el("b", { class: "swatch sw-dim" }, "\u25CF"), " no access"),
+      el("span", {}, "Membership grants the node ", el("b", {}, "and everything beneath it"), " \u2014 never the parent."),
+      el("span", {}, "Click any node to grant / revoke the selected actor's membership.")
+    );
+    const main = el("main", {}, el("section", { id: "tree" }), el("aside", { id: "panel" }));
+    byId("root").append(header, legend, main);
+  }
+  window.addEventListener("DOMContentLoaded", async () => {
+    await wasm_bindgen({ module_or_path: b64ToBytes(WASM_B64) });
+    WasmGraph = wasm_bindgen.WasmGraph;
+    graph = new WasmGraph(NODES.map((n) => n.id), NODES.map((n) => n.parent));
+    buildChrome();
+    render();
+  });
+})();
+</script></body></html>

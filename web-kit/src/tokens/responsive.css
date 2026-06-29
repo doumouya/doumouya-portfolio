@@ -1,0 +1,81 @@
+/* ============================================================
+   web-kit — Responsive layer
+   ------------------------------------------------------------
+   Breakpoints are aligned to real device logical viewports, and
+   device CLASS is judged by pointer/hover/orientation — not width
+   alone. Width alone misclassifies: a landscape phone is wide but
+   short, and a narrow desktop window is not a phone. Prefer fluid
+   sizing (clamp(), min(), max()) and @container queries; reach for
+   these media rules only when a layout must truly change.
+
+   Width steps (min-width): xs 360 · sm 480 · md 600 · lg 768 ·
+   xl 1024 · 2xl 1280. Height: short ≤480, tall ≥900. The numeric
+   values are also exported from responsive.ts.
+   ============================================================ */
+
+:root {
+  /* Breakpoint values, for reference + JS parity (CSS @media cannot read vars). */
+  --bp-xs: 360;
+  --bp-sm: 480;
+  --bp-md: 600;
+  --bp-lg: 768;
+  --bp-xl: 1024;
+  --bp-2xl: 1280;
+  --bp-short: 480;
+  --bp-tall: 900;
+}
+
+/* ---- Touch devices: enlarge hit targets, regardless of width ----
+   A coarse pointer means fingers; honour the WCAG ~44px target. */
+@media (pointer: coarse) {
+  :root {
+    --tap-min: 2.75rem; /* ≥44px */
+    --control-h: 2.5rem; /* roomier default control */
+  }
+}
+
+/* ---- Landscape phones (wide but short): reclaim vertical space ----
+   Catches e.g. 844×390 — desktop-ish width, phone-ish height. */
+@media (max-height: 480px) and (pointer: coarse) {
+  :root {
+    --pad-section-y: 0.4rem;
+  }
+}
+
+/* ---- Visibility utilities (use sparingly; prefer fluid layout) ---- */
+.wk-hide-below-md {
+  display: none !important;
+}
+@media (min-width: 600px) {
+  .wk-hide-below-md {
+    display: revert !important;
+  }
+}
+.wk-show-below-md {
+  display: revert !important;
+}
+@media (min-width: 600px) {
+  .wk-show-below-md {
+    display: none !important;
+  }
+}
+
+/* ---- Foldables (Viewport Segments API): keep content in one pane ----
+   When the viewport is split by a hinge (book mode), single-pane content
+   shouldn't straddle the fold. Progressive — ignored where unsupported. */
+@media (horizontal-viewport-segments: 2) {
+  .wk-pane {
+    max-width: env(viewport-segment-width 0 0, 100%);
+  }
+}
+
+/* ---- Stack helper: a row that collapses to a column on narrow widths ---- */
+.wk-stack-sm {
+  display: flex;
+  gap: var(--space-3);
+}
+@media (max-width: 599px) {
+  .wk-stack-sm {
+    flex-direction: column;
+  }
+}

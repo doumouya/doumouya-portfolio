@@ -1,0 +1,9 @@
+[package]
+name = "shared"
+version = "0.1.0"
+edition = "2021"
+
+# Wire DTOs only — no logic, no io. serde structs the engine + UI speak.
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }

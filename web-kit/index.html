@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>web-kit — components</title>
+  <link rel="stylesheet" href="./src/tokens.css">
+  <style>
+    body { margin: 0; font: var(--font-body); background: var(--surface); color: var(--text); }
+    header { padding: var(--space-4) var(--space-6); border-bottom: var(--border-line); position: sticky; top: 0; background: var(--surface); }
+    h1 { margin: 0; font: var(--font-title); font-size: var(--text-2xl); }
+    header p { margin: 0.25rem 0 0; color: var(--text-muted); font-size: var(--text-sm); }
+    .demo-section { padding: var(--space-5) var(--space-6); border-bottom: var(--border-width) solid var(--border-subtle); }
+    .demo-h { margin: 0 0 var(--space-4); color: var(--text-muted); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: var(--tracking-wide); font-weight: var(--weight-semibold); }
+    .demo-row { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: flex-start; }
+    .demo-readout { font: var(--font-code); color: var(--text-muted); margin: 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>web-kit</h1>
+    <p>dependency-free TypeScript components · design tokens · responsive by device, not width</p>
+  </header>
+  <main id="app"></main>
+  <script type="module" src="./dist/showcase.js"></script>
+</body>
+</html>

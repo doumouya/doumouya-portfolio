@@ -1,0 +1,8 @@
+# node + build artifacts
+/node_modules
+/dist
+*.tsbuildinfo
+
+# OS cruft
+.DS_Store
+*~

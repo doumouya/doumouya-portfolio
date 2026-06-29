@@ -1,0 +1,557 @@
+/* ============================================================
+   Datacore — Base layer
+   ------------------------------------------------------------
+   A minimal, token-driven reset. Mirrors the source UI's
+   `* { box-sizing }` + body font/color/background, plus sensible
+   defaults for the elements components and kits rely on. Kept
+   deliberately small — this is a foundation, not a normalize.
+   ============================================================ */
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font: var(--font-body);
+  color: var(--text);
+  background: var(--surface);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--selection-bg); }
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+code, kbd, samp, pre {
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+}
+
+/* Data surfaces get tabular figures by default */
+table { font-variant-numeric: var(--numeric-tabular); }
+
+/* Consistent, visible focus everywhere (accessibility is a brand value) */
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+hr {
+  border: 0;
+  border-top: var(--border-line);
+  margin: var(--space-4) 0;
+}
+
+::placeholder { color: var(--text-subtle); }
+/* ============================================================
+   Datacore — Colors
+   ------------------------------------------------------------
+   Source of truth: advanced-datatable `web/style.css`, which
+   uses a cool neutral (gray/slate) palette + a single blue
+   accent, with a hand-authored dark theme via prefers-color-
+   scheme. We formalize that into base ramps + semantic aliases,
+   and add restrained status hues for the build-engine work
+   tracker (backlog / in_progress / in_review / done, close-check
+   pass/fail, reject states).
+
+   Layer 1 = base ramps (raw hues). Layer 2 = semantic aliases
+   (what UI code should reference). Dark theme remaps Layer 2 only.
+   ============================================================ */
+
+:root {
+  /* --- Layer 1: base neutral ramp (cool gray) --- */
+  --neutral-0:   #ffffff;
+  --neutral-50:  #f9fafb;  /* source --head (table head / subtle surface) */
+  --neutral-100: #f3f4f6;
+  --neutral-200: #e5e7eb;  /* source --line (hairline border) */
+  --neutral-300: #d1d5db;
+  --neutral-400: #9ca3af;
+  --neutral-500: #6b7280;  /* source --muted */
+  --neutral-600: #4b5563;
+  --neutral-700: #374151;
+  --neutral-800: #1f2937;  /* source --fg (body text) */
+  --neutral-900: #111827;
+  --neutral-950: #0b1120;
+
+  /* dark surfaces use the slate sub-family, matching the source dark theme */
+  --slate-400:   #94a3b8;  /* source dark --muted */
+  --slate-700:   #334155;
+  --slate-800:   #1e293b;  /* source dark --line */
+  --slate-900:   #0f172a;  /* source dark --bg */
+  --slate-950:   #020617;
+
+  /* --- Layer 1: accent (blue) --- */
+  --blue-50:  #eff6ff;
+  --blue-100: #dbeafe;
+  --blue-400: #60a5fa;  /* source dark --accent */
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;  /* source --accent */
+  --blue-700: #1d4ed8;
+
+  /* --- Layer 1: status hues (restrained, Tailwind-keyed to the blue) --- */
+  --green-50:  #f0fdf4;  --green-500: #22c55e;  --green-600: #16a34a;  --green-700: #15803d;
+  --amber-50:  #fffbeb;  --amber-500: #f59e0b;  --amber-600: #d97706;  --amber-700: #b45309;
+  --red-50:    #fef2f2;  --red-500:   #ef4444;  --red-600:   #dc2626;  --red-700:   #b91c1c;
+
+  /* ============================================================
+     Layer 2: semantic aliases — reference THESE in components
+     ============================================================ */
+
+  /* surfaces */
+  --surface:        var(--neutral-0);    /* page / card background */
+  --surface-subtle: var(--neutral-50);   /* table head, toolbars, zebra base */
+  --surface-sunken: var(--neutral-100);  /* wells, inset areas */
+  --surface-overlay:var(--neutral-0);    /* popovers, dialogs */
+
+  /* text */
+  --text:        var(--neutral-800);  /* primary body */
+  --text-muted:  var(--neutral-500);  /* secondary / captions / counts */
+  --text-subtle: var(--neutral-400);  /* tertiary / kind labels / placeholders */
+  --text-on-accent: var(--neutral-0);
+
+  /* lines & borders (the brand's primary structural device) */
+  --border:        var(--neutral-200);  /* default hairline */
+  --border-strong: var(--neutral-300);
+  --border-subtle: var(--neutral-100);
+
+  /* accent — exactly one, for active sort/filter, focus, primary actions */
+  --accent:        var(--blue-600);
+  --accent-hover:  var(--blue-700);
+  --accent-tint:   var(--blue-50);   /* faint accent wash (selected row, active filter bg) */
+  --accent-border: var(--blue-600);
+  --focus:         var(--accent);
+
+  /* status — semantic + the build-engine workflow states */
+  --success:       var(--green-600);  --success-tint: var(--green-50);   /* close-check passed, done */
+  --warning:       var(--amber-600);  --warning-tint: var(--amber-50);   /* in_review, attention */
+  --danger:        var(--red-600);    --danger-tint:  var(--red-50);     /* reject, check unmet, 4xx */
+
+  --status-backlog:    var(--neutral-500);
+  --status-progress:   var(--blue-600);
+  --status-review:     var(--amber-600);
+  --status-done:       var(--green-600);
+
+  /* selection */
+  --selection-bg: var(--blue-100);
+}
+
+/* ============================================================
+   Dark theme — remaps Layer 2 to the source's slate + blue-400.
+   Available two ways: OS preference, and an explicit
+   [data-theme="dark"] scope for forcing it in cards / kits.
+   ============================================================ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface:        var(--slate-900);   /* #0f172a */
+    --surface-subtle: var(--neutral-900); /* #111827  (source dark --head) */
+    --surface-sunken: var(--slate-950);
+    --surface-overlay:var(--slate-800);
+
+    --text:        var(--neutral-200);   /* #e5e7eb */
+    --text-muted:  var(--slate-400);     /* #94a3b8 */
+    --text-subtle: var(--slate-700);
+    --text-on-accent: var(--slate-950);
+
+    --border:        var(--slate-800);   /* #1e293b */
+    --border-strong: var(--slate-700);
+    --border-subtle: var(--slate-900);
+
+    --accent:        var(--blue-400);    /* #60a5fa */
+    --accent-hover:  var(--blue-500);
+    --accent-tint:   color-mix(in srgb, var(--blue-400) 14%, transparent);
+    --accent-border: var(--blue-400);
+
+    --success: var(--green-500); --success-tint: color-mix(in srgb, var(--green-500) 14%, transparent);
+    --warning: var(--amber-500); --warning-tint: color-mix(in srgb, var(--amber-500) 14%, transparent);
+    --danger:  var(--red-500);   --danger-tint:  color-mix(in srgb, var(--red-500) 14%, transparent);
+
+    --status-backlog:  var(--slate-400);
+    --status-progress: var(--blue-400);
+    --status-review:   var(--amber-500);
+    --status-done:     var(--green-500);
+
+    --selection-bg: color-mix(in srgb, var(--blue-400) 30%, transparent);
+  }
+}
+
+/* explicit, forced dark scope (single-selector, so tokens still compile) */
+[data-theme="dark"] {
+  --surface:        var(--slate-900);
+  --surface-subtle: var(--neutral-900);
+  --surface-sunken: var(--slate-950);
+  --surface-overlay:var(--slate-800);
+
+  --text:        var(--neutral-200);
+  --text-muted:  var(--slate-400);
+  --text-subtle: var(--slate-700);
+  --text-on-accent: var(--slate-950);
+
+  --border:        var(--slate-800);
+  --border-strong: var(--slate-700);
+  --border-subtle: var(--slate-900);
+
+  --accent:        var(--blue-400);
+  --accent-hover:  var(--blue-500);
+  --accent-tint:   color-mix(in srgb, var(--blue-400) 14%, transparent);
+  --accent-border: var(--blue-400);
+
+  --success: var(--green-500); --success-tint: color-mix(in srgb, var(--green-500) 14%, transparent);
+  --warning: var(--amber-500); --warning-tint: color-mix(in srgb, var(--amber-500) 14%, transparent);
+  --danger:  var(--red-500);   --danger-tint:  color-mix(in srgb, var(--red-500) 14%, transparent);
+
+  --status-backlog:  var(--slate-400);
+  --status-progress: var(--blue-400);
+  --status-review:   var(--amber-500);
+  --status-done:     var(--green-500);
+
+  --selection-bg: color-mix(in srgb, var(--blue-400) 30%, transparent);
+}
+/* ============================================================
+   Datacore — Typography
+   ------------------------------------------------------------
+   The brand is a privacy / local-first developer tool: by design
+   it ships ZERO webfonts (the front-end brief mandates "no
+   external CDN fonts/scripts ... keep assets inlineable"). So the
+   type system is the platform's own UI font + a system monospace
+   for data, identifiers, code and JSON. No @font-face exists in
+   this design system — that absence is intentional and on-brand.
+
+   Base size is 0.875rem / 14px with a 1.5 rhythm, lifted directly
+   from the source UI. Numeric data is rendered with tabular-nums.
+   ============================================================ */
+
+:root {
+  /* --- families --- */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco,
+               Consolas, "Liberation Mono", monospace;
+
+  /* --- type scale (rem; relative-units-only is a brand rule) --- */
+  --text-2xs: 0.7rem;    /* 11.2px — column-kind chips, dense meta */
+  --text-xs:  0.75rem;   /* 12px   — table filter inputs, fine print */
+  --text-sm:  0.8rem;    /* 12.8px — muted captions, row counts */
+  --text-md:  0.875rem;  /* 14px   — BODY DEFAULT */
+  --text-lg:  1rem;      /* 16px   — H1 / view title */
+  --text-xl:  1.125rem;  /* 18px   — empty-state lead */
+  --text-2xl: 1.375rem;  /* 22px   — section heading */
+  --text-3xl: 1.75rem;   /* 28px   — page hero (sparingly) */
+
+  /* --- line-height --- */
+  --leading-tight: 1.25;
+  --leading:       1.5;   /* source default */
+  --leading-loose: 1.7;
+
+  /* --- weight (system fonts carry these reliably) --- */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* --- tracking --- */
+  --tracking-tight:  -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.02em;   /* small-caps-ish labels */
+  --tracking-mono:   0;        /* mono stays at 0 */
+
+  /* --- numerics: opt-in tabular figures for all data surfaces --- */
+  --numeric-tabular: tabular-nums;  /* @kind other */
+
+  /* --- composed shorthands (font: shorthand, matching source) --- */
+  --font-body:  var(--weight-regular) var(--text-md)/var(--leading) var(--font-sans);
+  --font-title: var(--weight-semibold) var(--text-lg)/var(--leading-tight) var(--font-sans);
+  --font-code:  var(--weight-regular) var(--text-sm)/var(--leading) var(--font-mono);
+}
+
+/* Utility classes kept minimal — components reference the tokens directly.
+   These exist so specimen cards and ad-hoc HTML can opt into the data look. */
+.dc-tabular { font-variant-numeric: var(--numeric-tabular); }
+.dc-mono    { font-family: var(--font-mono); font-variant-numeric: var(--numeric-tabular); }
+/* ============================================================
+   Datacore — Spacing, sizing, radii, borders, focus, z-index
+   ------------------------------------------------------------
+   The source UI is DENSE: small rem paddings (0.2–0.75rem),
+   hairline 1px borders as the structural device, and modest
+   radii (inputs 0.3rem, buttons 0.4rem). Relative units only;
+   px is reserved for hairlines and the focus ring. Everything
+   here is calibrated to a 14-inch laptop as the primary target.
+   ============================================================ */
+
+:root {
+  /* --- spacing scale (0.25rem base step) --- */
+  --space-0:  0;
+  --space-px: 1px;
+  --space-1:  0.25rem;  /*  4px */
+  --space-2:  0.5rem;   /*  8px */
+  --space-3:  0.75rem;  /* 12px */
+  --space-4:  1rem;     /* 16px */
+  --space-5:  1.25rem;  /* 20px */
+  --space-6:  1.5rem;   /* 24px */
+  --space-8:  2rem;     /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+
+  /* --- source-calibrated micro-paddings (the table & control rhythm) --- */
+  --pad-cell-y:    0.3rem;   /* td / th vertical   */
+  --pad-cell-x:    0.5rem;   /* td / th horizontal */
+  --pad-input-y:   0.2rem;   /* filter input       */
+  --pad-input-x:   0.3rem;
+  --pad-control-y: 0.4rem;   /* buttons / labels   */
+  --pad-control-x: 0.7rem;
+  --pad-section-x: 1rem;     /* header / toolbar gutter */
+  --pad-section-y: 0.75rem;
+
+  /* --- control sizing (generous hit targets per the brief) --- */
+  --control-h-sm: 1.75rem;   /* ~28px — compact (filter inputs) */
+  --control-h:    2.125rem;  /* ~34px — default */
+  --control-h-lg: 2.5rem;    /* ~40px — comfortable */
+  --tap-min:      2.25rem;   /* ~36px minimum interactive target */
+
+  /* --- radii (small; never pill except true pills) --- */
+  --radius-xs:   0.2rem;   /* hairline chips */
+  --radius-sm:   0.3rem;   /* inputs */
+  --radius:      0.4rem;   /* buttons, cards (default) */
+  --radius-lg:   0.5rem;   /* dialogs, larger panels */
+  --radius-full: 9999px;   /* avatars, status dots, true pills */
+
+  /* --- borders (THE structural device — flat, hairline-driven) --- */
+  --border-width:  1px;
+  --border-line:   var(--border-width) solid var(--border);
+  --border-strong-line: var(--border-width) solid var(--border-strong);
+
+  /* --- focus ring (visible, deliberate; from source: 2px accent, inset) --- */
+  --focus-width:  2px;
+  --focus-offset: -1px;
+  --focus-ring:   var(--focus-width) solid var(--focus);
+
+  /* --- layered surfaces / stacking --- */
+  --z-base:    0;    /* @kind other */
+  --z-sticky:  2;    /* @kind other */
+  --z-dropdown:50;   /* @kind other */
+  --z-popover: 60;   /* @kind other */
+  --z-dialog:  100;  /* @kind other */
+  --z-toast:   200;  /* @kind other */
+
+  /* --- layout maxima --- */
+  --container:     72rem;   /* 1152px content cap for marketing-ish views */
+  --measure:       42rem;   /* readable prose measure */
+  --sidebar-w:     15rem;   /* work-tracker side rail */
+}
+/* ============================================================
+   Datacore — Elevation & Motion
+   ------------------------------------------------------------
+   The brand is FLAT. Base surfaces carry NO drop shadow — depth
+   is communicated with hairline borders and subtle surface-color
+   steps, exactly as the source UI does. Shadows exist ONLY for
+   genuinely floating layers (filter popovers, dropdowns, dialogs,
+   toasts) and stay soft and low.
+
+   Motion is near-instant: the source has no transitions at all.
+   We add only the smallest tasteful easing for hover/border and
+   overlay fade — no bounces, no parallax, no decorative loops.
+   ============================================================ */
+
+:root {
+  /* --- elevation --- */
+  --shadow-none:    none;                       /* base surfaces, cards, table */
+  --shadow-popover: 0 4px 12px -2px rgba(15, 23, 42, 0.12),
+                    0 2px 4px  -2px rgba(15, 23, 42, 0.08);   /* dropdowns, filter pops */
+  --shadow-dialog:  0 16px 40px -8px rgba(15, 23, 42, 0.22),
+                    0 4px 10px  -4px rgba(15, 23, 42, 0.10);  /* modal dialogs */
+  --shadow-focus:   0 0 0 3px var(--accent-tint);            /* soft accent halo (optional) */
+
+  /* hairline "elevation" — the brand's real depth cue */
+  --ring-hairline:  inset 0 0 0 1px var(--border);
+
+  /* --- motion --- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);   /* @kind other */
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);   /* @kind other */
+  --ease-in-out:   cubic-bezier(0.65, 0, 0.35, 1);  /* @kind other */
+
+  --dur-instant: 0ms;     /* @kind other */
+  --dur-fast:    100ms;   /* @kind other */
+  --dur:         150ms;   /* @kind other */
+  --dur-slow:    240ms;   /* @kind other */
+
+  /* common composed transitions */
+  --transition-control: border-color var(--dur-fast) var(--ease-standard),
+                        background-color var(--dur-fast) var(--ease-standard),
+                        color var(--dur-fast) var(--ease-standard);  /* @kind other */
+  --transition-overlay: opacity var(--dur) var(--ease-out),
+                        transform var(--dur) var(--ease-out);  /* @kind other */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;  /* @kind other */
+    --dur:      0ms;  /* @kind other */
+    --dur-slow: 0ms;  /* @kind other */
+  }
+}
+/* ============================================================
+   Datacore — Chart palette
+   ------------------------------------------------------------
+   The one new foundation the echarts-dashboard product needs: a
+   categorical series palette. It is NOT a rainbow — it is anchored
+   on the brand blue accent and extended with harmonious, mutually
+   distinguishable hues (reusing the cyan/violet already used by
+   KindLabel for Int/Float). Light values are the 600-weight hues;
+   dark remaps to the 400/500 weights so series stay legible on the
+   slate-900 surface.
+
+   The Chart component reads these custom properties at runtime
+   (getComputedStyle) to build the ECharts theme, so charts always
+   track the active theme and any token overrides.
+
+   Series order is deliberate: 1 = accent (the default single series),
+   then cool → warm so adjacent categories never collide.
+   ============================================================ */
+
+:root {
+  --chart-1: #2563eb;  /* accent blue   */
+  --chart-2: #0891b2;  /* cyan-600      */
+  --chart-3: #7c3aed;  /* violet-600    */
+  --chart-4: #16a34a;  /* green-600     */
+  --chart-5: #d97706;  /* amber-600     */
+  --chart-6: #dc2626;  /* red-600       */
+  --chart-7: #db2777;  /* pink-600      */
+  --chart-8: #475569;  /* slate-600     */
+
+  /* structural chart tokens (axes, grid, tooltip) — alias the
+     semantic surface/line/text tokens so they flip with the theme */
+  --chart-axis:    var(--text-muted);   /* axis labels, legend text */
+  --chart-grid:    var(--border);       /* split / grid lines       */
+  --chart-track:   var(--surface-sunken); /* empty bar track / base */
+  --chart-tooltip-bg:     var(--surface-overlay);
+  --chart-tooltip-border: var(--border);
+  --chart-tooltip-text:   var(--text);
+
+  /* a single-hue sequential ramp (the accent), for one-measure
+     intensity encodings (heat, choropleth, gradients) */
+  --chart-seq-1: var(--blue-100);
+  --chart-seq-2: #93c5fd;
+  --chart-seq-3: var(--blue-500);
+  --chart-seq-4: var(--blue-700);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --chart-1: #60a5fa;  /* blue-400  */
+    --chart-2: #22d3ee;  /* cyan-400  */
+    --chart-3: #a78bfa;  /* violet-400 */
+    --chart-4: #4ade80;  /* green-400 */
+    --chart-5: #fbbf24;  /* amber-400 */
+    --chart-6: #f87171;  /* red-400   */
+    --chart-7: #f472b6;  /* pink-400  */
+    --chart-8: #94a3b8;  /* slate-400 */
+
+    --chart-seq-1: #1e3a5f;
+    --chart-seq-2: #2563eb;
+    --chart-seq-3: #60a5fa;
+    --chart-seq-4: #bfdbfe;
+  }
+}
+
+[data-theme="dark"] {
+  --chart-1: #60a5fa;
+  --chart-2: #22d3ee;
+  --chart-3: #a78bfa;
+  --chart-4: #4ade80;
+  --chart-5: #fbbf24;
+  --chart-6: #f87171;
+  --chart-7: #f472b6;
+  --chart-8: #94a3b8;
+
+  --chart-seq-1: #1e3a5f;
+  --chart-seq-2: #2563eb;
+  --chart-seq-3: #60a5fa;
+  --chart-seq-4: #bfdbfe;
+}
+/* ============================================================
+   web-kit — Responsive layer
+   ------------------------------------------------------------
+   Breakpoints are aligned to real device logical viewports, and
+   device CLASS is judged by pointer/hover/orientation — not width
+   alone. Width alone misclassifies: a landscape phone is wide but
+   short, and a narrow desktop window is not a phone. Prefer fluid
+   sizing (clamp(), min(), max()) and @container queries; reach for
+   these media rules only when a layout must truly change.
+
+   Width steps (min-width): xs 360 · sm 480 · md 600 · lg 768 ·
+   xl 1024 · 2xl 1280. Height: short ≤480, tall ≥900. The numeric
+   values are also exported from responsive.ts.
+   ============================================================ */
+
+:root {
+  /* Breakpoint values, for reference + JS parity (CSS @media cannot read vars). */
+  --bp-xs: 360;
+  --bp-sm: 480;
+  --bp-md: 600;
+  --bp-lg: 768;
+  --bp-xl: 1024;
+  --bp-2xl: 1280;
+  --bp-short: 480;
+  --bp-tall: 900;
+}
+
+/* ---- Touch devices: enlarge hit targets, regardless of width ----
+   A coarse pointer means fingers; honour the WCAG ~44px target. */
+@media (pointer: coarse) {
+  :root {
+    --tap-min: 2.75rem; /* ≥44px */
+    --control-h: 2.5rem; /* roomier default control */
+  }
+}
+
+/* ---- Landscape phones (wide but short): reclaim vertical space ----
+   Catches e.g. 844×390 — desktop-ish width, phone-ish height. */
+@media (max-height: 480px) and (pointer: coarse) {
+  :root {
+    --pad-section-y: 0.4rem;
+  }
+}
+
+/* ---- Visibility utilities (use sparingly; prefer fluid layout) ---- */
+.wk-hide-below-md {
+  display: none !important;
+}
+@media (min-width: 600px) {
+  .wk-hide-below-md {
+    display: revert !important;
+  }
+}
+.wk-show-below-md {
+  display: revert !important;
+}
+@media (min-width: 600px) {
+  .wk-show-below-md {
+    display: none !important;
+  }
+}
+
+/* ---- Foldables (Viewport Segments API): keep content in one pane ----
+   When the viewport is split by a hinge (book mode), single-pane content
+   shouldn't straddle the fold. Progressive — ignored where unsupported. */
+@media (horizontal-viewport-segments: 2) {
+  .wk-pane {
+    max-width: env(viewport-segment-width 0 0, 100%);
+  }
+}
+
+/* ---- Stack helper: a row that collapses to a column on narrow widths ---- */
+.wk-stack-sm {
+  display: flex;
+  gap: var(--space-3);
+}
+@media (max-width: 599px) {
+  .wk-stack-sm {
+    flex-direction: column;
+  }
+}

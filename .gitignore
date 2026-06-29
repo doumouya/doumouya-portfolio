@@ -1,0 +1,19 @@
+# ── dependencies & build outputs (regenerable; never commit) ──
+**/node_modules/
+**/target/
+**/dist/
+**/.build/
+**/web/wasm/*.wasm
+**/wasm/*_bg.wasm
+
+# ── secrets / local env ──
+**/.env
+**/.env.*
+!**/.env.example
+
+# ── OS / editor cruft ──
+*.log
+*.swp
+*~
+.DS_Store
+desktop.ini

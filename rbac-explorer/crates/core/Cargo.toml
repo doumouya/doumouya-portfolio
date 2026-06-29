@@ -1,0 +1,8 @@
+[package]
+name = "rbac-core"
+version = "0.1.0"
+edition = "2021"
+description = "Pure, cycle-safe reach resolver for scoped-ownership access control (compiles to wasm)."
+
+# No dependencies — small wasm, and a pure resolver that runs entirely on-device.
+[dependencies]
