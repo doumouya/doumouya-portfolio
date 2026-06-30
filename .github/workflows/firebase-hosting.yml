@@ -2,15 +2,16 @@ name: firebase-hosting
 
 # Deploys the portfolio front-door (the portfolio/ subdir) to Firebase Hosting.
 # - push to main  -> live channel (https://doumouya-portfolio.web.app + custom domain)
-# - pull_request  -> ephemeral preview channel, URL posted on the PR
+# - pull_request  -> ephemeral preview channel (URL printed in the job log)
 #
-# Like the site itself, CI does NOT rebuild (rebuild needs the sibling repos web-kit/
-# echarts-dashboard/rbac-explorer). The landing + app demos are committed pre-built; CI
-# only typechecks the source and stages the committed files into portfolio/dist via stage.sh.
+# CI does NOT rebuild (that needs the sibling repos web-kit/echarts-dashboard/rbac-explorer).
+# The landing + app demos are committed pre-built; CI typechecks the source and stages the
+# committed files into portfolio/dist via stage.sh.
 #
-# Requires repo secret FIREBASE_SERVICE_ACCOUNT_DOUMOUYA_PORTFOLIO (a Firebase service-account
-# JSON). Easiest to create with `firebase init hosting:github` from the repo, which provisions
-# the service account and stores the secret for you.
+# Auth: the numu.im org blocks service-account keys
+# (constraints/iam.disableServiceAccountKeyCreation), so this uses a user CI token instead of
+# a service-account JSON. Generate it with `firebase login:ci` and store it as the repo secret
+# FIREBASE_TOKEN (Settings -> Secrets and variables -> Actions).
 
 on:
   push:
@@ -18,9 +19,7 @@ on:
   pull_request:
 
 permissions:
-  checks: write
   contents: read
-  pull-requests: write
 
 concurrency:
   group: firebase-hosting-${{ github.ref }}
@@ -44,13 +43,19 @@ jobs:
         run: npm run typecheck
       - name: Stage the committed site into dist/
         run: sh tools/stage.sh
-      # The action runs from the repo root, where firebase.json lives (public: portfolio/dist).
-      # Empty channelId on push -> live; on pull_request -> auto preview channel.
+      # firebase.json lives at the repo root (public: portfolio/dist), so deploy from there.
+      # Inputs are passed via env (never interpolated into the script) to avoid injection.
       - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DOUMOUYA_PORTFOLIO }}
-          projectId: doumouya-portfolio
-          channelId: ${{ github.event_name == 'push' && 'live' || '' }}
-          entryPoint: .
+        working-directory: .
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          if [ "$EVENT_NAME" = "push" ]; then
+            npx -y firebase-tools@latest deploy --only hosting \
+              --project doumouya-portfolio --non-interactive
+          else
+            npx -y firebase-tools@latest hosting:channel:deploy "pr-$PR_NUMBER" \
+              --project doumouya-portfolio --expires 7d --non-interactive
+          fi
