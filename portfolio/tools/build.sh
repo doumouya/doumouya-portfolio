@@ -19,6 +19,8 @@ mkdir -p .build apps
 {
   printf '<!doctype html><html lang="en"><head><meta charset="utf-8">'
   printf '<meta name="viewport" content="width=device-width,initial-scale=1">'
+  printf '<meta name="theme-color" content="#2563eb">'
+  printf '<link rel="icon" href="/icons/favicon.svg"><link rel="apple-touch-icon" href="/icons/icon-192.png"><link rel="manifest" href="/manifest.webmanifest">'
   printf '<title>Emmanuel Doumouya — portfolio</title><style>'
   cat "$WK/base.css" "$WK/colors.css" "$WK/typography.css" "$WK/spacing.css" "$WK/elevation.css" "$WK/charts.css" "$WK/responsive.css"
   cat src/landing.css
@@ -26,7 +28,9 @@ mkdir -p .build apps
   cat src/body.html
   printf '\n<script type="module">'
   cat .build/landing.js
-  printf '</script></body></html>'
+  printf '</script>'
+  printf '<script>if("serviceWorker" in navigator)addEventListener("load",function(){navigator.serviceWorker.register("/service-worker.js")});</script>'
+  printf '</body></html>'
 } > index.html
 
 # 3. copy each app's offline demo (their own repos build/commit these)
@@ -40,3 +44,6 @@ for app in echarts-dashboard rbac-explorer; do
 done
 
 echo "built index.html ($(wc -c < index.html) bytes) + apps: $(ls apps 2>/dev/null | tr '\n' ' ')"
+
+# 4. stage the assembled site into dist/ for Firebase Hosting (no rebuild needed downstream)
+sh tools/stage.sh

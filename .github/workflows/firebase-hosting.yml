@@ -1,0 +1,56 @@
+name: firebase-hosting
+
+# Deploys the portfolio front-door (the portfolio/ subdir) to Firebase Hosting.
+# - push to main  -> live channel (https://doumouya-portfolio.web.app + custom domain)
+# - pull_request  -> ephemeral preview channel, URL posted on the PR
+#
+# Like the site itself, CI does NOT rebuild (rebuild needs the sibling repos web-kit/
+# echarts-dashboard/rbac-explorer). The landing + app demos are committed pre-built; CI
+# only typechecks the source and stages the committed files into portfolio/dist via stage.sh.
+#
+# Requires repo secret FIREBASE_SERVICE_ACCOUNT_DOUMOUYA_PORTFOLIO (a Firebase service-account
+# JSON). Easiest to create with `firebase init hosting:github` from the repo, which provisions
+# the service account and stores the secret for you.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: firebase-hosting-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: portfolio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: portfolio/package-lock.json
+      - run: npm ci
+      - name: Typecheck the landing source
+        run: npm run typecheck
+      - name: Stage the committed site into dist/
+        run: sh tools/stage.sh
+      # The action runs from the repo root, where firebase.json lives (public: portfolio/dist).
+      # Empty channelId on push -> live; on pull_request -> auto preview channel.
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DOUMOUYA_PORTFOLIO }}
+          projectId: doumouya-portfolio
+          channelId: ${{ github.event_name == 'push' && 'live' || '' }}
+          entryPoint: .

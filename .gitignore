@@ -17,3 +17,6 @@
 *~
 .DS_Store
 desktop.ini
+
+# firebase CLI local cache
+.firebase/
