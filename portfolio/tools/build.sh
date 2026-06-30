@@ -54,7 +54,11 @@ mkdir -p .build apps
   printf '\n<script type="module">'
   cat .build/landing.js
   printf '</script>'
-  printf '<script>if("serviceWorker" in navigator)addEventListener("load",function(){navigator.serviceWorker.register("/service-worker.js")});</script>'
+  # SW intentionally NOT registered while the UI is in flux (it caused stale-cache friction).
+  # Instead, proactively unregister any SW a previous visit installed and clear its caches, so
+  # returning visitors stop being served by the old worker. (A real RedPash-lean, content-hashed
+  # SW will replace this once the UI is final.)
+  printf '<script>if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})});if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})})}</script>'
   printf '</body></html>'
 } > index.html
 
