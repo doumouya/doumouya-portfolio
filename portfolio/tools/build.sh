@@ -32,9 +32,15 @@ mkdir -p .build apps
 #    sheets the page uses (atoms/card/termbar) + landing.css (page chrome).
 {
   printf '<!doctype html><html lang="en" data-theme="portfolio" data-mode="light"><head><meta charset="utf-8">'
+  # Canonicalize: bounce the default Firebase hostnames to the custom domain. Runs first &
+  # synchronously (location.replace stops parsing), so the default URLs never render. No-op on
+  # em.numu.im / localhost / preview channels (exact-host match only). Firebase can'\''t do this
+  # host-conditionally in firebase.json (redirects are path-based and would loop on em.numu.im).
+  printf '<script>(function(){var h=location.hostname;if(h==="doumouya-portfolio.web.app"||h==="doumouya-portfolio.firebaseapp.com"){location.replace("https://em.numu.im"+location.pathname+location.search+location.hash);}})();</script>'
   printf '<meta name="viewport" content="width=device-width,initial-scale=1">'
   printf '<meta name="theme-color" content="#0B0B0C">'
   printf '<script>(function(){try{var m=localStorage.getItem("amu-mode");var d=document.documentElement;d.setAttribute("data-theme","portfolio");d.setAttribute("data-mode",(m==="dark"||m==="light")?m:"light");}catch(e){}})();</script>'
+  printf '<link rel="canonical" href="https://em.numu.im/">'
   printf '<link rel="icon" href="/icons/favicon.svg"><link rel="apple-touch-icon" href="/icons/icon-192.png"><link rel="manifest" href="/manifest.webmanifest">'
   printf '<title>Emmanuel Doumouya — portfolio</title><style>'
   cat "$AMU/src/theme/base.css" \
