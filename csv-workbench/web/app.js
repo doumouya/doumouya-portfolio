@@ -1,290 +1,172 @@
 "use strict";
 (() => {
-  // ../web-kit/src/el.ts
-  function el(tag, attrs = {}, ...children) {
+  // ../../amenan-ui/src/kernel/dom.ts
+  function el(tag, attrs, ...children) {
     const node = document.createElement(tag);
-    for (const [key, value] of Object.entries(attrs)) {
-      if (value === null || value === void 0 || value === false) continue;
-      if (key === "class") node.className = String(value);
-      else if (key === "text") node.textContent = String(value);
-      else if (key.startsWith("on") && typeof value === "function") {
-        node.addEventListener(key.slice(2).toLowerCase(), value);
-      } else if (value === true) {
-        node.setAttribute(key, "");
-      } else {
-        node.setAttribute(key, String(value));
-      }
+    for (const [k, v] of Object.entries(attrs ?? {})) {
+      if (v == null) continue;
+      if (k === "class") node.className = String(v);
+      else if (k.startsWith("on") && typeof v === "function") {
+        node.addEventListener(k.slice(2), v);
+      } else node.setAttribute(k, String(v));
     }
-    append(node, children);
-    return node;
-  }
-  function append(parent, children) {
-    for (const child of children) {
-      if (child === null || child === void 0 || child === false) continue;
-      parent.appendChild(child instanceof Node ? child : document.createTextNode(String(child)));
+    for (const c of children.flat(Infinity)) {
+      if (c == null) continue;
+      const isNode = typeof c === "object" && c !== null && "nodeType" in c;
+      node.appendChild(isNode ? c : document.createTextNode(String(c)));
     }
-  }
-  var injected = /* @__PURE__ */ new Set();
-  function ensureStyles(name, css) {
-    if (injected.has(name) || typeof document === "undefined") return;
-    injected.add(name);
-    const style = document.createElement("style");
-    style.dataset["dc"] = name;
-    style.textContent = css;
-    document.head.appendChild(style);
-  }
-
-  // ../web-kit/src/components/button.ts
-  var CSS = `
-.dc-btn{
-  font: var(--font-body); font-weight: var(--weight-medium);
-  display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2);
-  height:var(--control-h); padding:0 var(--pad-control-x);
-  border:var(--border-width) solid var(--border); border-radius:var(--radius);
-  background:var(--surface-subtle); color:var(--text);
-  cursor:pointer; white-space:nowrap; user-select:none; line-height:1;
-  transition:var(--transition-control);
-}
-.dc-btn:hover{ border-color:var(--accent); }
-.dc-btn:active{ background:var(--surface-sunken); }
-.dc-btn:focus-visible{ outline:var(--focus-ring); outline-offset:1px; }
-.dc-btn[disabled],.dc-btn[aria-disabled="true"]{ opacity:.5; cursor:not-allowed; }
-.dc-btn[disabled]:hover,.dc-btn[aria-disabled="true"]:hover{ border-color:var(--border); }
-
-.dc-btn--primary{ background:var(--accent); border-color:var(--accent); color:var(--text-on-accent); }
-.dc-btn--primary:hover{ background:var(--accent-hover); border-color:var(--accent-hover); }
-.dc-btn--primary:active{ background:var(--accent-hover); }
-
-.dc-btn--ghost{ background:transparent; border-color:transparent; }
-.dc-btn--ghost:hover{ background:var(--surface-subtle); border-color:transparent; }
-.dc-btn--ghost:active{ background:var(--surface-sunken); }
-
-.dc-btn--danger{ background:var(--danger); border-color:var(--danger); color:#fff; }
-.dc-btn--danger:hover{ filter:brightness(.94); border-color:var(--danger); }
-
-.dc-btn--sm{ height:var(--control-h-sm); padding:0 var(--space-2); font-size:var(--text-sm); border-radius:var(--radius-sm); }
-.dc-btn--lg{ height:var(--control-h-lg); padding:0 var(--space-4); }
-.dc-btn--block{ width:100%; }
-.dc-btn svg{ width:1em; height:1em; flex:none; }
-`;
-  function button(label, opts = {}) {
-    ensureStyles("button", CSS);
-    const { variant = "secondary", size = "md", block, leadingIcon, trailingIcon, disabled, onClick } = opts;
-    const classes = [
-      "dc-btn",
-      variant !== "secondary" && `dc-btn--${variant}`,
-      size !== "md" && `dc-btn--${size}`,
-      block && "dc-btn--block",
-      opts.class
-    ].filter(Boolean).join(" ");
-    const node = el(
-      "button",
-      { class: classes, disabled, ...onClick ? { onClick } : {} },
-      leadingIcon ?? null,
-      label !== null && label !== void 0 && label !== false ? el("span", {}, label) : null,
-      trailingIcon ?? null
-    );
-    if (opts.attrs) for (const [k, v] of Object.entries(opts.attrs)) node.setAttribute(k, v);
     return node;
   }
 
-  // ../web-kit/src/components/iconButton.ts
-  var CSS2 = `
-.dc-iconbtn{
-  display:inline-flex; align-items:center; justify-content:center;
-  width:var(--control-h); height:var(--control-h); padding:0;
-  border:var(--border-width) solid transparent; border-radius:var(--radius);
-  background:transparent; color:var(--text-muted);
-  cursor:pointer; line-height:1; font-size:var(--text-md);
-  transition:var(--transition-control);
-}
-.dc-iconbtn:hover{ background:var(--surface-subtle); color:var(--text); }
-.dc-iconbtn:active{ background:var(--surface-sunken); }
-.dc-iconbtn:focus-visible{ outline:var(--focus-ring); outline-offset:1px; }
-.dc-iconbtn[disabled]{ opacity:.45; cursor:not-allowed; }
-.dc-iconbtn[disabled]:hover{ background:transparent; color:var(--text-muted); }
-.dc-iconbtn[aria-pressed="true"],.dc-iconbtn.is-active{ color:var(--accent); background:var(--accent-tint); }
-.dc-iconbtn--bordered{ border-color:var(--border); }
-.dc-iconbtn--bordered:hover{ border-color:var(--accent); background:transparent; color:var(--text); }
-.dc-iconbtn--sm{ width:var(--control-h-sm); height:var(--control-h-sm); font-size:var(--text-sm); border-radius:var(--radius-sm); }
-.dc-iconbtn--lg{ width:var(--control-h-lg); height:var(--control-h-lg); }
-.dc-iconbtn svg{ width:1.05em; height:1.05em; }
-`;
-  function iconButton(icon, opts) {
-    ensureStyles("iconbutton", CSS2);
-    const { label, size = "md", bordered, active, disabled, title, onClick } = opts;
-    const classes = [
-      "dc-iconbtn",
-      bordered && "dc-iconbtn--bordered",
-      active && "is-active",
-      size !== "md" && `dc-iconbtn--${size}`,
-      opts.class
-    ].filter(Boolean).join(" ");
-    const node = el(
+  // ../../amenan-ui/src/theme/theme.ts
+  var THEME_KEY = "amu-theme";
+  var MODE_KEY = "amu-mode";
+  var DEFAULT_THEME = "redpash";
+  var DEFAULT_MODE = "dark";
+  var prePaintSnippet = `(function(){try{var t=localStorage.getItem("${THEME_KEY}");var m=localStorage.getItem("${MODE_KEY}");var d=document.documentElement;var isMode=function(v){return v==="dark"||v==="light";};if(!isMode(m)){m=isMode(t)?t:"${DEFAULT_MODE}";}var theme=(t&&!isMode(t))?t:"${DEFAULT_THEME}";d.setAttribute("data-theme",theme);d.setAttribute("data-mode",m);}catch(e){}})();`;
+
+  // ../../amenan-ui/src/components/atoms/atoms.ts
+  function button(cfg) {
+    const cls = ["amu-btn"];
+    if (cfg.variant) cls.push(`amu-btn--${cfg.variant}`);
+    if (cfg.size) cls.push(`amu-btn--${cfg.size}`);
+    if (cfg.icon && cfg.label == null) cls.push("amu-btn--icon");
+    const b = el(
       "button",
       {
-        class: classes,
-        "aria-label": label,
-        title: title ?? label,
-        disabled,
-        ...onClick ? { onClick } : {}
+        class: cls.join(" "),
+        type: cfg.type ?? "button",
+        onclick: cfg.onClick,
+        title: cfg.title ?? null,
+        "aria-label": cfg.ariaLabel ?? cfg.title ?? null
       },
-      icon
+      cfg.icon ? el("i", { class: "bi " + cfg.icon }) : null,
+      cfg.label ?? null
     );
-    if (opts.attrs) for (const [k, v] of Object.entries(opts.attrs)) node.setAttribute(k, v);
-    return node;
+    if (cfg.disabled) b.disabled = true;
+    return b;
   }
-
-  // ../web-kit/src/components/select.ts
-  var CSS3 = `
-.dc-select{ display:inline-flex; flex-direction:column; gap:var(--space-1); }
-.dc-select--block{ display:flex; width:100%; }
-.dc-select__label{ font-size:var(--text-sm); font-weight:var(--weight-medium); color:var(--text); }
-.dc-select__shell{ position:relative; display:inline-flex; align-items:center; }
-.dc-select--block .dc-select__shell{ display:flex; width:100%; }
-.dc-select select{
-  appearance:none; -webkit-appearance:none;
-  font:var(--font-body); color:var(--text);
-  height:var(--control-h); width:100%;
-  padding:0 calc(var(--space-6)) 0 var(--pad-control-x);
-  border:var(--border-width) solid var(--border); border-radius:var(--radius-sm);
-  background:var(--surface); cursor:pointer;
-  transition:var(--transition-control);
-}
-.dc-select select:hover{ border-color:var(--border-strong); }
-.dc-select select:focus-visible{ outline:var(--focus-ring); outline-offset:var(--focus-offset); border-color:var(--accent); }
-.dc-select select:disabled{ opacity:.55; background:var(--surface-subtle); cursor:not-allowed; }
-.dc-select--sm select{ height:var(--control-h-sm); font-size:var(--text-sm); padding-right:var(--space-5); }
-.dc-select__chevron{
-  position:absolute; right:var(--space-2); pointer-events:none;
-  color:var(--text-subtle); font-size:.7em; line-height:1;
-}
-`;
-  function select(opts = {}) {
-    ensureStyles("select", CSS3);
-    const { label, options = [], size = "md", block, id, children } = opts;
-    const fieldId = id || (label ? `dc-${Math.random().toString(36).slice(2, 8)}` : void 0);
-    const classes = [
-      "dc-select",
-      size !== "md" && `dc-select--${size}`,
-      block && "dc-select--block",
-      opts.class
-    ].filter(Boolean).join(" ");
-    const selectEl = el("select", fieldId ? { id: fieldId } : {});
-    if (opts.attrs) for (const [k, v] of Object.entries(opts.attrs)) selectEl.setAttribute(k, v);
-    if (children && children.length > 0) {
-      append(selectEl, children);
-    } else {
-      for (const o of options) {
-        const opt = typeof o === "string" ? { value: o, label: o } : o;
-        append(selectEl, [el("option", { value: opt.value }, opt.label)]);
-      }
-    }
+  function badge(cfg) {
     return el(
-      "div",
-      { class: classes },
-      label ? el("label", { class: "dc-select__label", ...fieldId ? { for: fieldId } : {} }, label) : null,
-      el(
-        "span",
-        { class: "dc-select__shell" },
-        selectEl,
-        el("span", { class: "dc-select__chevron", "aria-hidden": "true" }, "\u25BC")
-      )
+      "span",
+      { class: `amu-badge${cfg.tone ? ` amu-badge--${cfg.tone}` : ""}` },
+      cfg.label
     );
   }
 
-  // ../web-kit/src/components/stat.ts
-  var CSS4 = `
-.dc-stat{ display:flex; flex-direction:column; gap:2px; min-width:0; }
-.dc-stat--bordered{ padding:var(--space-3) var(--space-4); border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); }
-.dc-stat__label{ font-size:var(--text-xs); color:var(--text-muted); font-weight:var(--weight-medium); letter-spacing:var(--tracking-wide); text-transform:uppercase; white-space:nowrap; }
-.dc-stat__value{ font-size:var(--text-3xl); font-weight:var(--weight-bold); line-height:1.05; color:var(--text); font-variant-numeric:var(--numeric-tabular); letter-spacing:var(--tracking-tight); }
-.dc-stat--accent .dc-stat__value{ color:var(--accent); }
-.dc-stat--success .dc-stat__value{ color:var(--success); }
-.dc-stat--sm .dc-stat__value{ font-size:var(--text-2xl); }
-.dc-stat__unit{ font-size:.5em; font-weight:var(--weight-medium); color:var(--text-muted); margin-left:.25em; letter-spacing:0; }
-.dc-stat__foot{ display:flex; align-items:center; gap:var(--space-2); margin-top:1px; }
-.dc-stat__caption{ font-size:var(--text-xs); color:var(--text-subtle); }
-.dc-stat__delta{ display:inline-flex; align-items:center; gap:2px; font-size:var(--text-xs); font-weight:var(--weight-medium); font-variant-numeric:var(--numeric-tabular); }
-.dc-stat__delta--up{ color:var(--success); }
-.dc-stat__delta--down{ color:var(--danger); }
-.dc-stat__delta--flat{ color:var(--text-muted); }
-`;
-  function stat(value, opts = {}) {
-    ensureStyles("stat", CSS4);
-    const { label, unit, caption, delta, tone = "default", size = "md", bordered } = opts;
-    const classes = [
-      "dc-stat",
-      tone !== "default" && `dc-stat--${tone}`,
-      size !== "md" && `dc-stat--${size}`,
-      bordered && "dc-stat--bordered",
-      opts.class
-    ].filter(Boolean).join(" ");
-    const dir = delta === null || delta === void 0 ? null : delta > 0 ? "up" : delta < 0 ? "down" : "flat";
-    const footer = caption !== null && caption !== void 0 && caption !== false ? true : delta !== null && delta !== void 0;
+  // ../../amenan-ui/src/components/empty-state/empty-state.ts
+  function mountEmptyState(host, cfg) {
     const node = el(
       "div",
-      { class: classes },
-      label !== null && label !== void 0 && label !== false ? el("div", { class: "dc-stat__label" }, label) : null,
-      el(
-        "div",
-        { class: "dc-stat__value" },
-        value,
-        unit !== null && unit !== void 0 && unit !== false ? el("span", { class: "dc-stat__unit" }, unit) : null
-      ),
-      footer ? el(
-        "div",
-        { class: "dc-stat__foot" },
-        dir !== null ? el(
-          "span",
-          { class: `dc-stat__delta dc-stat__delta--${dir}` },
-          `${dir === "up" ? "\u25B2" : dir === "down" ? "\u25BC" : "\u2014"} ${Math.abs(delta)}%`
-        ) : null,
-        caption !== null && caption !== void 0 && caption !== false ? el("span", { class: "dc-stat__caption" }, caption) : null
-      ) : null
+      { class: "amu-empty" },
+      el("h3", { class: "amu-empty-title" }, cfg.title),
+      cfg.line ? el("p", { class: "amu-empty-line" }, cfg.line) : null,
+      cfg.action ? button({ variant: "accent", ...cfg.action }) : null
     );
-    if (opts.attrs) for (const [k, v] of Object.entries(opts.attrs)) node.setAttribute(k, v);
-    return node;
+    host.append(node);
+    return { el: node, update() {
+    }, destroy: () => node.remove() };
   }
 
-  // ../web-kit/src/components/emptyState.ts
-  var CSS5 = `
-.dc-empty{
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:var(--space-3); text-align:center; color:var(--text-muted);
-  padding:var(--space-12) var(--space-6); min-height:16rem;
-}
-.dc-empty--dropzone{
-  border:2px dashed var(--border-strong); border-radius:var(--radius-lg);
-  background:var(--surface-subtle); transition:var(--transition-control);
-}
-.dc-empty--dropzone.is-over{ border-color:var(--accent); background:var(--accent-tint); }
-.dc-empty__glyph{ font-size:1.9rem; line-height:1; color:var(--text-subtle); }
-.dc-empty__lead{ font-size:var(--text-xl); color:var(--text); margin:0; font-weight:var(--weight-medium); }
-.dc-empty__desc{ font-size:var(--text-sm); color:var(--text-muted); margin:0; max-width:28rem; }
-.dc-empty__action{ margin-top:var(--space-2); }
-`;
-  function emptyState(opts = {}) {
-    ensureStyles("emptystate", CSS5);
-    const { glyph, lead, description, action, dropzone, over, children } = opts;
-    const classes = [
-      "dc-empty",
-      dropzone && "dc-empty--dropzone",
-      dropzone && over && "is-over",
-      opts.class
-    ].filter(Boolean).join(" ");
-    const node = el(
-      "div",
-      { class: classes },
-      glyph !== null && glyph !== void 0 && glyph !== false ? el("div", { class: "dc-empty__glyph", "aria-hidden": "true" }, glyph) : null,
-      lead !== null && lead !== void 0 && lead !== false ? el("p", { class: "dc-empty__lead" }, lead) : null,
-      description !== null && description !== void 0 && description !== false ? el("p", { class: "dc-empty__desc" }, description) : null,
-      ...children ?? [],
-      action !== null && action !== void 0 && action !== false ? el("div", { class: "dc-empty__action" }, action) : null
-    );
-    if (opts.attrs) for (const [k, v] of Object.entries(opts.attrs)) node.setAttribute(k, v);
-    return node;
+  // ../../amenan-ui/src/components/select/select.ts
+  function mountSelect(host, cfg) {
+    const sel = el("select", { class: "amu-select" });
+    function render(options, value) {
+      sel.replaceChildren(
+        ...options.map((o) => {
+          const opt = el("option", { value: o.value }, o.label);
+          if (o.value === value) opt.selected = true;
+          return opt;
+        })
+      );
+    }
+    render(cfg.options ?? [], cfg.value);
+    sel.addEventListener("change", () => cfg.onChange?.(sel.value));
+    host.append(sel);
+    return {
+      el: sel,
+      update: (p) => render(p.options ?? cfg.options ?? [], p.value ?? sel.value),
+      destroy: () => sel.remove()
+    };
   }
+
+  // ../../amenan-ui/src/components/chart/build.ts
+  var TYPES = {
+    cartesian: [
+      ["bar", "bi-bar-chart", "Bar"],
+      ["line", "bi-graph-up", "Line"],
+      ["area", "bi-graph-up-arrow", "Area"]
+    ],
+    barh: [["barh", "bi-bar-chart-steps", "Horizontal"]],
+    scatter: [["scatter", "bi-circle", "Scatter"]],
+    pie: [
+      ["pie", "bi-pie-chart-fill", "Pie"],
+      ["donut", "bi-circle", "Donut"],
+      ["half_donut", "bi-circle-half", "Half-donut"],
+      ["rose", "bi-flower2", "Rose"]
+    ],
+    radar: [["radar", "bi-pentagon", "Radar"]],
+    gauge: [["gauge", "bi-speedometer", "Gauge"]],
+    pictorial: [["pictorial", "bi-dice-3", "Pictorial"]]
+  };
+  var TYPE_TO_KIND = {};
+  Object.entries(TYPES).forEach(
+    ([kind, list]) => list.forEach(([t]) => {
+      TYPE_TO_KIND[t] = kind;
+    })
+  );
+  var TYPE_LIST = Object.values(TYPES).flat();
+
+  // ../../amenan-ui/src/components/redtable/editor-registry.ts
+  var editors = /* @__PURE__ */ new Map();
+  function registerEditor(dtype, factory) {
+    editors.set(dtype, factory);
+  }
+  function makeEditor({ type = "text", parse = (s) => s } = {}) {
+    return (td, { value, onCommit }) => {
+      const prev = [...td.childNodes];
+      const field = el("input", { class: "amu-input amu-redtable-editor", type });
+      field.value = value == null ? "" : String(value);
+      td.replaceChildren(field);
+      field.focus();
+      field.select();
+      let done = false;
+      const restore = () => td.replaceChildren(...prev);
+      const commit = () => {
+        if (done) return;
+        done = true;
+        const next = parse(field.value);
+        restore();
+        if (next !== void 0) onCommit?.(next);
+      };
+      const cancel = () => {
+        if (done) return;
+        done = true;
+        restore();
+      };
+      field.addEventListener("blur", commit);
+      field.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          commit();
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          cancel();
+          field.blur();
+        }
+      });
+      return { commit, cancel, el: field };
+    };
+  }
+  function parseNumber(s) {
+    const t = s.trim();
+    if (t === "") return "";
+    const n = Number(t);
+    return Number.isFinite(n) ? n : void 0;
+  }
+  registerEditor("text", makeEditor());
+  registerEditor("int", makeEditor({ type: "number", parse: parseNumber }));
+  registerEditor("float", makeEditor({ type: "number", parse: parseNumber }));
 
   // web/app.ts
   var step = (kind, params) => ({ kind, params });
@@ -519,12 +401,12 @@
   async function renderTable() {
     const host = byId("table");
     if (!cols.length) {
-      host.replaceChildren(emptyState({
-        dropzone: true,
-        glyph: "\u25A6",
-        lead: "Open a CSV \u2014 it stays on your device.",
-        description: "Parsed and cleaned entirely in your browser by a Polars\u2192WebAssembly engine. Nothing is uploaded. No file handy? Click \u201CLoad sample\u201D to try it on a messy French dataset."
-      }));
+      host.replaceChildren();
+      mountEmptyState(host, {
+        title: "Open a CSV \u2014 it stays on your device.",
+        line: "Parsed and cleaned entirely in your browser by a Polars\u2192WebAssembly engine. Nothing is uploaded. No file handy? Click \u201CLoad sample\u201D to try it on a messy French dataset.",
+        action: { label: "Load sample", onClick: loadSample }
+      });
       return;
     }
     const q = {};
@@ -557,7 +439,8 @@
     page.rows.forEach((row, r) => {
       const absIdx = rowIndices[r];
       const tr = el("tr", { "data-idx": String(absIdx), class: selectedRows.has(absIdx) ? "is-selected" : "" });
-      const rowCb = el("input", { type: "checkbox", class: "row-chk", checked: selectedRows.has(absIdx), "aria-label": "select row" });
+      const rowCb = el("input", { type: "checkbox", class: "row-chk", "aria-label": "select row" });
+      rowCb.checked = selectedRows.has(absIdx);
       tr.append(el("td", { class: "col-chk" }, rowCb));
       visible.forEach(({ name, i }) => {
         const cell = row[i];
@@ -601,18 +484,18 @@
     );
     const nav = el("div", { class: "pager-nav" });
     if (pageCount > 1) {
-      nav.append(iconButton("\u2039", { label: "previous page", size: "sm", onClick: () => goTo(current - 1) }));
+      nav.append(button({ label: "\u2039", variant: "ghost", size: "sm", ariaLabel: "previous page", title: "previous page", onClick: () => goTo(current - 1) }));
       for (const p of pageWindow(current, pageCount)) {
         if (p === 0) {
           nav.append(el("span", { class: "pager-gap" }, "\u2026"));
           continue;
         }
-        const b = button(String(p), { variant: p === current ? "primary" : "ghost", size: "sm", onClick: () => goTo(p) });
+        const b = button({ label: String(p), variant: p === current ? "accent" : "ghost", size: "sm", onClick: () => goTo(p) });
         b.classList.add("pager-page");
         if (p === current) b.setAttribute("aria-current", "page");
         nav.append(b);
       }
-      nav.append(iconButton("\u203A", { label: "next page", size: "sm", onClick: () => goTo(current + 1) }));
+      nav.append(button({ label: "\u203A", variant: "ghost", size: "sm", ariaLabel: "next page", title: "next page", onClick: () => goTo(current + 1) }));
     }
     setKids(byId("pager"), summary, el("span", { class: "spacer" }), nav, rowsPerPage());
   }
@@ -722,7 +605,8 @@
     const n = selection.size;
     const list = el("div", { class: "col-list" });
     cols.forEach((c) => {
-      const cb = el("input", { type: "checkbox", checked: selection.has(c.name) });
+      const cb = el("input", { type: "checkbox" });
+      cb.checked = selection.has(c.name);
       cb.addEventListener("change", () => {
         cb.checked ? selection.add(c.name) : selection.delete(c.name);
         renderTools();
@@ -739,8 +623,9 @@
     });
     const opBtn = (op) => {
       const enabled = opEnabled(op, n);
-      return button(op.label, {
-        variant: activeOp?.id === op.id ? "primary" : "secondary",
+      return button({
+        label: op.label,
+        variant: activeOp?.id === op.id ? "accent" : void 0,
         size: "sm",
         disabled: !enabled,
         onClick: () => {
@@ -758,7 +643,7 @@
         { class: "tools-head" },
         el("h2", {}, "Tools"),
         el("span", { class: "spacer" }),
-        n ? button(`Clear (${n})`, { variant: "ghost", size: "sm", onClick: () => {
+        n ? button({ label: `Clear (${n})`, variant: "ghost", size: "sm", onClick: () => {
           selection.clear();
           activeOp = null;
           renderTools();
@@ -787,7 +672,8 @@
     });
     const controls = op.fields.map((f) => {
       if (f.type === "enum") {
-        const field = select({ size: "sm", children: (f.options ?? []).map(([val, lab]) => el("option", { value: val, selected: val === f.default }, lab)) });
+        const field = el("span", { class: "sel-field" });
+        mountSelect(field, { options: (f.options ?? []).map(([val, lab]) => ({ value: val, label: lab })), value: typeof f.default === "string" ? f.default : void 0 });
         const sel = field.querySelector("select");
         values[f.key] = sel.value;
         sel.addEventListener("change", () => {
@@ -796,7 +682,8 @@
         return el("label", { class: "field" }, el("span", {}, f.label), field);
       }
       if (f.type === "bool") {
-        const cb = el("input", { type: "checkbox", checked: !!f.default });
+        const cb = el("input", { type: "checkbox" });
+        cb.checked = !!f.default;
         cb.addEventListener("change", () => {
           values[f.key] = cb.checked;
         });
@@ -816,11 +703,11 @@
       el(
         "div",
         { class: "sheet-actions" },
-        button("Cancel", { variant: "ghost", size: "sm", onClick: () => {
+        button({ label: "Cancel", variant: "ghost", size: "sm", onClick: () => {
           activeOp = null;
           renderTools();
         } }),
-        button("Apply", { variant: "primary", size: "sm", onClick: () => runOp(op, values) })
+        button({ label: "Apply", variant: "accent", size: "sm", onClick: () => runOp(op, values) })
       )
     );
   }
@@ -881,19 +768,19 @@
     return el("div", { class: "dt-search" }, el("span", { class: "dt-search-ico" }, "\u2315"), inp);
   }
   function modeButton(m, glyph, title) {
-    const b = iconButton(glyph, { label: title, size: "sm", onClick: () => {
+    const b = button({ label: glyph, variant: "ghost", size: "sm", ariaLabel: title, title, onClick: () => {
       if (m === "delete" && selectedRows.size) {
         stageSteps([step("drop_rows", { indices: [...selectedRows] })]);
         return;
       }
-      setMode(mode === m ? "" : m);
+      setMode2(mode === m ? "" : m);
     } });
     b.classList.add("dt-mode");
     b.setAttribute("data-mode", m);
     b.setAttribute("title", title);
     return b;
   }
-  function setMode(m) {
+  function setMode2(m) {
     mode = m;
     selectedRows.clear();
     document.querySelectorAll(".dt-mode").forEach((b) => b.classList.toggle("is-active", b.getAttribute("data-mode") === m && m !== ""));
@@ -901,7 +788,8 @@
     void renderTable();
   }
   function rowsPerPage() {
-    const field = select({ size: "sm", children: [50, 100, 200, 500].map((nn) => el("option", { value: String(nn), selected: nn === pageLimit }, `${nn}/page`)) });
+    const field = el("span", { class: "sel-field" });
+    mountSelect(field, { options: [50, 100, 200, 500].map((nn) => ({ value: String(nn), label: `${nn}/page` })), value: String(pageLimit) });
     const sel = field.querySelector("select");
     sel.addEventListener("change", () => {
       pageLimit = Number(sel.value);
@@ -913,7 +801,7 @@
   }
   function columnsDropdown() {
     const menu = el("div", { class: "dt-menu", hidden: true });
-    const toggle = iconButton("\u25A6", { label: "Show / hide columns", size: "sm", onClick: () => {
+    const toggle = button({ label: "\u25A6", variant: "ghost", size: "sm", ariaLabel: "Show / hide columns", title: "Show / hide columns", onClick: () => {
       if (menu.hasAttribute("hidden")) {
         fillColumnsMenu(menu);
         menu.removeAttribute("hidden");
@@ -928,7 +816,8 @@
   }
   function fillColumnsMenu(menu) {
     setKids(menu, ...cols.map((c) => {
-      const cb = el("input", { type: "checkbox", checked: !hiddenCols.has(c.name) });
+      const cb = el("input", { type: "checkbox" });
+      cb.checked = !hiddenCols.has(c.name);
       cb.addEventListener("change", () => {
         cb.checked ? hiddenCols.delete(c.name) : hiddenCols.add(c.name);
         void renderTable();
@@ -937,16 +826,16 @@
     }));
   }
   function syncSelChip() {
-    const chip = byId("selChip");
+    const chip2 = byId("selChip");
     const n = selectedRows.size;
-    chip.classList.toggle("show", n > 0);
+    chip2.classList.toggle("show", n > 0);
     setKids(
-      chip,
+      chip2,
       n ? el("span", { class: "sel-n" }, `${n} selected`) : null,
-      n ? button("Delete rows", { variant: "secondary", size: "sm", onClick: () => {
+      n ? button({ label: "Delete rows", size: "sm", onClick: () => {
         if (selectedRows.size) stageSteps([step("drop_rows", { indices: [...selectedRows] })]);
       } }) : null,
-      n ? iconButton("\u2715", { label: "clear selection", size: "sm", onClick: clearSelection }) : null
+      n ? button({ label: "\u2715", variant: "ghost", size: "sm", ariaLabel: "clear selection", title: "clear selection", onClick: clearSelection }) : null
     );
   }
   function syncToolbar() {
@@ -961,7 +850,7 @@
   function renderChip() {
     const host = byId("chip");
     host.replaceChildren(
-      cleanness != null ? stat(`${Math.round(cleanness)}%`, { label: "clean", size: "sm", tone: cleanness >= 80 ? "success" : "default" }) : el("span", {})
+      cleanness != null ? badge({ label: `${Math.round(cleanness)}% clean`, tone: cleanness >= 80 ? "ok" : void 0 }) : el("span", {})
     );
   }
   function setStatus(msg) {
@@ -971,8 +860,8 @@
     const file = el("input", { type: "file", accept: ".csv,text/csv" });
     file.hidden = true;
     file.addEventListener("change", () => void openFile(file.files?.[0]));
-    undoBtn = iconButton("\u21B6", { label: "undo", size: "sm", onClick: undo });
-    redoBtn = iconButton("\u21B7", { label: "redo", size: "sm", onClick: redoAction });
+    undoBtn = button({ label: "\u21B6", variant: "ghost", size: "sm", ariaLabel: "undo", title: "undo", onClick: undo });
+    redoBtn = button({ label: "\u21B7", variant: "ghost", size: "sm", ariaLabel: "redo", title: "redo", onClick: redoAction });
     undoBtn.setAttribute("title", "Undo");
     redoBtn.setAttribute("title", "Redo");
     const header = el(
@@ -983,9 +872,9 @@
       el("span", { id: "status", class: "status" }),
       el("span", { class: "spacer" }),
       el("span", { id: "chip", class: "chip" }),
-      button("Load sample", { onClick: loadSample }),
-      button("Open CSV", { variant: "primary", onClick: () => file.click() }),
-      button("Export CSV", { onClick: () => void exportCsv() }),
+      button({ label: "Load sample", onClick: loadSample }),
+      button({ label: "Open CSV", variant: "accent", onClick: () => file.click() }),
+      button({ label: "Export CSV", onClick: () => void exportCsv() }),
       file
     );
     const toolbar = el(
@@ -1003,7 +892,7 @@
       columnsDropdown(),
       el("span", { id: "selChip", class: "dt-selchip" }),
       el("span", { class: "spacer" }),
-      button("Clean tools", { variant: "secondary", size: "sm", onClick: openToolsDrawer })
+      button({ label: "Clean tools", size: "sm", onClick: openToolsDrawer })
     );
     const drawer = el(
       "dialog",
@@ -1011,7 +900,7 @@
       el(
         "div",
         { class: "drawer-head" },
-        iconButton("\u2715", { label: "close tools", size: "sm", onClick: () => drawer.close() })
+        button({ label: "\u2715", variant: "ghost", size: "sm", ariaLabel: "close tools", title: "close tools", onClick: () => drawer.close() })
       ),
       el("aside", { id: "tools", class: "tools-pane" })
     );

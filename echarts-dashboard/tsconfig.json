@@ -11,7 +11,12 @@
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "baseUrl": ".",
+    "paths": {
+      "amenan-ui": ["../../amenan-ui/src/index.ts"]
+    }
   },
   "include": ["web"]
 }

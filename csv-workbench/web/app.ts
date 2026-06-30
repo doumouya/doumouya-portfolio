@@ -4,14 +4,10 @@
    workspace-style toolbar (live search · edit/select/delete row modes · undo/redo)
    and a Clean-tools side panel that ends in an always-visible step-History strip.
    All edits are non-destructive engine steps (replayed from an immutable base),
-   so undo/redo and "revert to here" are just "replay a shorter list". Built with
-   web-kit components + tokens; the DOM is built with el() — no innerHTML. */
-import { el } from "../../web-kit/src/el";
-import { button } from "../../web-kit/src/components/button";
-import { iconButton } from "../../web-kit/src/components/iconButton";
-import { select } from "../../web-kit/src/components/select";
-import { stat } from "../../web-kit/src/components/stat";
-import { emptyState } from "../../web-kit/src/components/emptyState";
+   so undo/redo and "revert to here" are just "replay a shorter list". Built on
+   amenan-ui components + its `portfolio` (Console) theme; the DOM is built with
+   el() — no innerHTML. */
+import { el, button, mountSelect, mountEmptyState, badge } from "amenan-ui";
 
 // ---------- types ----------
 interface ColumnMeta {
@@ -249,11 +245,12 @@ async function exportCsv(): Promise<void> {
 async function renderTable(): Promise<void> {
   const host = byId("table");
   if (!cols.length) {
-    host.replaceChildren(emptyState({
-      dropzone: true, glyph: "▦",
-      lead: "Open a CSV — it stays on your device.",
-      description: "Parsed and cleaned entirely in your browser by a Polars→WebAssembly engine. Nothing is uploaded. No file handy? Click “Load sample” to try it on a messy French dataset.",
-    }));
+    host.replaceChildren();
+    mountEmptyState(host, {
+      title: "Open a CSV — it stays on your device.",
+      line: "Parsed and cleaned entirely in your browser by a Polars→WebAssembly engine. Nothing is uploaded. No file handy? Click “Load sample” to try it on a messy French dataset.",
+      action: { label: "Load sample", onClick: loadSample },
+    });
     return;
   }
   const q: Record<string, unknown> = {};
@@ -290,7 +287,9 @@ async function renderTable(): Promise<void> {
   page.rows.forEach((row, r) => {
     const absIdx = rowIndices[r]!; // rowIndices is built parallel to page.rows (see above), so r is always in range
     const tr = el("tr", { "data-idx": String(absIdx), class: selectedRows.has(absIdx) ? "is-selected" : "" });
-    const rowCb = el("input", { type: "checkbox", class: "row-chk", checked: selectedRows.has(absIdx), "aria-label": "select row" }) as HTMLInputElement;
+    // set .checked as a PROPERTY (amenan-ui's el renders any non-null attr value, so checked={false} would wrongly check it)
+    const rowCb = el("input", { type: "checkbox", class: "row-chk", "aria-label": "select row" }) as HTMLInputElement;
+    rowCb.checked = selectedRows.has(absIdx);
     tr.append(el("td", { class: "col-chk" }, rowCb));
     visible.forEach(({ name, i }) => {
       const cell = row[i];
@@ -327,15 +326,15 @@ function renderPager(total: number): void {
 
   const nav = el("div", { class: "pager-nav" });
   if (pageCount > 1) {
-    nav.append(iconButton("‹", { label: "previous page", size: "sm", onClick: () => goTo(current - 1) }));
+    nav.append(button({ label: "‹", variant: "ghost", size: "sm", ariaLabel: "previous page", title: "previous page", onClick: () => goTo(current - 1) }));
     for (const p of pageWindow(current, pageCount)) {
       if (p === 0) { nav.append(el("span", { class: "pager-gap" }, "…")); continue; }
-      const b = button(String(p), { variant: p === current ? "primary" : "ghost", size: "sm", onClick: () => goTo(p) });
+      const b = button({ label: String(p), variant: p === current ? "accent" : "ghost", size: "sm", onClick: () => goTo(p) });
       b.classList.add("pager-page");
       if (p === current) b.setAttribute("aria-current", "page");
       nav.append(b);
     }
-    nav.append(iconButton("›", { label: "next page", size: "sm", onClick: () => goTo(current + 1) }));
+    nav.append(button({ label: "›", variant: "ghost", size: "sm", ariaLabel: "next page", title: "next page", onClick: () => goTo(current + 1) }));
   }
 
   setKids(byId("pager"), summary, el("span", { class: "spacer" }), nav, rowsPerPage());
@@ -440,7 +439,8 @@ function renderTools(): void {
 
   const list = el("div", { class: "col-list" });
   cols.forEach((c) => {
-    const cb = el("input", { type: "checkbox", checked: selection.has(c.name) }) as HTMLInputElement;
+    const cb = el("input", { type: "checkbox" }) as HTMLInputElement;
+    cb.checked = selection.has(c.name);
     cb.addEventListener("change", () => { cb.checked ? selection.add(c.name) : selection.delete(c.name); renderTools(); });
     const nullBadge = c.null_pct && c.null_pct > 0 ? el("span", { class: "col-null" }, `${Math.round(c.null_pct)}% empty`) : null;
     list.append(el("label", { class: "col-row" }, cb,
@@ -450,8 +450,9 @@ function renderTools(): void {
 
   const opBtn = (op: OpDef): HTMLElement => {
     const enabled = opEnabled(op, n);
-    return button(op.label, {
-      variant: activeOp?.id === op.id ? "primary" : "secondary", size: "sm", disabled: !enabled,
+    return button({
+      label: op.label,
+      variant: activeOp?.id === op.id ? "accent" : undefined, size: "sm", disabled: !enabled,
       onClick: () => { if (op.fields.length) { activeOp = activeOp?.id === op.id ? null : op; renderTools(); } else runOp(op, {}); },
     });
   };
@@ -459,7 +460,7 @@ function renderTools(): void {
   setKids(host,
     el("div", { class: "tools-head" }, el("h2", {}, "Tools"),
       el("span", { class: "spacer" }),
-      n ? button(`Clear (${n})`, { variant: "ghost", size: "sm", onClick: () => { selection.clear(); activeOp = null; renderTools(); } }) : null),
+      n ? button({ label: `Clear (${n})`, variant: "ghost", size: "sm", onClick: () => { selection.clear(); activeOp = null; renderTools(); } }) : null),
     el("div", { class: "tools-body" },
       el("div", { class: "tools-section" }, el("h3", {}, "Columns"), list),
       el("div", { class: "tools-section" }, el("h3", {}, "Whole file"), el("div", { class: "op-grid" }, ...GLOBAL_OPS.map(opBtn))),
@@ -476,14 +477,16 @@ function actionSheet(op: OpDef): HTMLElement {
   op.fields.forEach((f) => { if (f.default !== undefined) values[f.key] = f.default; });
   const controls = op.fields.map((f) => {
     if (f.type === "enum") {
-      const field = select({ size: "sm", children: (f.options ?? []).map(([val, lab]) => el("option", { value: val, selected: val === f.default }, lab)) });
+      const field = el("span", { class: "sel-field" });
+      mountSelect(field, { options: (f.options ?? []).map(([val, lab]) => ({ value: val, label: lab })), value: typeof f.default === "string" ? f.default : undefined });
       const sel = field.querySelector("select") as HTMLSelectElement;
       values[f.key] = sel.value;
       sel.addEventListener("change", () => { values[f.key] = sel.value; });
       return el("label", { class: "field" }, el("span", {}, f.label), field);
     }
     if (f.type === "bool") {
-      const cb = el("input", { type: "checkbox", checked: !!f.default }) as HTMLInputElement;
+      const cb = el("input", { type: "checkbox" }) as HTMLInputElement;
+      cb.checked = !!f.default;
       cb.addEventListener("change", () => { values[f.key] = cb.checked; });
       return el("label", { class: "field field-bool" }, cb, el("span", {}, f.label));
     }
@@ -495,8 +498,8 @@ function actionSheet(op: OpDef): HTMLElement {
     el("div", { class: "sheet-title" }, op.label),
     ...controls,
     el("div", { class: "sheet-actions" },
-      button("Cancel", { variant: "ghost", size: "sm", onClick: () => { activeOp = null; renderTools(); } }),
-      button("Apply", { variant: "primary", size: "sm", onClick: () => runOp(op, values) })));
+      button({ label: "Cancel", variant: "ghost", size: "sm", onClick: () => { activeOp = null; renderTools(); } }),
+      button({ label: "Apply", variant: "accent", size: "sm", onClick: () => runOp(op, values) })));
 }
 
 // The always-visible step timeline pinned to the bottom of the tools panel. Past steps are solid,
@@ -544,7 +547,7 @@ function searchBox(): HTMLElement {
 }
 
 function modeButton(m: Mode, glyph: string, title: string): HTMLElement {
-  const b = iconButton(glyph, { label: title, size: "sm", onClick: () => {
+  const b = button({ label: glyph, variant: "ghost", size: "sm", ariaLabel: title, title, onClick: () => {
     // bulk shortcut: hitting Delete with rows selected removes them in one step
     if (m === "delete" && selectedRows.size) { stageSteps([step("drop_rows", { indices: [...selectedRows] })]); return; }
     setMode(mode === m ? "" : m);
@@ -563,7 +566,8 @@ function setMode(m: Mode): void {
 }
 
 function rowsPerPage(): HTMLElement {
-  const field = select({ size: "sm", children: [50, 100, 200, 500].map((nn) => el("option", { value: String(nn), selected: nn === pageLimit }, `${nn}/page`)) });
+  const field = el("span", { class: "sel-field" });
+  mountSelect(field, { options: [50, 100, 200, 500].map((nn) => ({ value: String(nn), label: `${nn}/page` })), value: String(pageLimit) });
   const sel = field.querySelector("select") as HTMLSelectElement;
   sel.addEventListener("change", () => { pageLimit = Number(sel.value); offset = 0; void renderTable(); });
   field.classList.add("dt-rows");
@@ -572,7 +576,7 @@ function rowsPerPage(): HTMLElement {
 
 function columnsDropdown(): HTMLElement {
   const menu = el("div", { class: "dt-menu", hidden: true });
-  const toggle = iconButton("▦", { label: "Show / hide columns", size: "sm", onClick: () => {
+  const toggle = button({ label: "▦", variant: "ghost", size: "sm", ariaLabel: "Show / hide columns", title: "Show / hide columns", onClick: () => {
     if (menu.hasAttribute("hidden")) { fillColumnsMenu(menu); menu.removeAttribute("hidden"); }
     else menu.setAttribute("hidden", "");
   } });
@@ -583,7 +587,8 @@ function columnsDropdown(): HTMLElement {
 }
 function fillColumnsMenu(menu: HTMLElement): void {
   setKids(menu, ...cols.map((c) => {
-    const cb = el("input", { type: "checkbox", checked: !hiddenCols.has(c.name) }) as HTMLInputElement;
+    const cb = el("input", { type: "checkbox" }) as HTMLInputElement;
+    cb.checked = !hiddenCols.has(c.name);
     cb.addEventListener("change", () => { cb.checked ? hiddenCols.delete(c.name) : hiddenCols.add(c.name); void renderTable(); });
     return el("label", { class: "dt-menu-item" }, cb, el("span", { class: "dt-menu-name" }, c.name));
   }));
@@ -595,8 +600,8 @@ function syncSelChip(): void {
   chip.classList.toggle("show", n > 0);
   setKids(chip,
     n ? el("span", { class: "sel-n" }, `${n} selected`) : null,
-    n ? button("Delete rows", { variant: "secondary", size: "sm", onClick: () => { if (selectedRows.size) stageSteps([step("drop_rows", { indices: [...selectedRows] })]); } }) : null,
-    n ? iconButton("✕", { label: "clear selection", size: "sm", onClick: clearSelection }) : null,
+    n ? button({ label: "Delete rows", size: "sm", onClick: () => { if (selectedRows.size) stageSteps([step("drop_rows", { indices: [...selectedRows] })]); } }) : null,
+    n ? button({ label: "✕", variant: "ghost", size: "sm", ariaLabel: "clear selection", title: "clear selection", onClick: clearSelection }) : null,
   );
 }
 function syncToolbar(): void {
@@ -612,8 +617,9 @@ function resetToolbarUi(): void {
 // ---------- chrome ----------
 function renderChip(): void {
   const host = byId("chip");
+  // a compact amenan-ui badge (the header chip context suits a pill, not a KPI tile)
   host.replaceChildren(
-    cleanness != null ? stat(`${Math.round(cleanness)}%`, { label: "clean", size: "sm", tone: cleanness >= 80 ? "success" : "default" }) : el("span", {}),
+    cleanness != null ? badge({ label: `${Math.round(cleanness)}% clean`, tone: cleanness >= 80 ? "ok" : undefined }) : el("span", {}),
   );
 }
 function setStatus(msg: string): void { byId("status").textContent = msg; }
@@ -623,8 +629,8 @@ function buildChrome(): void {
   file.hidden = true;
   file.addEventListener("change", () => void openFile(file.files?.[0]));
 
-  undoBtn = iconButton("↶", { label: "undo", size: "sm", onClick: undo });
-  redoBtn = iconButton("↷", { label: "redo", size: "sm", onClick: redoAction });
+  undoBtn = button({ label: "↶", variant: "ghost", size: "sm", ariaLabel: "undo", title: "undo", onClick: undo });
+  redoBtn = button({ label: "↷", variant: "ghost", size: "sm", ariaLabel: "redo", title: "redo", onClick: redoAction });
   undoBtn.setAttribute("title", "Undo");
   redoBtn.setAttribute("title", "Redo");
 
@@ -634,9 +640,9 @@ function buildChrome(): void {
     el("span", { id: "status", class: "status" }),
     el("span", { class: "spacer" }),
     el("span", { id: "chip", class: "chip" }),
-    button("Load sample", { onClick: loadSample }),
-    button("Open CSV", { variant: "primary", onClick: () => file.click() }),
-    button("Export CSV", { onClick: () => void exportCsv() }),
+    button({ label: "Load sample", onClick: loadSample }),
+    button({ label: "Open CSV", variant: "accent", onClick: () => file.click() }),
+    button({ label: "Export CSV", onClick: () => void exportCsv() }),
     file);
 
   const toolbar = el("div", { class: "dt-toolbar" },
@@ -651,12 +657,12 @@ function buildChrome(): void {
     columnsDropdown(),
     el("span", { id: "selChip", class: "dt-selchip" }),
     el("span", { class: "spacer" }),
-    button("Clean tools", { variant: "secondary", size: "sm", onClick: openToolsDrawer }));
+    button({ label: "Clean tools", size: "sm", onClick: openToolsDrawer }));
 
   // The cleaning tools live in a right slide-over so the centered table card stays the hero.
   const drawer = el("dialog", { id: "tools-drawer", class: "tools-drawer" },
     el("div", { class: "drawer-head" },
-      iconButton("✕", { label: "close tools", size: "sm", onClick: () => drawer.close() })),
+      button({ label: "✕", variant: "ghost", size: "sm", ariaLabel: "close tools", title: "close tools", onClick: () => drawer.close() })),
     el("aside", { id: "tools", class: "tools-pane" })) as HTMLDialogElement;
   // a backdrop click lands on the <dialog> itself (never an inner node) — use that to close
   drawer.addEventListener("click", (e) => { if (e.target === drawer) drawer.close(); });

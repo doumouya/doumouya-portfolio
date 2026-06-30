@@ -1,11 +1,8 @@
 /* Interactive reference UI for scoped-ownership reach. A sample org tree + memberships; pick an actor
    and the nodes they can reach light up. Click a node to grant/revoke that actor's membership and watch
    reach recompute. The reach itself is the wasm engine (WasmGraph.reachable); this file only renders and
-   edits the membership state — built with web-kit components and tokens, no innerHTML. */
-import { el } from "../../web-kit/src/el";
-import { select } from "../../web-kit/src/components/select";
-import { badge } from "../../web-kit/src/components/badge";
-import { stat } from "../../web-kit/src/components/stat";
+   edits the membership state — built on amenan-ui components + its `portfolio` (Console) theme, no innerHTML. */
+import { el, mountSelect, badge, mountStat } from "amenan-ui";
 
 interface OrgNode {
   id: string;
@@ -57,13 +54,13 @@ function nodeFrag(n: OrgNode, reach: Set<string>): DocumentFragment {
   const reached = reach.has(n.id);
   const cls = ["node", reached ? "reached" : "dim", isMember && "member"].filter(Boolean).join(" ");
 
-  const memberBadges = membersAt(n.id).map((a) =>
-    badge(a.slice(0, 1), {
-      tone: a === actor ? "accent" : "neutral",
-      variant: a === actor ? "solid" : "soft",
-      attrs: { title: a },
-    }),
-  );
+  // amenan-ui's badge: accent-toned for the selected actor, default for the rest; the
+  // full name rides on the title attribute (set after build — badge takes label/tone only).
+  const memberBadges = membersAt(n.id).map((a) => {
+    const b = badge({ label: a.slice(0, 1), tone: a === actor ? "accent" : undefined });
+    b.title = a;
+    return b;
+  });
 
   const row = el(
     "div",
@@ -94,14 +91,16 @@ function render(): void {
 
   const reachable = NODES.filter((n) => reach.has(n.id));
   const memberOf = [...memberships[actor]];
-  byId("panel").replaceChildren(
-    stat(String(reachable.length), {
-      unit: `/ ${NODES.length}`,
-      caption: "reachable nodes",
-      tone: "success",
-      size: "sm",
-      class: "reach-stat",
-    }),
+
+  // amenan-ui's stat is mount-based, so clear the panel, mount the metric, then append the prose.
+  const panel = byId("panel");
+  panel.replaceChildren();
+  mountStat(panel, {
+    label: "reachable nodes",
+    value: `${reachable.length} / ${NODES.length}`,
+    tone: "ok",
+  });
+  panel.append(
     el("p", {}, el("b", {}, actor), " is a member of:", el("br"),
       memberOf.length ? memberOf.map(labelOf).join(", ") : el("i", {}, "nothing")),
     el("p", {}, "Reaches:", el("br"),
@@ -110,9 +109,16 @@ function render(): void {
 }
 
 function buildChrome(): void {
-  const actorField = select({ size: "sm", children: ACTORS.map((a) => el("option", { selected: a === actor }, a)) });
-  const sel = actorField.querySelector("select") as HTMLSelectElement;
-  sel.addEventListener("change", () => { actor = sel.value as Actor; render(); });
+  // amenan-ui's mountSelect renders the <select> into a host; the <label> is that host.
+  const actorField = el("label", { class: "actor-field" }, "Actor");
+  mountSelect(actorField, {
+    options: ACTORS.map((a) => ({ value: a, label: a })),
+    value: actor,
+    onChange: (v) => {
+      actor = v as Actor;
+      render();
+    },
+  });
 
   const header = el(
     "header",
@@ -120,7 +126,7 @@ function buildChrome(): void {
     el("h1", {}, "rbac-explorer"),
     el("span", { class: "muted" }, "scoped-ownership access, resolved in your browser"),
     el("span", { class: "spacer" }),
-    el("label", { class: "actor-field" }, "Actor", actorField),
+    actorField,
   );
   const legend = el(
     "div",

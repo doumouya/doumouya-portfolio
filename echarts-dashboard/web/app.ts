@@ -1,14 +1,8 @@
-/* The dashboard UI: a typed wasm aggregation engine + web-kit chrome + ECharts. The engine holds the
+/* The dashboard UI: a typed wasm aggregation engine + amenan-ui chrome + ECharts. The engine holds the
    CSV; each chart card asks it for a fresh { labels, values } series whenever its controls change.
-   Built with web-kit components and tokens — no innerHTML; the DOM is built with el(). */
-// Import each component directly (not via the web-kit barrel): the barrel pulls in web-kit's own
-// `chart` component, whose typed view of the global `echarts` would clash with our echarts.d.ts.
-import { el } from "../../web-kit/src/el";
-import { button } from "../../web-kit/src/components/button";
-import { iconButton } from "../../web-kit/src/components/iconButton";
-import { card } from "../../web-kit/src/components/card";
-import { emptyState } from "../../web-kit/src/components/emptyState";
-import { select } from "../../web-kit/src/components/select";
+   Built on amenan-ui components + its `portfolio` (Console) theme — no innerHTML; the DOM is built with
+   el(). ECharts stays a separate global (window.echarts); amenan-ui never imports it. */
+import { el, button, mountCard, mountEmptyState, mountSelect } from "amenan-ui";
 
 type Data = wasm_bindgen.WasmData;
 
@@ -17,7 +11,9 @@ let data: Data | null = null;
 let headers: string[] = [];
 let kinds: string[] = [];
 let seq = 0;
-const THEME: string | null = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : null;
+// Follow the applied portfolio mode (set by the prepaint) so charts match the page; the demo has no
+// in-page theme toggle, so the mode is fixed at load (no live ECharts re-theme needed).
+const THEME: string | null = document.documentElement.dataset.mode === "dark" ? "dark" : null;
 
 const byId = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;
 
@@ -28,20 +24,25 @@ function b64ToBytes(b64: string): Uint8Array {
   return u;
 }
 
-/** Pre-built <option> children for a column picker; numericOnly skips non-Number columns. */
-function optionEls(selected: number, numericOnly: boolean): HTMLOptionElement[] {
-  return headers.flatMap((h, i) =>
-    numericOnly && kinds[i] !== "Number" ? [] : [el("option", { value: String(i), selected: i === selected }, h)],
-  );
+/** The portfolio theme's chart palette (--chart-1..8); --chart-1 is the brand green --signal. */
+function chartColors(): string[] {
+  const cs = getComputedStyle(document.documentElement);
+  return [1, 2, 3, 4, 5, 6, 7, 8]
+    .map((i) => cs.getPropertyValue(`--chart-${i}`).trim())
+    .filter(Boolean);
 }
 
-/** The inner <select> of a web-kit select field (the factory returns the wrapper div). */
-function selectEl(field: HTMLElement): HTMLSelectElement {
-  return field.querySelector("select") as HTMLSelectElement;
+/** Column-picker options; numericOnly skips non-Number columns. */
+function optionObjs(numericOnly: boolean): { value: string; label: string }[] {
+  return headers.flatMap((h, i) =>
+    numericOnly && kinds[i] !== "Number" ? [] : [{ value: String(i), label: h }],
+  );
 }
 
 function buildOption(type: string, labels: string[], values: number[], title: string): Record<string, unknown> {
   const base: Record<string, unknown> = {
+    color: chartColors(),
+    backgroundColor: "transparent", // show the Console card surface through the canvas
     title: { text: title, textStyle: { fontSize: 13 } },
     tooltip: {},
     grid: { left: "14%", right: "6%", bottom: "16%", top: "20%" },
@@ -95,20 +96,24 @@ function addChart(presetAgg?: string): void {
   const measIdx = defaultMeasure();
   const defAgg = presetAgg ?? (measIdx >= 0 ? "sum" : "count");
 
-  const catField = select({ size: "sm", attrs: { title: "group by" }, children: optionEls(catIdx, false) });
-  const aggField = select({ size: "sm", attrs: { title: "aggregate" }, children: ["count", "sum", "avg", "min", "max"].map((a) => el("option", { value: a, selected: a === defAgg }, a)) });
-  const measureField = select({ size: "sm", attrs: { title: "measure" }, children: optionEls(measIdx < 0 ? 0 : measIdx, true) });
-  const typeField = select({ size: "sm", attrs: { title: "chart" }, children: ["bar", "line", "pie"].map((t) => el("option", { value: t }, t)) });
-  const cat = selectEl(catField);
-  const agg = selectEl(aggField);
-  const measure = selectEl(measureField);
-  const typ = selectEl(typeField);
+  // amenan-ui's mountSelect renders the <select> into a host; each `.cfield` span is one host.
+  const catField = el("span", { class: "cfield", title: "group by" });
+  mountSelect(catField, { options: optionObjs(false), value: String(catIdx) });
+  const aggField = el("span", { class: "cfield", title: "aggregate" });
+  mountSelect(aggField, { options: ["count", "sum", "avg", "min", "max"].map((a) => ({ value: a, label: a })), value: defAgg });
+  const measureField = el("span", { class: "cfield", title: "measure" });
+  mountSelect(measureField, { options: optionObjs(true), value: String(measIdx < 0 ? 0 : measIdx) });
+  const typeField = el("span", { class: "cfield", title: "chart" });
+  mountSelect(typeField, { options: ["bar", "line", "pie"].map((t) => ({ value: t, label: t })), value: "bar" });
+  const cat = catField.querySelector("select") as HTMLSelectElement;
+  const agg = aggField.querySelector("select") as HTMLSelectElement;
+  const measure = measureField.querySelector("select") as HTMLSelectElement;
+  const typ = typeField.querySelector("select") as HTMLSelectElement;
 
-  const removeBtn = iconButton("✕", { label: "remove chart", size: "sm" });
+  const removeBtn = button({ label: "✕", size: "sm", ariaLabel: "remove chart", title: "remove chart" });
   const ctrls = el("div", { class: "ctrls" }, catField, aggField, measureField, typeField, el("span", { class: "spacer" }), removeBtn);
   const chartDiv = el("div", { class: "chart", id });
-  const cardNode = card([ctrls, chartDiv]);
-  byId("grid").appendChild(cardNode);
+  const cardNode = mountCard(byId("grid"), { body: el("div", { class: "chart-card" }, ctrls, chartDiv) }).el;
 
   const chart = echarts.init(chartDiv, THEME, { renderer: "canvas" });
   // Keep the canvas matched to its container: charts are added sequentially (the first inits while
@@ -161,15 +166,13 @@ function openCsv(text: string): void {
 }
 
 function showHint(): void {
-  byId("grid").replaceChildren(
-    emptyState({
-      dropzone: true,
-      class: "grid-span",
-      glyph: "▦",
-      lead: "Open a CSV — it stays on your device.",
-      description: "Group, aggregate, and chart it. All computed in your browser; nothing is uploaded. No file handy? Click “Load sample” to chart a demo dataset.",
-    }),
-  );
+  byId("grid").replaceChildren();
+  const h = mountEmptyState(byId("grid"), {
+    title: "Open a CSV — it stays on your device.",
+    line: "Group, aggregate, and chart it. All computed in your browser; nothing is uploaded. No file handy? Click “Load sample” to chart a demo dataset.",
+    action: { label: "Load sample", onClick: () => openCsv(SAMPLE_CSV) },
+  });
+  h.el.classList.add("grid-span"); // span the full grid width, like the old drop-zone panel
 }
 
 function readFile(file: File | undefined): void {
@@ -190,9 +193,9 @@ function buildChrome(): void {
     el("h1", {}, "echarts-dashboard"),
     el("span", { class: "muted" }, "your data never leaves this page"),
     el("span", { class: "spacer" }),
-    button("+ Chart", { onClick: () => addChart() }),
-    button("Load sample", { onClick: () => openCsv(SAMPLE_CSV) }),
-    button("Open CSV", { variant: "primary", onClick: () => file.click() }),
+    button({ label: "+ Chart", onClick: () => addChart() }),
+    button({ label: "Load sample", onClick: () => openCsv(SAMPLE_CSV) }),
+    button({ label: "Open CSV", variant: "accent", onClick: () => file.click() }),
     file,
   );
   byId("root").append(header, el("main", { id: "grid" }));

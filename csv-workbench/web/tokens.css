@@ -1,556 +1,413 @@
-/* ============================================================
-   Datacore — Base layer
-   ------------------------------------------------------------
-   A minimal, token-driven reset. Mirrors the source UI's
-   `* { box-sizing }` + body font/color/background, plus sensible
-   defaults for the elements components and kits rely on. Kept
-   deliberately small — this is a foundation, not a normalize.
-   ============================================================ */
+/* base.css — the theme-platform STRUCTURE tier (AC-1). Theme-AGNOSTIC :root
+   scales every theme shares: spacing, radius, the shared mono family, the type
+   scale, density rhythm, motion, breakpoints, and z-index. It carries NO
+   color/palette/`--font`-family/`--shadow` *value* token — those are per-theme
+   (the palette tier, in src/theme/themes/<name>.css under the two-axis selector).
 
-* { box-sizing: border-box; }
-
-html { -webkit-text-size-adjust: 100%; }
-
-body {
-  margin: 0;
-  font: var(--font-body);
-  color: var(--text);
-  background: var(--surface);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-::selection { background: var(--selection-bg); }
-
-a {
-  color: var(--accent);
-  text-decoration: none;
-}
-a:hover { text-decoration: underline; }
-
-code, kbd, samp, pre {
-  font-family: var(--font-mono);
-  font-size: 0.95em;
-}
-
-/* Data surfaces get tabular figures by default */
-table { font-variant-numeric: var(--numeric-tabular); }
-
-/* Consistent, visible focus everywhere (accessibility is a brand value) */
-:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-offset);
-}
-
-hr {
-  border: 0;
-  border-top: var(--border-line);
-  margin: var(--space-4) 0;
-}
-
-::placeholder { color: var(--text-subtle); }
-/* ============================================================
-   Datacore — Colors
-   ------------------------------------------------------------
-   The palette is a cool neutral (gray/slate) ramp + a single
-   blue accent, with a hand-authored dark theme via prefers-
-   color-scheme. We formalize that into base ramps + semantic aliases,
-   and add restrained status hues for the build-engine work
-   tracker (backlog / in_progress / in_review / done, close-check
-   pass/fail, reject states).
-
-   Layer 1 = base ramps (raw hues). Layer 2 = semantic aliases
-   (what UI code should reference). Dark theme remaps Layer 2 only.
-   ============================================================ */
+   This file is the structure half of the old tokens.css :root block; the palette
+   half moved into the per-theme files. base.css defines no .amu-* class — it is
+   theme-tier, excluded from the audit's R4 ownership exactly as tokens.css was. */
 
 :root {
-  /* --- Layer 1: base neutral ramp (cool gray) --- */
-  --neutral-0:   #ffffff;
-  --neutral-50:  #f9fafb;  /* source --head (table head / subtle surface) */
-  --neutral-100: #f3f4f6;
-  --neutral-200: #e5e7eb;  /* source --line (hairline border) */
-  --neutral-300: #d1d5db;
-  --neutral-400: #9ca3af;
-  --neutral-500: #6b7280;  /* source --muted */
-  --neutral-600: #4b5563;
-  --neutral-700: #374151;
-  --neutral-800: #1f2937;  /* source --fg (body text) */
-  --neutral-900: #111827;
-  --neutral-950: #0b1120;
+  /* spacing scale */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-8: 3rem;
 
-  /* dark surfaces use the slate sub-family, matching the source dark theme */
-  --slate-400:   #94a3b8;  /* source dark --muted */
-  --slate-700:   #334155;
-  --slate-800:   #1e293b;  /* source dark --line */
-  --slate-900:   #0f172a;  /* source dark --bg */
-  --slate-950:   #020617;
+  /* radius (px on purpose — corners don't scale with font size) */
+  --radius-sm: 7px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
 
-  /* --- Layer 1: accent (blue) --- */
-  --blue-50:  #eff6ff;
-  --blue-100: #dbeafe;
-  --blue-400: #60a5fa;  /* source dark --accent */
-  --blue-500: #3b82f6;
-  --blue-600: #2563eb;  /* source --accent */
-  --blue-700: #1d4ed8;
+  /* the shared mono family (structural — data/identifiers/code). The per-theme
+     display/body `--font` is a PALETTE token (per theme, e.g. mono-first for
+     portfolio); `--font-mono` is shared structure and stays here. */
+  --font-mono: ui-monospace, "Cascadia Code", "Segoe UI Mono", Consolas, monospace;
 
-  /* --- Layer 1: status hues (restrained, Tailwind-keyed to the blue) --- */
-  --green-50:  #f0fdf4;  --green-500: #22c55e;  --green-600: #16a34a;  --green-700: #15803d;
-  --amber-50:  #fffbeb;  --amber-500: #f59e0b;  --amber-600: #d97706;  --amber-700: #b45309;
-  --red-50:    #fef2f2;  --red-500:   #ef4444;  --red-600:   #dc2626;  --red-700:   #b91c1c;
+  /* type scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-md: 0.9375rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2.25rem;
 
-  /* ============================================================
-     Layer 2: semantic aliases — reference THESE in components
-     ============================================================ */
+  /* density rhythm — the Linear-calm knob set. Components consume these;
+     density attrs retune them globally (one knob, not per-sheet). */
+  --row-h: 2.25rem;      /* 36px table/list rows */
+  --ctl-h: 2rem;         /* 32px controls (buttons, inputs) */
+  --pad-x: 0.75rem;      /* horizontal cell/control padding */
+  --gap: 0.5rem;         /* default flex/grid gap */
+  --topbar-h: 3.25rem;   /* 52px */
+  --rail-w: 15rem;       /* 240px, fixed — no icon-only collapse */
 
-  /* surfaces */
-  --surface:        var(--neutral-0);    /* page / card background */
-  --surface-subtle: var(--neutral-50);   /* table head, toolbars, zebra base */
-  --surface-sunken: var(--neutral-100);  /* wells, inset areas */
-  --surface-overlay:var(--neutral-0);    /* popovers, dialogs */
+  /* motion */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --fast: 0.12s;
+  --slow: 0.22s;
 
-  /* text */
-  --text:        var(--neutral-800);  /* primary body */
-  --text-muted:  var(--neutral-500);  /* secondary / captions / counts */
-  --text-subtle: var(--neutral-400);  /* tertiary / kind labels / placeholders */
-  --text-on-accent: var(--neutral-0);
+  /* z-index scale — the stacking contract (overlays above chrome above content) */
+  --z-base: 0;
+  --z-rail: 10;
+  --z-topbar: 20;
+  --z-side-panel: 30;
+  --z-popover: 100;
+  --z-toast: 200;
+  --z-modal: 300;
 
-  /* lines & borders (the brand's primary structural device) */
-  --border:        var(--neutral-200);  /* default hairline */
-  --border-strong: var(--neutral-300);
-  --border-subtle: var(--neutral-100);
-
-  /* accent — exactly one, for active sort/filter, focus, primary actions */
-  --accent:        var(--blue-600);
-  --accent-hover:  var(--blue-700);
-  --accent-tint:   var(--blue-50);   /* faint accent wash (selected row, active filter bg) */
-  --accent-border: var(--blue-600);
-  --focus:         var(--accent);
-
-  /* status — semantic + the build-engine workflow states */
-  --success:       var(--green-600);  --success-tint: var(--green-50);   /* close-check passed, done */
-  --warning:       var(--amber-600);  --warning-tint: var(--amber-50);   /* in_review, attention */
-  --danger:        var(--red-600);    --danger-tint:  var(--red-50);     /* reject, check unmet, 4xx */
-
-  --status-backlog:    var(--neutral-500);
-  --status-progress:   var(--blue-600);
-  --status-review:     var(--amber-600);
-  --status-done:       var(--green-600);
-
-  /* selection */
-  --selection-bg: var(--blue-100);
+  /* breakpoints — the documented source of truth. CSS can't var() inside a
+     @media query, so each media rule repeats the rem literal and tags it with
+     the matching token name in a comment to stay grep-synced. Floor = iPad Mini
+     landscape (1024x768 = 64rem).
+       --bp-lg 80rem (1280px): below, side panels overlay
+       --bp-md 64rem (1024px): the FLOOR; below, the rail also drawers
+       --bp-sm 48rem  (768px): portrait safety net (kept usable, not a target) */
+  --bp-lg: 80rem;
+  --bp-md: 64rem;
+  --bp-sm: 48rem;
 }
+/* themes/portfolio.css — the portfolio (Console) theme (AC-9). Ports web-kit's
+   "Datacore Console" identity into the amenan token contract for both modes:
+   near-monochrome ink/paper, ONE green --signal, mono-first --font, a hard 1.5px
+   --rule with a 4px offset block --rule-shadow, and FLAT base elevation (shadows
+   only for floating layers). Values lifted from web-kit
+   src/tokens/colors+charts+elevation+typography + the Console card offset block.
 
-/* ============================================================
-   Dark theme — remaps Layer 2 to the source's slate + blue-400.
-   Available two ways: OS preference, and an explicit
-   [data-theme="dark"] scope for forcing it in cards / kits.
-   ============================================================ */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --surface:        var(--slate-900);   /* #0f172a */
-    --surface-subtle: var(--neutral-900); /* #111827  (source dark --head) */
-    --surface-sunken: var(--slate-950);
-    --surface-overlay:var(--slate-800);
+   web-kit keyed light off :root and dark off [data-theme="dark"]; amenan splits
+   that into the two-axis [data-theme="portfolio"][data-mode="dark"|"light"].
 
-    --text:        var(--neutral-200);   /* #e5e7eb */
-    --text-muted:  var(--slate-400);     /* #94a3b8 */
-    --text-subtle: var(--slate-700);
-    --text-on-accent: var(--slate-950);
+   Token map (web-kit → amenan contract):
+     ink/paper        → --bg / --text / --surface*
+     --rule (ink)     → --rule (1.5px ink/paper structural line)
+     --elev (ink)     → carried by --rule-shadow = 4px 4px 0 0 var(--rule)
+     --accent (ink)   → --accent (primary actions are ink)
+     --signal (green) → --signal / --ok / --status-progress / chart-1
+     --shadow-popover/-dialog → web-kit elevation.css
+     --font-sans (mono) → --font (mono-first)
+     --chart-1..8     → web-kit charts.css
+     --status-*       → web-kit workflow states */
 
-    --border:        var(--slate-800);   /* #1e293b */
-    --border-strong: var(--slate-700);
-    --border-subtle: var(--slate-900);
+/* ── dark — ink surface, paper text, green-400 signal ────────────────────── */
+html[data-theme="portfolio"][data-mode="dark"] {
+  --bg: #0B0B0C;                 /* --ink */
+  --surface: #161618;            /* --gray-900 (surface-overlay tier) */
+  --surface-2: #000000;          /* --surface-sunken */
+  --border: #232327;             /* soft hairline (dividers, rows) */
+  --text: #F2F2F3;
+  --text-dim: #A1A1A6;           /* --gray-400 */
+  --text-mute: #54545A;          /* --text-subtle (dark) */
+  --accent: #F2F2F3;             /* accent = paper-ink in dark (primary actions) */
+  --accent-soft: #232327;        /* --accent-tint (dark) */
+  --on-accent: #0B0B0C;          /* --text-on-accent (dark) = ink */
+  --ok: #34C77B;                 /* --green-400 (success in dark) */
+  --warn: #B7791F;               /* --amber-500 */
+  --info: #22d3ee;               /* cyan series — restrained info */
+  --danger: #D63B3B;             /* --red-500 */
+  --hover: color-mix(in srgb, #F2F2F3 6%, transparent);
+  --glass: color-mix(in srgb, #F2F2F3 4%, transparent);
+  --glass-blur: 0px;             /* Console is FLAT — no glass blur */
+  --shadow: none;                /* base surfaces carry NO drop shadow */
+  --ring: inset 0 0 0 1px var(--border);
+  --font: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  color-scheme: dark;
 
-    --accent:        var(--blue-400);    /* #60a5fa */
-    --accent-hover:  var(--blue-500);
-    --accent-tint:   color-mix(in srgb, var(--blue-400) 14%, transparent);
-    --accent-border: var(--blue-400);
-
-    --success: var(--green-500); --success-tint: color-mix(in srgb, var(--green-500) 14%, transparent);
-    --warning: var(--amber-500); --warning-tint: color-mix(in srgb, var(--amber-500) 14%, transparent);
-    --danger:  var(--red-500);   --danger-tint:  color-mix(in srgb, var(--red-500) 14%, transparent);
-
-    --status-backlog:  var(--slate-400);
-    --status-progress: var(--blue-400);
-    --status-review:   var(--amber-500);
-    --status-done:     var(--green-500);
-
-    --selection-bg: color-mix(in srgb, var(--blue-400) 30%, transparent);
-  }
-}
-
-/* explicit, forced dark scope (single-selector, so tokens still compile) */
-[data-theme="dark"] {
-  --surface:        var(--slate-900);
-  --surface-subtle: var(--neutral-900);
-  --surface-sunken: var(--slate-950);
-  --surface-overlay:var(--slate-800);
-
-  --text:        var(--neutral-200);
-  --text-muted:  var(--slate-400);
-  --text-subtle: var(--slate-700);
-  --text-on-accent: var(--slate-950);
-
-  --border:        var(--slate-800);
-  --border-strong: var(--slate-700);
-  --border-subtle: var(--slate-900);
-
-  --accent:        var(--blue-400);
-  --accent-hover:  var(--blue-500);
-  --accent-tint:   color-mix(in srgb, var(--blue-400) 14%, transparent);
-  --accent-border: var(--blue-400);
-
-  --success: var(--green-500); --success-tint: color-mix(in srgb, var(--green-500) 14%, transparent);
-  --warning: var(--amber-500); --warning-tint: color-mix(in srgb, var(--amber-500) 14%, transparent);
-  --danger:  var(--red-500);   --danger-tint:  color-mix(in srgb, var(--red-500) 14%, transparent);
-
-  --status-backlog:  var(--slate-400);
-  --status-progress: var(--blue-400);
-  --status-review:   var(--amber-500);
-  --status-done:     var(--green-500);
-
-  --selection-bg: color-mix(in srgb, var(--blue-400) 30%, transparent);
-}
-/* ============================================================
-   Datacore — Typography
-   ------------------------------------------------------------
-   The brand is a privacy / local-first developer tool: by design
-   it ships ZERO webfonts (the front-end brief mandates "no
-   external CDN fonts/scripts ... keep assets inlineable"). So the
-   type system is the platform's own UI font + a system monospace
-   for data, identifiers, code and JSON. No @font-face exists in
-   this design system — that absence is intentional and on-brand.
-
-   Base size is 0.875rem / 14px with a 1.5 rhythm, lifted directly
-   from the source UI. Numeric data is rendered with tabular-nums.
-   ============================================================ */
-
-:root {
-  /* --- families --- */
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-               Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco,
-               Consolas, "Liberation Mono", monospace;
-
-  /* --- type scale (rem; relative-units-only is a brand rule) --- */
-  --text-2xs: 0.7rem;    /* 11.2px — column-kind chips, dense meta */
-  --text-xs:  0.75rem;   /* 12px   — table filter inputs, fine print */
-  --text-sm:  0.8rem;    /* 12.8px — muted captions, row counts */
-  --text-md:  0.875rem;  /* 14px   — BODY DEFAULT */
-  --text-lg:  1rem;      /* 16px   — H1 / view title */
-  --text-xl:  1.125rem;  /* 18px   — empty-state lead */
-  --text-2xl: 1.375rem;  /* 22px   — section heading */
-  --text-3xl: 1.75rem;   /* 28px   — page hero (sparingly) */
-
-  /* --- line-height --- */
-  --leading-tight: 1.25;
-  --leading:       1.5;   /* source default */
-  --leading-loose: 1.7;
-
-  /* --- weight (system fonts carry these reliably) --- */
-  --weight-regular:  400;
-  --weight-medium:   500;
-  --weight-semibold: 600;
-  --weight-bold:     700;
-
-  /* --- tracking --- */
-  --tracking-tight:  -0.01em;
-  --tracking-normal: 0;
-  --tracking-wide:   0.02em;   /* small-caps-ish labels */
-  --tracking-mono:   0;        /* mono stays at 0 */
-
-  /* --- numerics: opt-in tabular figures for all data surfaces --- */
-  --numeric-tabular: tabular-nums;  /* @kind other */
-
-  /* --- composed shorthands (font: shorthand, matching source) --- */
-  --font-body:  var(--weight-regular) var(--text-md)/var(--leading) var(--font-sans);
-  --font-title: var(--weight-semibold) var(--text-lg)/var(--leading-tight) var(--font-sans);
-  --font-code:  var(--weight-regular) var(--text-sm)/var(--leading) var(--font-mono);
-}
-
-/* Utility classes kept minimal — components reference the tokens directly.
-   These exist so specimen cards and ad-hoc HTML can opt into the data look. */
-.dc-tabular { font-variant-numeric: var(--numeric-tabular); }
-.dc-mono    { font-family: var(--font-mono); font-variant-numeric: var(--numeric-tabular); }
-/* ============================================================
-   Datacore — Spacing, sizing, radii, borders, focus, z-index
-   ------------------------------------------------------------
-   The source UI is DENSE: small rem paddings (0.2–0.75rem),
-   hairline 1px borders as the structural device, and modest
-   radii (inputs 0.3rem, buttons 0.4rem). Relative units only;
-   px is reserved for hairlines and the focus ring. Everything
-   here is calibrated to a 14-inch laptop as the primary target.
-   ============================================================ */
-
-:root {
-  /* --- spacing scale (0.25rem base step) --- */
-  --space-0:  0;
-  --space-px: 1px;
-  --space-1:  0.25rem;  /*  4px */
-  --space-2:  0.5rem;   /*  8px */
-  --space-3:  0.75rem;  /* 12px */
-  --space-4:  1rem;     /* 16px */
-  --space-5:  1.25rem;  /* 20px */
-  --space-6:  1.5rem;   /* 24px */
-  --space-8:  2rem;     /* 32px */
-  --space-10: 2.5rem;   /* 40px */
-  --space-12: 3rem;     /* 48px */
-  --space-16: 4rem;     /* 64px */
-
-  /* --- source-calibrated micro-paddings (the table & control rhythm) --- */
-  --pad-cell-y:    0.3rem;   /* td / th vertical   */
-  --pad-cell-x:    0.5rem;   /* td / th horizontal */
-  --pad-input-y:   0.2rem;   /* filter input       */
-  --pad-input-x:   0.3rem;
-  --pad-control-y: 0.4rem;   /* buttons / labels   */
-  --pad-control-x: 0.7rem;
-  --pad-section-x: 1rem;     /* header / toolbar gutter */
-  --pad-section-y: 0.75rem;
-
-  /* --- control sizing (generous hit targets per the brief) --- */
-  --control-h-sm: 1.75rem;   /* ~28px — compact (filter inputs) */
-  --control-h:    2.125rem;  /* ~34px — default */
-  --control-h-lg: 2.5rem;    /* ~40px — comfortable */
-  --tap-min:      2.25rem;   /* ~36px minimum interactive target */
-
-  /* --- radii (small; never pill except true pills) --- */
-  --radius-xs:   0.2rem;   /* hairline chips */
-  --radius-sm:   0.3rem;   /* inputs */
-  --radius:      0.4rem;   /* buttons, cards (default) */
-  --radius-lg:   0.5rem;   /* dialogs, larger panels */
-  --radius-full: 9999px;   /* avatars, status dots, true pills */
-
-  /* --- borders (THE structural device — flat, hairline-driven) --- */
-  --border-width:  1px;
-  --border-line:   var(--border-width) solid var(--border);
-  --border-strong-line: var(--border-width) solid var(--border-strong);
-
-  /* --- focus ring (visible, deliberate; from source: 2px accent, inset) --- */
-  --focus-width:  2px;
-  --focus-offset: -1px;
-  --focus-ring:   var(--focus-width) solid var(--focus);
-
-  /* --- layered surfaces / stacking --- */
-  --z-base:    0;    /* @kind other */
-  --z-sticky:  2;    /* @kind other */
-  --z-dropdown:50;   /* @kind other */
-  --z-popover: 60;   /* @kind other */
-  --z-dialog:  100;  /* @kind other */
-  --z-toast:   200;  /* @kind other */
-
-  /* --- layout maxima --- */
-  --container:     72rem;   /* 1152px content cap for marketing-ish views */
-  --measure:       42rem;   /* readable prose measure */
-  --sidebar-w:     15rem;   /* work-tracker side rail */
-}
-/* ============================================================
-   Datacore — Elevation & Motion
-   ------------------------------------------------------------
-   The brand is FLAT. Base surfaces carry NO drop shadow — depth
-   is communicated with hairline borders and subtle surface-color
-   steps, exactly as the source UI does. Shadows exist ONLY for
-   genuinely floating layers (filter popovers, dropdowns, dialogs,
-   toasts) and stay soft and low.
-
-   Motion is near-instant: the source has no transitions at all.
-   We add only the smallest tasteful easing for hover/border and
-   overlay fade — no bounces, no parallax, no decorative loops.
-   ============================================================ */
-
-:root {
-  /* --- elevation --- */
-  --shadow-none:    none;                       /* base surfaces, cards, table */
-  --shadow-popover: 0 4px 12px -2px rgba(15, 23, 42, 0.12),
-                    0 2px 4px  -2px rgba(15, 23, 42, 0.08);   /* dropdowns, filter pops */
-  --shadow-dialog:  0 16px 40px -8px rgba(15, 23, 42, 0.22),
-                    0 4px 10px  -4px rgba(15, 23, 42, 0.10);  /* modal dialogs */
-  --shadow-focus:   0 0 0 3px var(--accent-tint);            /* soft accent halo (optional) */
-
-  /* hairline "elevation" — the brand's real depth cue */
-  --ring-hairline:  inset 0 0 0 1px var(--border);
-
-  /* --- motion --- */
-  --ease-standard: cubic-bezier(0.2, 0, 0, 1);   /* @kind other */
-  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);   /* @kind other */
-  --ease-in-out:   cubic-bezier(0.65, 0, 0.35, 1);  /* @kind other */
-
-  --dur-instant: 0ms;     /* @kind other */
-  --dur-fast:    100ms;   /* @kind other */
-  --dur:         150ms;   /* @kind other */
-  --dur-slow:    240ms;   /* @kind other */
-
-  /* common composed transitions */
-  --transition-control: border-color var(--dur-fast) var(--ease-standard),
-                        background-color var(--dur-fast) var(--ease-standard),
-                        color var(--dur-fast) var(--ease-standard);  /* @kind other */
-  --transition-overlay: opacity var(--dur) var(--ease-out),
-                        transform var(--dur) var(--ease-out);  /* @kind other */
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --dur-fast: 0ms;  /* @kind other */
-    --dur:      0ms;  /* @kind other */
-    --dur-slow: 0ms;  /* @kind other */
-  }
-}
-/* ============================================================
-   Datacore — Chart palette
-   ------------------------------------------------------------
-   The one new foundation the echarts-dashboard product needs: a
-   categorical series palette. It is NOT a rainbow — it is anchored
-   on the brand blue accent and extended with harmonious, mutually
-   distinguishable hues (reusing the cyan/violet already used by
-   KindLabel for Int/Float). Light values are the 600-weight hues;
-   dark remaps to the 400/500 weights so series stay legible on the
-   slate-900 surface.
-
-   The Chart component reads these custom properties at runtime
-   (getComputedStyle) to build the ECharts theme, so charts always
-   track the active theme and any token overrides.
-
-   Series order is deliberate: 1 = accent (the default single series),
-   then cool → warm so adjacent categories never collide.
-   ============================================================ */
-
-:root {
-  --chart-1: #2563eb;  /* accent blue   */
-  --chart-2: #0891b2;  /* cyan-600      */
-  --chart-3: #7c3aed;  /* violet-600    */
-  --chart-4: #16a34a;  /* green-600     */
-  --chart-5: #d97706;  /* amber-600     */
-  --chart-6: #dc2626;  /* red-600       */
-  --chart-7: #db2777;  /* pink-600      */
-  --chart-8: #475569;  /* slate-600     */
-
-  /* structural chart tokens (axes, grid, tooltip) — alias the
-     semantic surface/line/text tokens so they flip with the theme */
-  --chart-axis:    var(--text-muted);   /* axis labels, legend text */
-  --chart-grid:    var(--border);       /* split / grid lines       */
-  --chart-track:   var(--surface-sunken); /* empty bar track / base */
-  --chart-tooltip-bg:     var(--surface-overlay);
-  --chart-tooltip-border: var(--border);
-  --chart-tooltip-text:   var(--text);
-
-  /* a single-hue sequential ramp (the accent), for one-measure
-     intensity encodings (heat, choropleth, gradients) */
-  --chart-seq-1: var(--blue-100);
-  --chart-seq-2: #93c5fd;
-  --chart-seq-3: var(--blue-500);
-  --chart-seq-4: var(--blue-700);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --chart-1: #60a5fa;  /* blue-400  */
-    --chart-2: #22d3ee;  /* cyan-400  */
-    --chart-3: #a78bfa;  /* violet-400 */
-    --chart-4: #4ade80;  /* green-400 */
-    --chart-5: #fbbf24;  /* amber-400 */
-    --chart-6: #f87171;  /* red-400   */
-    --chart-7: #f472b6;  /* pink-400  */
-    --chart-8: #94a3b8;  /* slate-400 */
-
-    --chart-seq-1: #1e3a5f;
-    --chart-seq-2: #2563eb;
-    --chart-seq-3: #60a5fa;
-    --chart-seq-4: #bfdbfe;
-  }
-}
-
-[data-theme="dark"] {
-  --chart-1: #60a5fa;
+  /* the Console vocabulary */
+  --signal: #34C77B;             /* --green-400 */
+  --signal-hover: #1E9E5A;       /* --green-500 */
+  --signal-tint: color-mix(in srgb, #34C77B 16%, var(--surface));
+  --rule: #F2F2F3;               /* HARD ink structural line (paper-ink in dark) */
+  --rule-shadow: 4px 4px 0 0 var(--rule);  /* the Console card offset block shadow */
+  --focus-ring: #34C77B;         /* --focus = green in dark */
+  --chart-1: var(--signal);      /* brand green — default single series */
   --chart-2: #22d3ee;
   --chart-3: #a78bfa;
-  --chart-4: #4ade80;
-  --chart-5: #fbbf24;
-  --chart-6: #f87171;
-  --chart-7: #f472b6;
-  --chart-8: #94a3b8;
-
-  --chart-seq-1: #1e3a5f;
-  --chart-seq-2: #2563eb;
-  --chart-seq-3: #60a5fa;
-  --chart-seq-4: #bfdbfe;
-}
-/* ============================================================
-   web-kit — Responsive layer
-   ------------------------------------------------------------
-   Breakpoints are aligned to real device logical viewports, and
-   device CLASS is judged by pointer/hover/orientation — not width
-   alone. Width alone misclassifies: a landscape phone is wide but
-   short, and a narrow desktop window is not a phone. Prefer fluid
-   sizing (clamp(), min(), max()) and @container queries; reach for
-   these media rules only when a layout must truly change.
-
-   Width steps (min-width): xs 360 · sm 480 · md 600 · lg 768 ·
-   xl 1024 · 2xl 1280. Height: short ≤480, tall ≥900. The numeric
-   values are also exported from responsive.ts.
-   ============================================================ */
-
-:root {
-  /* Breakpoint values, for reference + JS parity (CSS @media cannot read vars). */
-  --bp-xs: 360;
-  --bp-sm: 480;
-  --bp-md: 600;
-  --bp-lg: 768;
-  --bp-xl: 1024;
-  --bp-2xl: 1280;
-  --bp-short: 480;
-  --bp-tall: 900;
+  --chart-4: #fbbf24;
+  --chart-5: #f87171;
+  --chart-6: #f472b6;
+  --chart-7: #94a3b8;
+  --chart-8: #2dd4bf;
+  --status-backlog: #A1A1A6;     /* --gray-400 */
+  --status-progress: #34C77B;    /* --green-400 */
+  --status-review: #B7791F;      /* --amber-500 */
+  --status-done: #34C77B;        /* --green-400 */
+  --shadow-popover: 0 4px 12px -2px rgba(15, 23, 42, 0.12),
+                    0 2px 4px -2px rgba(15, 23, 42, 0.08);
+  --shadow-dialog: 0 16px 40px -8px rgba(15, 23, 42, 0.22),
+                   0 4px 10px -4px rgba(15, 23, 42, 0.10);
 }
 
-/* ---- Touch devices: enlarge hit targets, regardless of width ----
-   A coarse pointer means fingers; honour the WCAG ~44px target. */
-@media (pointer: coarse) {
-  :root {
-    --tap-min: 2.75rem; /* ≥44px */
-    --control-h: 2.5rem; /* roomier default control */
-  }
+/* ── light — paper surface, ink text, green-500 signal (web-kit :root) ─────── */
+html[data-theme="portfolio"][data-mode="light"] {
+  --bg: #FFFFFF;                 /* --paper */
+  --surface: #FFFFFF;            /* --surface */
+  --surface-2: #ECECEE;          /* --surface-sunken / --gray-100 */
+  --border: #E0E0E3;             /* --gray-200 soft hairline */
+  --text: #0B0B0C;              /* --ink */
+  --text-dim: #717177;           /* --gray-500 */
+  --text-mute: #A1A1A6;          /* --gray-400 */
+  --accent: #0B0B0C;             /* accent = ink (primary actions) */
+  --accent-soft: #ECECEE;        /* --accent-tint (--gray-100) */
+  --on-accent: #FFFFFF;          /* --text-on-accent = paper */
+  --ok: #1E9E5A;                 /* --green-500 (success in light) */
+  --warn: #B7791F;               /* --amber-500 */
+  --info: #0891b2;               /* cyan-600 — restrained info */
+  --danger: #D63B3B;             /* --red-500 */
+  --hover: color-mix(in srgb, #0B0B0C 4%, transparent);
+  --glass: color-mix(in srgb, #FFFFFF 80%, transparent);
+  --glass-blur: 0px;             /* Console is FLAT — no glass blur */
+  --shadow: none;                /* base surfaces carry NO drop shadow */
+  --ring: inset 0 0 0 1px var(--border);
+  --font: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  color-scheme: light;
+
+  /* the Console vocabulary */
+  --signal: #1E9E5A;             /* --green-500 */
+  --signal-hover: #16864B;       /* --green-600 */
+  --signal-tint: color-mix(in srgb, #1E9E5A 12%, var(--surface));
+  --rule: #0B0B0C;               /* HARD ink structural line */
+  --rule-shadow: 4px 4px 0 0 var(--rule);  /* the Console card offset block shadow */
+  --focus-ring: #1E9E5A;         /* --focus = green */
+  --chart-1: var(--signal);      /* brand green — default single series */
+  --chart-2: #0891b2;            /* cyan-600 */
+  --chart-3: #7c3aed;            /* violet-600 */
+  --chart-4: #B7791F;            /* amber */
+  --chart-5: #dc2626;            /* red-600 */
+  --chart-6: #db2777;            /* pink-600 */
+  --chart-7: #475569;            /* slate-600 */
+  --chart-8: #0e7490;            /* teal-700 */
+  --status-backlog: #717177;     /* --gray-500 */
+  --status-progress: #1E9E5A;    /* --signal */
+  --status-review: #B7791F;      /* --amber-500 */
+  --status-done: #1E9E5A;        /* --green-500 */
+  --shadow-popover: 0 4px 12px -2px rgba(15, 23, 42, 0.12),
+                    0 2px 4px -2px rgba(15, 23, 42, 0.08);
+  --shadow-dialog: 0 16px 40px -8px rgba(15, 23, 42, 0.22),
+                   0 4px 10px -4px rgba(15, 23, 42, 0.10);
+}
+/* atoms — the lowest-level vocabulary: button, chip, input, textarea, badge,
+   spinner, kbd. Sole owner of these classes (ui-fork-audit R4).
+   knob: --atom-radius */
+
+/* ── amu-btn ── the text button. Variants: default · accent (ONE per view —
+   the primary action) · ghost (low-emphasis). */
+.amu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--gap) * 0.75);
+  height: var(--ctl-h);
+  padding: 0 var(--pad-x);
+  border: 1px solid var(--border);
+  border-radius: var(--atom-radius, var(--radius));
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease);
+  user-select: none;
+  white-space: nowrap;
+}
+.amu-btn:hover {
+  background: var(--hover);
+}
+.amu-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.amu-btn--accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+.amu-btn--accent:hover {
+  background: var(--accent);
+  filter: brightness(1.08);
+}
+.amu-btn--ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-dim);
+}
+.amu-btn--ghost:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.amu-btn--danger {
+  color: var(--danger);
+}
+.amu-btn--sm {
+  height: 1.625rem;
+  padding: 0 var(--sp-2);
+  font-size: var(--text-xs);
+}
+/* icon-only: square, no horizontal padding; the bi glyph centers via the
+   flex alignment already on .amu-btn. */
+.amu-btn--icon {
+  width: var(--ctl-h);
+  padding: 0;
+  font-size: var(--text-md);
 }
 
-/* ---- Landscape phones (wide but short): reclaim vertical space ----
-   Catches e.g. 844×390 — desktop-ish width, phone-ish height. */
-@media (max-height: 480px) and (pointer: coarse) {
-  :root {
-    --pad-section-y: 0.4rem;
-  }
+/* ── amu-chip ── pill selector (single-select rows live in chip-row). */
+.amu-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 1.625rem;
+  padding: 0 var(--sp-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+  white-space: nowrap;
+}
+.amu-chip:hover {
+  color: var(--text);
+}
+.amu-chip.is-active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--ring), var(--shadow);
 }
 
-/* ---- Visibility utilities (use sparingly; prefer fluid layout) ---- */
-.wk-hide-below-md {
-  display: none !important;
+/* ── amu-input ── single-line text input. */
+.amu-input {
+  height: var(--ctl-h);
+  padding: 0 var(--pad-x);
+  border: 1px solid var(--border);
+  border-radius: var(--atom-radius, var(--radius));
+  background: var(--bg);
+  color: var(--text);
+  font-size: var(--text-sm);
+  width: 100%;
 }
-@media (min-width: 600px) {
-  .wk-hide-below-md {
-    display: revert !important;
-  }
+.amu-input::placeholder {
+  color: var(--text-mute);
 }
-.wk-show-below-md {
-  display: revert !important;
-}
-@media (min-width: 600px) {
-  .wk-show-below-md {
-    display: none !important;
-  }
-}
-
-/* ---- Foldables (Viewport Segments API): keep content in one pane ----
-   When the viewport is split by a hinge (book mode), single-pane content
-   shouldn't straddle the fold. Progressive — ignored where unsupported. */
-@media (horizontal-viewport-segments: 2) {
-  .wk-pane {
-    max-width: env(viewport-segment-width 0 0, 100%);
-  }
+.amu-input:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -1px;
+  border-color: var(--accent);
 }
 
-/* ---- Stack helper: a row that collapses to a column on narrow widths ---- */
-.wk-stack-sm {
-  display: flex;
-  gap: var(--space-3);
+/* ── amu-textarea ── the multiline input (comment composers, descriptions). */
+.amu-textarea {
+  display: block;
+  width: 100%;
+  min-height: 4.5rem;
+  padding: 0.5rem var(--pad-x);
+  border: 1px solid var(--border);
+  border-radius: var(--atom-radius, var(--radius));
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  resize: vertical;
 }
-@media (max-width: 599px) {
-  .wk-stack-sm {
-    flex-direction: column;
-  }
+.amu-textarea::placeholder {
+  color: var(--text-mute);
+}
+.amu-textarea:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -1px;
+  border-color: var(--accent);
+}
+
+/* ── amu-badge ── soft-tint label pill (status / role / plan). */
+.amu-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 1.25rem;
+  padding: 0 var(--sp-2);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.amu-badge--ok { background: var(--signal-tint); color: var(--signal); }
+.amu-badge--warn { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); }
+.amu-badge--danger { background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--danger); }
+.amu-badge--info { background: color-mix(in srgb, var(--info) 14%, transparent); color: var(--info); }
+.amu-badge--accent { background: var(--accent-soft); color: var(--accent); }
+
+/* ── amu-spinner ── async feedback (used sparingly — optimistic UI first). */
+.amu-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: amu-spin 0.7s linear infinite;
+}
+@keyframes amu-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── amu-kbd ── keyboard hint. */
+.amu-kbd {
+  display: inline-block;
+  padding: 0.0625rem 0.375rem;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+/* select — native select, token-skinned (less is more: no custom listbox
+   until a real need arrives). Sole owner of .amu-select. */
+
+.amu-select {
+  height: var(--ctl-h);
+  padding: 0 var(--pad-x);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  min-width: 9rem;
+}
+
+.amu-select:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -1px;
+  border-color: var(--accent);
+}
+/* empty-state — THE onboarding surface: one sentence + the view's single
+   primary action. No tours, no hint chips. Sole owner of .amu-empty*. */
+
+.amu-empty {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: var(--sp-8) var(--sp-5);
+  gap: var(--sp-2);
+}
+
+.amu-empty-title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.amu-empty-line {
+  margin: 0 0 var(--sp-3);
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+  max-width: 26rem;
 }
