@@ -1,35 +1,133 @@
-/* Front-door styles — built on web-kit's design tokens (inlined at build). */
-body { margin: 0; font: var(--font-body); background: var(--surface); color: var(--text); }
-a { color: var(--accent); }
+/* Front-door page chrome — authored on amenan-ui's token contract. The portfolio
+   (Console) theme is selected on <html data-theme="portfolio"> and supplies every
+   value (ink/paper, the one green --signal, the hard 1.5px --rule, the mono --font).
+   Cards, buttons, the badge, and the termbar wear amenan-ui's OWN component CSS
+   (inlined at build); this sheet styles only the page frame the framework doesn't
+   ship: the hero, the project grid, and the method/footer rails. */
 
-.hero { max-width: var(--container); margin: 0 auto; padding: clamp(2rem, 6vw, 4rem) var(--space-6) var(--space-8); }
-.hero h1 { margin: 0; font-size: var(--text-3xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); }
-.hero .sub { margin: var(--space-4) 0 0; color: var(--text-muted); font-size: var(--text-lg); line-height: var(--leading); max-width: 42rem; }
-.hero .note { margin: var(--space-4) 0 0; color: var(--text-subtle); font-size: var(--text-sm); }
+:root {
+  --container: 64rem;
+}
 
-main { max-width: var(--container); margin: 0 auto; padding: 0 var(--space-6) var(--space-12); }
-#grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr)); gap: var(--space-5); }
+body {
+  margin: 0;
+  font-family: var(--font); /* portfolio --font = mono-first Console */
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+a {
+  color: var(--accent);
+}
 
-.card { border: var(--border-width) solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5);
-        background: var(--surface-subtle); display: flex; flex-direction: column; gap: var(--space-3); }
-.card-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
-.card-head h3 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-semibold); }
-.kind { font-size: var(--text-2xs); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-muted);
-        border: var(--border-width) solid var(--border); border-radius: var(--radius-full); padding: 0.1rem 0.5rem; white-space: nowrap; }
-.blurb { margin: 0; font-size: var(--text-md); line-height: var(--leading); }
-.stack { margin: 0; color: var(--text-muted); font: var(--font-code); font-size: var(--text-xs); }
-.links { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: auto; padding-top: var(--space-2); }
-.lnk { font: var(--font-body); font-weight: var(--weight-medium); font-size: var(--text-sm); text-decoration: none;
-       padding: var(--pad-control-y) var(--pad-control-x); border: var(--border-width) solid var(--border);
-       border-radius: var(--radius); background: var(--surface); color: var(--text); transition: var(--transition-control); }
-.lnk:hover { border-color: var(--accent); }
-.lnk-primary { background: var(--accent); border-color: var(--accent); color: var(--text-on-accent); }
-.lnk-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+/* The Console termbar spans full width and sticks to the top (the theme toggle
+   stays in reach); the component owns its own surface + ink rule. */
+#termbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-topbar);
+}
 
-.method { margin-top: var(--space-10); padding-top: var(--space-6); border-top: var(--border-width) solid var(--border);
-          color: var(--text-muted); font-size: var(--text-md); line-height: var(--leading); max-width: 42rem; }
-.method h2 { color: var(--text); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: var(--tracking-wide); font-weight: var(--weight-semibold); }
-.method strong { color: var(--text); font-weight: var(--weight-semibold); }
+.hero {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 4rem) var(--sp-6) var(--sp-6);
+}
+.hero h1 {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.hero .sub {
+  margin: var(--sp-4) 0 0;
+  color: var(--text-dim);
+  font-size: var(--text-lg);
+  line-height: 1.5;
+  max-width: 42rem;
+}
+.hero .note {
+  margin: var(--sp-4) 0 0;
+  color: var(--text-mute);
+  font-size: var(--text-sm);
+}
 
-footer { max-width: var(--container); margin: 0 auto; padding: var(--space-6); color: var(--text-subtle);
-         font-size: var(--text-sm); border-top: var(--border-width) solid var(--border); }
+main {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--sp-6) var(--sp-8);
+}
+#grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: var(--sp-5);
+  align-items: start;
+}
+
+/* The card frame is amenan-ui's `.amu-card` (1.5px --rule + the 4px offset block
+   --rule-shadow come from the portfolio theme). This styles only the body we hand
+   to mountCard, beneath the title it paints. */
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+.card-body > .amu-badge {
+  align-self: flex-start; /* size the kind pill to its text, not the column */
+}
+.blurb {
+  margin: 0;
+  font-size: var(--text-md);
+  line-height: 1.55;
+  color: var(--text);
+}
+.stack {
+  margin: 0;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
+}
+/* the link-buttons are amenan-ui's `.amu-btn` on an <a>; only the anchor reset is ours */
+.links a.amu-btn {
+  text-decoration: none;
+}
+
+.method {
+  margin-top: var(--sp-8);
+  padding-top: var(--sp-6);
+  border-top: 1.5px solid var(--rule);
+  color: var(--text-dim);
+  font-size: var(--text-md);
+  line-height: 1.6;
+  max-width: 42rem;
+}
+.method h2 {
+  color: var(--text);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.method strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+footer {
+  max-width: var(--container);
+  margin: var(--sp-8) auto 0;
+  padding: var(--sp-6);
+  border-top: 1.5px solid var(--rule);
+  color: var(--text-mute);
+  font-size: var(--text-sm);
+}
+footer a {
+  color: var(--accent);
+}

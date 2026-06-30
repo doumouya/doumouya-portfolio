@@ -4,9 +4,11 @@ name: firebase-hosting
 # - push to main  -> live channel (https://doumouya-portfolio.web.app + custom domain)
 # - pull_request  -> ephemeral preview channel (URL printed in the job log)
 #
-# CI does NOT rebuild (that needs the sibling repos web-kit/echarts-dashboard/rbac-explorer).
-# The landing + app demos are committed pre-built; CI typechecks the source and stages the
-# committed files into portfolio/dist via stage.sh.
+# CI does NOT rebuild OR typecheck — both need the amenan-ui sibling (the landing is now
+# authored on the amenan-ui package) plus the app-demo repos. The landing + app demos are
+# committed pre-built and locally typechecked (npm run build / npm run typecheck against the
+# sibling checkout); CI just stages the committed files into portfolio/dist via stage.sh and
+# deploys. amenan-ui is a LOCAL build input, exactly like the demo repos are for the rebuild.
 #
 # Auth: the numu.im org blocks service-account keys
 # (constraints/iam.disableServiceAccountKeyCreation), so this uses a user CI token instead of
@@ -38,9 +40,9 @@ jobs:
           node-version: 20
           cache: npm
           cache-dependency-path: portfolio/package-lock.json
-      - run: npm ci
-      - name: Typecheck the landing source
-        run: npm run typecheck
+      # No npm ci / typecheck here: the landing is authored on the amenan-ui sibling, which
+      # isn't present in CI — it's built + typechecked locally before commit (see comment above).
+      # CI only stages the committed, pre-built site and deploys it.
       - name: Stage the committed site into dist/
         run: sh tools/stage.sh
       # firebase.json lives at the repo root (public: portfolio/dist), so deploy from there.

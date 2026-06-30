@@ -7,7 +7,7 @@
  *
  * Bump CACHE whenever the shell list changes so stale entries are purged on activate.
  */
-const CACHE = "portfolio-v1";
+const CACHE = "portfolio-v2";
 const SHELL = [
   "/",
   "/index.html",

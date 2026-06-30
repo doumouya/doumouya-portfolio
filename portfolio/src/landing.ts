@@ -1,4 +1,12 @@
-/** The portfolio front-door: a card per project, built from data. Styled with web-kit's tokens. */
+/** The portfolio front-door — re-authored on amenan-ui, the very framework this
+   site is a work-sample of. The project grid is built from amenan-ui's own `card`
+   component, topped by the Console `termbar` (traffic-lights + wordmark + a live
+   light/dark toggle wired straight to the framework's theme seam). The page wears
+   amenan-ui's `portfolio` theme (set on <html> at build time). No bespoke DOM
+   helpers, no second design system — `el`, the cards, the badge, and the button
+   affordance all come from the package. */
+
+import { el, mountTermbar, mountCard, badge } from "amenan-ui";
 
 type Kind = "Data cleaning" | "Data table" | "Analytics" | "Access control" | "System";
 
@@ -54,21 +62,15 @@ const PROJECTS: Project[] = [
   },
 ];
 
-type Attrs = Record<string, string | null | undefined>;
-function el(tag: string, attrs: Attrs = {}, ...children: Array<Node | string>): HTMLElement {
-  const node = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) if (v != null) node.setAttribute(k, v);
-  for (const c of children) node.append(c);
-  return node;
-}
-
-/** A link styled as a button. External links open in a new tab (rel=noopener). */
-function link(label: string, href: string, primary = false): HTMLElement {
+/** A link wearing amenan-ui's button affordance (`.amu-btn`). External links open
+    in a new tab (rel=noopener). `accent` renders the filled primary action (ink in
+    the Console theme); the rest are the quiet default. */
+function linkButton(label: string, href: string, accent = false): HTMLAnchorElement {
   const external = href.startsWith("http");
   return el(
     "a",
     {
-      class: primary ? "lnk lnk-primary" : "lnk",
+      class: accent ? "amu-btn amu-btn--accent" : "amu-btn",
       href,
       target: "_blank",
       rel: external ? "noopener noreferrer" : "noopener",
@@ -77,21 +79,33 @@ function link(label: string, href: string, primary = false): HTMLElement {
   );
 }
 
-function card(p: Project): HTMLElement {
-  const head = el("div", { class: "card-head" }, el("h3", {}, p.title), el("span", { class: "kind" }, p.kind));
+/** The body of a project card: a kind badge, the blurb, the stack line, and the
+    action links. `mountCard` paints the title; this fills everything beneath it. */
+function cardBody(p: Project): HTMLElement {
   const links = el("div", { class: "links" });
-  if (p.demo) links.append(link("Try it", p.demo, true));
-  links.append(link("Code", p.repo));
-  if (p.docs) links.append(link("Docs", p.docs));
+  if (p.demo) links.append(linkButton("Try it", p.demo, true));
+  links.append(linkButton("Code", p.repo));
+  if (p.docs) links.append(linkButton("Docs", p.docs));
   return el(
-    "article",
-    { class: "card" },
-    head,
+    "div",
+    { class: "card-body" },
+    badge({ label: p.kind }),
     el("p", { class: "blurb" }, p.blurb),
     el("p", { class: "stack" }, p.stack),
     links,
   );
 }
 
+// The Console top strip — amenan-ui's `termbar`: three traffic-lights, the
+// "doumouya" wordmark, the cwd, a status pill, and a light/dark toggle the
+// framework wires to its theme seam (toggleMode/onThemeChange). Mounted above the hero.
+const termbarHost = document.getElementById("termbar");
+if (termbarHost) {
+  mountTermbar(termbarHost, { cwd: "~/portfolio", status: "● open source · runs offline" });
+}
+
+// One amenan-ui card per project; the body holds the kind, blurb, stack, and links.
 const grid = document.getElementById("grid");
-if (grid) for (const p of PROJECTS) grid.append(card(p));
+if (grid) {
+  for (const p of PROJECTS) mountCard(grid, { title: p.title, body: cardBody(p) });
+}
