@@ -5,6 +5,9 @@
 **/.build/
 **/web/wasm/*.wasm
 **/wasm/*_bg.wasm
+# …but the front-door EMBEDS csv-workbench (portfolio/apps/csv-workbench) and self-hosts its
+# Polars engine, so track that one deployed wasm binary (the build-side copies stay ignored above).
+!portfolio/apps/csv-workbench/wasm/data_bg.wasm
 
 # ── secrets / local env ──
 **/.env

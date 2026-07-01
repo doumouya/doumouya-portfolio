@@ -64,6 +64,7 @@ mkdir -p .build apps
 
 # 3. copy each app's offline demo (their own repos build/commit these); if a sibling
 #    isn't present, keep the demo already committed under apps/.
+# echarts-dashboard / rbac-explorer are single self-contained index.html files.
 for app in echarts-dashboard rbac-explorer; do
   if [ -f "../$app/index.html" ]; then
     mkdir -p "apps/$app"
@@ -72,6 +73,18 @@ for app in echarts-dashboard rbac-explorer; do
     echo "WARN: ../$app/index.html not found — keeping committed apps/$app"
   fi
 done
+# csv-workbench is a MULTI-FILE site (a Web Worker + the Polars→wasm engine), so embed its
+# whole built web/ runtime (index.html + app.js/css + tokens.css + worker.js + wasm/). This
+# self-hosts the flagship demo at /apps/csv-workbench/ so it no longer needs its own Pages.
+if [ -f "../csv-workbench/web/index.html" ]; then
+  rm -rf apps/csv-workbench
+  mkdir -p apps/csv-workbench
+  cp ../csv-workbench/web/index.html ../csv-workbench/web/app.js ../csv-workbench/web/app.css \
+     ../csv-workbench/web/tokens.css ../csv-workbench/web/worker.js apps/csv-workbench/
+  cp -r ../csv-workbench/web/wasm apps/csv-workbench/wasm
+else
+  echo "WARN: ../csv-workbench/web not found — keeping committed apps/csv-workbench"
+fi
 
 echo "built index.html ($(wc -c < index.html) bytes) + apps: $(ls apps 2>/dev/null | tr '\n' ' ')"
 
