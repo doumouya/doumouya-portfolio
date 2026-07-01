@@ -38,3 +38,33 @@ main { display: grid; grid-template-columns: 1fr 18rem; gap: var(--sp-4); paddin
 #panel .amu-stat { margin-bottom: var(--sp-4); }
 #panel p { margin: 0 0 var(--sp-3); font-size: var(--text-sm); }
 #panel i { color: var(--text-dim); }
+#panel .who { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-3); }
+#panel .who b { font-size: var(--text-md); }
+#panel .guardrail { color: var(--text-dim); border-top: 1.5px solid var(--rule); padding-top: var(--sp-3); margin-top: var(--sp-1); }
+#panel .guardrail b { color: var(--text); }
+
+/* ── field-permission matrix ─────────────────────────────────────────────── */
+.fieldperms { margin: 0 var(--sp-4) var(--sp-6); }
+.fp-head { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap;
+           border-top: 1.5px solid var(--rule); padding-top: var(--sp-4); margin-bottom: var(--sp-3); }
+.fp-head h2 { font-size: var(--text-md); font-weight: 600; margin: 0; }
+.rec-scope { font-size: var(--text-sm); color: var(--text-dim); margin-bottom: var(--sp-3); }
+.rec-scope b { color: var(--text); }
+.rec-scope .ok { color: var(--signal); }
+.rec-scope .no { color: var(--text-mute); }
+
+.perm-matrix { display: grid; grid-template-columns: minmax(9rem, 1.6fr) repeat(4, 1fr);
+               border: 1.5px solid var(--rule); border-radius: var(--radius); overflow: hidden; max-width: 46rem; }
+.pm-head { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
+           color: var(--text-dim); padding: var(--sp-2) var(--sp-3); text-align: center;
+           border-bottom: 1.5px solid var(--rule); background: var(--surface-2); }
+.pm-head.pm-corner { text-align: left; }
+.pm-field { display: flex; align-items: center; padding: var(--sp-2) var(--sp-3); font-size: var(--text-sm);
+            border-bottom: 1px solid var(--border); }
+.pm-cell { display: flex; align-items: center; justify-content: center; padding: var(--sp-1);
+           border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); }
+.perm-matrix > div:nth-last-child(-n + 5) { border-bottom: 0; }
+.pm-head.is-sel, .pm-cell.is-sel { background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+.pm-head.is-sel { color: var(--text); }
+.pm-note { margin-top: var(--sp-3); max-width: 46rem; }
+.pm-note b { color: var(--text); }

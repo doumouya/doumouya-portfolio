@@ -1,4 +1,4 @@
-<!doctype html><html lang="en" data-theme="portfolio" data-mode="light"><head><meta charset="utf-8"><script>(function(){var h=location.hostname;if(h==="doumouya-portfolio.web.app"||h==="doumouya-portfolio.firebaseapp.com"){location.replace("https://em.numu.im"+location.pathname+location.search+location.hash);}})();</script><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0B0B0C"><script>(function(){try{var m=localStorage.getItem("amu-mode");var d=document.documentElement;d.setAttribute("data-theme","portfolio");d.setAttribute("data-mode",(m==="dark"||m==="light")?m:"light");}catch(e){}})();</script><link rel="canonical" href="https://em.numu.im/"><link rel="icon" href="/icons/favicon.svg"><link rel="apple-touch-icon" href="/icons/icon-192.png"><link rel="manifest" href="/manifest.webmanifest"><title>Emmanuel Doumouya — portfolio</title><style>/* base.css — the theme-platform STRUCTURE tier (AC-1). Theme-AGNOSTIC :root
+<!doctype html><html lang="en" data-theme="portfolio" data-mode="light"><head><meta charset="utf-8"><script>(function(){var h=location.hostname;if(h==="doumouya-portfolio.web.app"||h==="doumouya-portfolio.firebaseapp.com"){location.replace("https://em.numu.im"+location.pathname+location.search+location.hash);}})();</script><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0B0B0C"><script>(function(){try{var m=localStorage.getItem("amu-mode");var d=document.documentElement;d.setAttribute("data-theme","portfolio");d.setAttribute("data-mode",(m==="dark"||m==="light")?m:"light");}catch(e){}})();</script><script>(function(){try{var d=document.documentElement;["fontsize","density","motion","contrast","readfont"].forEach(function(k){var v=localStorage.getItem("amu-pref-"+k);if(v){d.setAttribute("data-"+k,v);}});}catch(e){}})();</script><link rel="canonical" href="https://em.numu.im/"><link rel="icon" href="/icons/favicon.svg"><link rel="apple-touch-icon" href="/icons/icon-192.png"><link rel="manifest" href="/manifest.webmanifest"><title>Emmanuel Doumouya — portfolio</title><style>/* base.css — the theme-platform STRUCTURE tier (AC-1). Theme-AGNOSTIC :root
    scales every theme shares: spacing, radius, the shared mono family, the type
    scale, density rhythm, motion, breakpoints, and z-index. It carries NO
    color/palette/`--font`-family/`--shadow` *value* token — those are per-theme
@@ -463,12 +463,784 @@ button.amu-card:hover {
   color: var(--text);
   background: var(--signal-tint);
 }
+/* markdown — display styles for rendered Markdown (.amu-md). Sole owner of
+   .amu-md (ui-fork-audit R4); the descendant rules style the safe element subset
+   the renderer emits (p · strong · em · code · pre · a · ul/ol/li · blockquote).
+   Relative units; 1px hairlines only. */
+
+.amu-md {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  word-break: break-word;
+}
+.amu-md > :first-child { margin-top: 0; }
+.amu-md > :last-child { margin-bottom: 0; }
+
+.amu-md p { margin: 0 0 var(--sp-2); }
+
+.amu-md a { color: var(--accent); text-decoration: underline; }
+
+.amu-md code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--atom-radius, var(--radius));
+  padding: 0.05em 0.3em;
+}
+.amu-md pre {
+  margin: 0 0 var(--sp-2);
+  padding: var(--sp-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+.amu-md pre code { background: none; border: none; padding: 0; font-size: 0.85em; }
+
+.amu-md blockquote {
+  margin: 0 0 var(--sp-2);
+  padding-left: var(--sp-3);
+  border-left: 2px solid var(--border);
+  color: var(--text-mute);
+}
+
+.amu-md ul, .amu-md ol { margin: 0 0 var(--sp-2); padding-left: 1.4rem; }
+.amu-md li { margin: 0.1rem 0; }
+/* modal — create/confirm ONLY (the minimalism rule). Sole owner of .amu-modal*. */
+
+.amu-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: grid;
+  place-items: center;
+  z-index: 100;
+}
+
+.amu-modal {
+  width: min(26rem, 92vw);
+  max-height: 85vh;
+  overflow: auto;
+  background: var(--surface);
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius-lg);
+  /* dialog elevation token: portfolio's flat dialog shadow, redpash's soft one. */
+  box-shadow: var(--shadow-dialog);
+  padding: var(--sp-5);
+}
+
+.amu-modal-title {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.amu-modal-body {
+  margin-bottom: var(--sp-5);
+}
+
+.amu-modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--gap);
+}
+/* redtable — THE data table (one implementation; virtual + pager modes are
+   config, never forks; interaction modes — select/edit/delete — are state
+   classes on the root). Calm density via the rhythm tokens. Sole owner of
+   .amu-redtable*.
+   knobs: --redtable-max-h */
+
+.amu-redtable {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--ring);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  /* Let the table FILL a flex-column parent (e.g. a `fill` surface section):
+     flex:1 grows it to the remaining height, min-height:0 lets the scroll
+     shrink below its content. Both inert in a block parent — pager/virtual
+     modes outside a sized flex column are unaffected (the scroll's max-height
+     still caps a free-standing table; lift it via --redtable-max-h). */
+  flex: 1;
+  min-height: 0;
+}
+
+.amu-redtable-scroll {
+  flex: 1;
+  overflow: auto;
+  max-height: var(--redtable-max-h, 60vh);
+}
+
+.amu-redtable table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.amu-redtable th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface-2);
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-dim);
+  height: var(--row-h);
+  padding: 0 var(--pad-x);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+/* sortable header — click cycles the server sort; the chevron shows the active
+   column + direction. The sorted column reads in the accent. */
+.amu-redtable th.amu-redtable-th-sort {
+  cursor: pointer;
+  user-select: none;
+}
+.amu-redtable th.amu-redtable-th-sort:hover { color: var(--text); }
+.amu-redtable th.amu-redtable-th-sort.is-sorted { color: var(--accent); }
+.amu-redtable-sort {
+  margin-left: 0.25rem;
+  font-size: 0.85em;
+  opacity: 0.5;
+}
+.amu-redtable th.amu-redtable-th-sort:hover .amu-redtable-sort,
+.amu-redtable th.amu-redtable-th-sort.is-sorted .amu-redtable-sort { opacity: 1; }
+
+/* row-number column — a narrow, muted leading "#" column (1-based view
+   position). Tabular figures so digits don't jitter the edge on scroll. */
+.amu-redtable-rownum {
+  width: 3rem;
+  min-width: 3rem;
+  text-align: right;
+  color: var(--text-mute);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+}
+
+.amu-redtable td {
+  height: var(--row-h);
+  padding: 0 var(--pad-x);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 20rem;
+}
+
+.amu-redtable tbody tr:hover td {
+  background: var(--hover);
+}
+
+.amu-redtable tbody tr.is-selected td {
+  background: var(--accent-soft);
+}
+
+.amu-redtable td.amu-redtable-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.amu-redtable-null {
+  color: var(--text-mute);
+  font-style: italic;
+}
+
+.amu-redtable-foot {
+  border-top: 1px solid var(--border);
+  padding: var(--sp-1) var(--pad-x);
+}
+
+/* ── interaction modes — state classes on the root (select / edit / delete).
+   The LAYOUT (pager/virtual) is orthogonal; these only retune what a cell or
+   row looks/behaves like. ─────────────────────────────────────────────── */
+
+/* select — a leading checkbox column (head select-all + per-row). The cell is
+   tight and centered; the box sizes off the text rhythm. */
+.amu-redtable-check-cell {
+  width: var(--row-h);
+  padding: 0 var(--pad-x);
+  text-align: center;
+}
+.amu-redtable-check {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+  vertical-align: middle;
+}
+/* the whole row is a click target in select mode (the row handler toggles). */
+.amu-redtable.is-select tbody tr {
+  cursor: pointer;
+}
+
+/* edit — cells read as editable (a subtle pointer); the cell holding an active
+   editor gets an accent inset so the focus is unmistakable. */
+.amu-redtable.is-edit tbody td {
+  cursor: text;
+}
+/* the editor input fills the cell flush — no double border, the inset is the
+   table's, not the atom's. (The atom's .amu-input supplies the base skin; this
+   only retunes — atoms.css remains the sole owner of .amu-input, R4.) */
+.amu-redtable-editor {
+  height: calc(var(--row-h) - 0.5rem);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--surface);
+}
+
+/* delete — row click removes; the hover reads destructive (danger tint + a
+   left danger bar) so the consequence is legible before the click. */
+.amu-redtable.is-delete tbody tr {
+  cursor: pointer;
+}
+.amu-redtable.is-delete tbody tr:hover td {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+.amu-redtable.is-delete tbody tr:hover td:first-child {
+  box-shadow: inset 0.1875rem 0 0 0 var(--danger);
+}
+/* pager — rows info + page controls. Sole owner of .amu-pager*. */
+
+.amu-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+/* at the 1024 floor, wrap rather than overflow when space is tight. */
+@media (max-width: 64rem) { /* --bp-md */
+  .amu-pager { flex-wrap: wrap; row-gap: var(--sp-2); }
+}
+
+.amu-pager-pages {
+  display: inline-flex;
+  gap: 0.125rem;
+}
+
+.amu-pager-btn {
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 0.375rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.amu-pager-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.amu-pager-btn.is-active {
+  background: var(--accent-soft);
+  color: var(--text);
+  font-weight: 600;
+}
+.amu-pager-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+/* empty-state — THE onboarding surface: one sentence + the view's single
+   primary action. No tours, no hint chips. Sole owner of .amu-empty*. */
+
+.amu-empty {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: var(--sp-8) var(--sp-5);
+  gap: var(--sp-2);
+}
+
+.amu-empty-title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.amu-empty-line {
+  margin: 0 0 var(--sp-3);
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+  max-width: 26rem;
+}
+/* filter-panel — the FilterNode builder. Sole owner of .amu-fp*. Compact, calm
+   (Linear density); designed for a ~280px side panel. */
+
+.amu-fp {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  font-size: var(--text-sm);
+}
+
+/* combinator (All / Any) — only shown when >1 row */
+.amu-fp-combo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.amu-fp-combo:empty {
+  display: none;
+}
+
+.amu-fp-combo-label {
+  color: var(--text-mute);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.amu-fp-seg {
+  display: inline-flex;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--ring);
+  overflow: hidden;
+}
+
+.amu-fp-seg-btn {
+  padding: 0.1875rem var(--sp-3);
+  border: 0;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.amu-fp-seg-btn + .amu-fp-seg-btn {
+  border-left: 1px solid var(--border);
+}
+
+.amu-fp-seg-btn.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* the rows list */
+.amu-fp-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.amu-fp-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--sp-2);
+  align-items: center;
+  padding: var(--sp-2);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--ring);
+}
+
+/* column + op stack full width on the left; value spans the row below; remove
+   hugs the top-right — keeps the row legible at 280px without horizontal scroll */
+.amu-fp-col,
+.amu-fp-op,
+.amu-fp-value {
+  grid-column: 1;
+  min-width: 0;
+}
+
+/* the column/op selects own their width (.amu-select min-width) — we don't style
+   another component's class (ui-fork-audit R4). The select host is a block so
+   each control sits on its own line, comfortable at ~280px. */
+.amu-fp-col,
+.amu-fp-op {
+  display: block;
+}
+
+.amu-fp-remove {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+}
+
+.amu-fp-value {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.amu-fp-value:empty {
+  display: none;
+}
+
+.amu-fp-text {
+  width: 100%;
+}
+
+.amu-fp-num {
+  width: 100%;
+  min-width: 0;
+}
+
+.amu-fp-and {
+  color: var(--text-mute);
+  font-size: var(--text-xs);
+  flex: 0 0 auto;
+}
+
+/* a nested AND/OR group — recessed surface + hairline so the tree reads at a
+   glance; its head carries the group's own All/Any toggle + a remove. */
+.amu-fp-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.amu-fp-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.amu-fp-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.amu-fp-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--border);
+}
+/* select — native select, token-skinned (less is more: no custom listbox
+   until a real need arrives). Sole owner of .amu-select. */
+
+.amu-select {
+  height: var(--ctl-h);
+  padding: 0 var(--pad-x);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  min-width: 9rem;
+}
+
+.amu-select:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -1px;
+  border-color: var(--accent);
+}
+/* omni — the global omnisearch: a pill box + a results dropdown. Sole owner of
+   every .amu-omni* class (ui-fork-audit R4). Calm chrome (no glass); results come
+   from the injected source and each carries a ready destination the consumer
+   routes to. */
+
+.amu-omni {
+  position: relative; /* anchors the results menu */
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  /* fluid but never collapses past a usable width */
+  width: clamp(16rem, 42vw, 34rem);
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+}
+.amu-omni:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.1875rem var(--accent-soft);
+}
+.amu-omni > .bi { font-size: 0.875rem; color: var(--text-mute); flex-shrink: 0; }
+.amu-omni input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-sm);
+}
+.amu-omni input::placeholder { color: var(--text-mute); }
+
+/* ── results dropdown — anchored below the box, scrolls on overflow ─────────── */
+.amu-omni-menu {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  left: 0;
+  right: 0;
+  max-height: 22.5rem;
+  overflow-y: auto;
+  padding: 0.25rem 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  z-index: 60;
+}
+.amu-omni-menu[hidden] { display: none; }
+
+.amu-omni-section {
+  padding: 0.5rem 0.875rem 0.25rem;
+  font-size: var(--text-xs);
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-mute);
+}
+.amu-omni-section:not(:first-child) {
+  border-top: 1px solid var(--border);
+  margin-top: 0.25rem;
+}
+
+.amu-omni-result {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.4375rem 0.875rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--fast) var(--ease);
+}
+.amu-omni-result > .bi { color: var(--text-mute); font-size: 0.875rem; flex-shrink: 0; }
+.amu-omni-result:hover,
+.amu-omni-result.is-active { background: var(--accent-soft); }
+.amu-omni-result.is-active > .bi { color: var(--accent); }
+.amu-omni-result-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.amu-omni-result-sub {
+  flex-shrink: 0;
+  max-width: 40%;
+  font-size: var(--text-xs);
+  color: var(--text-mute);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.amu-omni-hl {
+  background: color-mix(in srgb, var(--info) 22%, transparent);
+  color: var(--info);
+  font-weight: 600;
+  border-radius: 0.1875rem;
+  padding: 0 0.125rem;
+}
+.amu-omni-state {
+  padding: 0.75rem 0.875rem;
+  font-size: var(--text-sm);
+  color: var(--text-mute);
+  text-align: center;
+}
+
+/* portrait safety net — let the box shrink so it fits beside the icons. */
+@media (max-width: 48rem) { /* --bp-sm */
+  .amu-omni { width: clamp(10rem, 60vw, 20rem); }
+}
+/* chart — the ECharts-backed chart tile. Sole owner of the .amu-chart-* classes.
+   Glass surface; tokens mapped to amenan (--glass-blur, --border). */
+
+/* Auto-fit grid of 1-N chart cards (a chart strip). */
+.amu-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16.25rem, 1fr));
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-6);
+}
+
+/* The chart tile container — glass surface, flex column (title + canvas). */
+.amu-chart-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-3) var(--sp-3) var(--sp-2);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* Small uppercase tile title — owned by chart (not a second class on an atom). */
+.amu-chart-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: var(--sp-2);
+}
+
+/* The ECharts mount slot — load-bearing height (an unsized canvas renders a
+   0px-tall chart); full width; flex:1. */
+.amu-chart-canvas {
+  flex: 1;
+  width: 100%;
+  height: 11.25rem;
+  min-height: 11.25rem;
+}
+
+/* Faded dashed placeholder for an empty/echarts-less slot — a muted em-dash. */
+.amu-chart-card--empty {
+  background: var(--glass);
+  border: 1px dashed var(--border);
+  opacity: 0.45;
+}
+.amu-chart-card--empty .amu-chart-canvas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-mute);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.amu-chart-card--empty .amu-chart-canvas::after {
+  content: "\2014";
+}
+/* dashboard-grid — the designer canvas. Sole owner of .amu-dg-*. A cols×rows CSS
+   grid at 3:2 aspect (15×10 → square cells); elements are placed by the JS via
+   grid-column/grid-row. Editable mode shows a faint cell backdrop + per-cell
+   move/resize chrome. */
+
+.amu-dg {
+  display: grid;
+  grid-template-columns: repeat(var(--dg-cols, 15), 1fr);
+  grid-template-rows: repeat(var(--dg-rows, 10), 1fr);
+  gap: var(--sp-2);
+  width: 100%;
+  aspect-ratio: 3 / 2;          /* 15 : 10 → square cells */
+  max-height: 80vh;
+}
+
+/* Editable: a faint cell-grid backdrop so placement reads clearly. */
+.amu-dg.is-editable {
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: calc(100% / var(--dg-cols, 15)) calc(100% / var(--dg-rows, 10));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1px;
+}
+
+.amu-dg-cell {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.amu-dg-cell-body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Edit chrome — a slim top bar (grip + remove) revealed on hover, + an SE
+   resize handle. */
+.amu-dg-cell-bar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--sp-5);
+  padding: 0 var(--sp-2);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.amu-dg-cell:hover .amu-dg-cell-bar,
+.amu-dg-cell.is-dragging .amu-dg-cell-bar { opacity: 1; }
+
+.amu-dg-grip {
+  flex: 1;
+  height: 100%;
+  cursor: move;
+  display: flex;
+  align-items: center;
+}
+.amu-dg-grip::before {
+  content: "\22EE\22EE";        /* ⋮⋮ */
+  color: var(--text-mute);
+  font-size: 0.75rem;
+  letter-spacing: -0.15em;
+}
+
+.amu-dg-del {
+  border: 0;
+  background: transparent;
+  color: var(--text-mute);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 var(--sp-1);
+}
+.amu-dg-del:hover { color: var(--danger, #e5484d); }
+
+.amu-dg-resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: var(--sp-4);
+  height: var(--sp-4);
+  cursor: se-resize;
+  opacity: 0;
+}
+.amu-dg-cell:hover .amu-dg-resize { opacity: 1; }
+.amu-dg-resize::after {
+  content: "";
+  position: absolute;
+  right: 0.2rem;
+  bottom: 0.2rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid var(--text-mute);
+  border-bottom: 2px solid var(--text-mute);
+}
+
+.amu-dg-cell.is-dragging,
+.amu-dg-cell.is-resizing {
+  outline: 2px solid var(--accent, #6366f1);
+  z-index: 2;
+}
 /* Front-door page chrome — authored on amenan-ui's token contract. The portfolio
    (Console) theme is selected on <html data-theme="portfolio"> and supplies every
    value (ink/paper, the one green --signal, the hard 1.5px --rule, the mono --font).
    Cards, buttons, the badge, and the termbar wear amenan-ui's OWN component CSS
-   (inlined at build); this sheet styles only the page frame the framework doesn't
-   ship: the hero, the project grid, and the method/footer rails. */
+   (inlined at build); this sheet styles only the SPA frame the framework doesn't
+   ship: the sticky chrome (termbar + nav), the routes, the hero, the project grid,
+   the writing/about/contact prose, and the in-site demo frame. */
 
 :root {
   --container: 64rem;
@@ -485,18 +1257,105 @@ a {
   color: var(--accent);
 }
 
-/* The Console termbar spans full width and sticks to the top (the theme toggle
-   stays in reach); the component owns its own surface + ink rule. */
-#termbar {
+/* inline-SVG icons — inherit ink via currentColor, sized in em so they scale with
+   the text-size preference. Buttons already provide the icon↔label gap. */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.icon svg {
+  width: 1.15em;
+  height: 1.15em;
+  display: block;
+}
+.amu-btn .icon svg {
+  width: 1.05em;
+  height: 1.05em;
+}
+
+/* ── the persistent shell: termbar + nav, sticky as one header ────────────── */
+.chrome {
   position: sticky;
   top: 0;
   z-index: var(--z-topbar);
+  background: var(--bg);
+  border-bottom: 1.5px solid var(--rule);
 }
-
-.hero {
+#termbar {
+  display: block;
+}
+.nav {
+  border-top: 1.5px solid var(--rule);
+}
+.nav-inner {
   max-width: var(--container);
   margin: 0 auto;
-  padding: clamp(2rem, 6vw, 4rem) var(--sp-6) var(--sp-6);
+  display: flex;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-4);
+  flex-wrap: wrap;
+}
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  text-decoration: none;
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--radius-sm);
+  border: 1.5px solid transparent;
+  line-height: 1.6;
+}
+.nav-link .icon {
+  color: var(--text-mute);
+}
+.nav-link:hover {
+  color: var(--text);
+  background: var(--surface, transparent);
+}
+.nav-link[aria-current="page"] {
+  color: var(--text);
+  border-color: var(--rule);
+}
+.nav-link[aria-current="page"] .icon {
+  color: var(--signal);
+}
+
+/* ── routes: a max-width column, except the full-bleed demo frame ─────────── */
+.app {
+  display: block;
+}
+.route {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--sp-6) var(--sp-6) var(--sp-8);
+}
+.route.demo {
+  max-width: none;
+  padding: 0;
+}
+
+.page-head {
+  margin: 0 0 var(--sp-5);
+}
+.page-head h1 {
+  margin: 0;
+  font-size: var(--text-xl);
+  letter-spacing: -0.02em;
+}
+.page-head .sub {
+  margin: var(--sp-3) 0 0;
+  color: var(--text-dim);
+  font-size: var(--text-md);
+  max-width: 42rem;
+}
+
+/* ── hero ─────────────────────────────────────────────────────────────────*/
+.hero {
+  padding: clamp(1.5rem, 5vw, 3.5rem) 0 var(--sp-6);
 }
 .hero h1 {
   margin: 0;
@@ -509,29 +1368,52 @@ a {
   color: var(--text-dim);
   font-size: var(--text-lg);
   line-height: 1.5;
-  max-width: 42rem;
+  max-width: 44rem;
 }
 .hero .note {
   margin: var(--sp-4) 0 0;
   color: var(--text-mute);
   font-size: var(--text-sm);
+  max-width: 44rem;
+}
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-5);
+}
+.cta a.amu-btn,
+.links a.amu-btn,
+.section-head a.amu-btn,
+.post-nav a.amu-btn {
+  text-decoration: none;
 }
 
-main {
-  max-width: var(--container);
-  margin: 0 auto;
-  padding: 0 var(--sp-6) var(--sp-8);
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin: var(--sp-8) 0 var(--sp-4);
+  border-top: 1.5px solid var(--rule);
+  padding-top: var(--sp-5);
 }
-#grid {
+.section-head h2 {
+  margin: 0;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+/* ── project grid + card bodies (card frame is amenan-ui's .amu-card) ─────── */
+.grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
   gap: var(--sp-5);
   align-items: start;
 }
-
-/* The card frame is amenan-ui's `.amu-card` (1.5px --rule + the 4px offset block
-   --rule-shadow come from the portfolio theme). This styles only the body we hand
-   to mountCard, beneath the title it paints. */
 .card-body {
   display: flex;
   flex-direction: column;
@@ -539,7 +1421,7 @@ main {
   margin-top: var(--sp-2);
 }
 .card-body > .amu-badge {
-  align-self: flex-start; /* size the kind pill to its text, not the column */
+  align-self: flex-start;
 }
 .blurb {
   margin: 0;
@@ -559,11 +1441,120 @@ main {
   gap: var(--sp-2);
   margin-top: var(--sp-1);
 }
-/* the link-buttons are amenan-ui's `.amu-btn` on an <a>; only the anchor reset is ours */
-.links a.amu-btn {
+
+/* ── in-site demo: a bar + a full-bleed iframe filling the viewport ───────── */
+.demo-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  border-bottom: 1.5px solid var(--rule);
+  background: var(--bg);
+}
+.demo-bar .spacer {
+  flex: 1;
+}
+.demo-bar a.amu-btn {
   text-decoration: none;
 }
+.demo-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+.demo-frame {
+  display: block;
+  width: 100%;
+  height: calc(100dvh - 8.5rem);
+  border: 0;
+  background: var(--bg);
+}
 
+/* ── prose: writing post + about + contact ────────────────────────────────── */
+.prose,
+.post {
+  max-width: 42rem;
+}
+.prose p,
+.post .amu-md p {
+  font-size: var(--text-md);
+  line-height: 1.7;
+  color: var(--text);
+}
+.prose h1 {
+  font-size: var(--text-xl);
+}
+.post-nav {
+  margin-bottom: var(--sp-4);
+}
+.post-nav a.amu-btn {
+  text-decoration: none;
+}
+.post h1 {
+  font-size: var(--text-2xl);
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--sp-3);
+}
+.post h2,
+.post h3 {
+  margin: var(--sp-6) 0 var(--sp-2);
+  font-size: var(--text-lg);
+  color: var(--text);
+}
+.post h3 {
+  font-size: var(--text-md);
+  color: var(--text-dim);
+  font-weight: 600;
+}
+.post hr {
+  border: 0;
+  border-top: 1.5px solid var(--rule);
+  margin: var(--sp-6) 0;
+}
+.post .amu-md ul,
+.post .amu-md ol {
+  line-height: 1.7;
+  color: var(--text);
+  padding-left: var(--sp-5);
+}
+.post .amu-md code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--accent);
+}
+.post .amu-md blockquote {
+  border-left: 3px solid var(--rule);
+  margin: var(--sp-4) 0;
+  padding-left: var(--sp-4);
+  color: var(--text-dim);
+}
+
+.colophon {
+  margin-top: var(--sp-8);
+  padding-top: var(--sp-5);
+  border-top: 1.5px solid var(--rule);
+}
+.colophon h2 {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+.contact-lines {
+  line-height: 2;
+}
+.contact-lines .email {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+.avail {
+  color: var(--text-dim);
+  border-top: 1.5px solid var(--rule);
+  padding-top: var(--sp-4);
+  margin-top: var(--sp-5);
+}
+
+/* ── method note (home) ────────────────────────────────────────────────────*/
 .method {
   margin-top: var(--sp-8);
   padding-top: var(--sp-6);
@@ -571,7 +1562,7 @@ main {
   color: var(--text-dim);
   font-size: var(--text-md);
   line-height: 1.6;
-  max-width: 42rem;
+  max-width: 44rem;
 }
 .method h2 {
   color: var(--text);
@@ -580,38 +1571,389 @@ main {
   letter-spacing: 0.06em;
   font-weight: 600;
 }
-.method strong {
-  color: var(--text);
+
+/* ══ Display preferences ═══════════════════════════════════════════════════
+   Each preference is one attribute on <html>; the CSS cascade does the rest.
+   These axes live alongside amenan-ui's theme (data-theme) × mode (data-mode). */
+
+/* text size — scales the whole rem-based UI proportionally from the root */
+html[data-fontsize="sm"] { font-size: 93.75%; }  /* ~15px */
+html[data-fontsize="lg"] { font-size: 112.5%; }  /* ~18px */
+html[data-fontsize="xl"] { font-size: 125%; }    /* ~20px */
+
+/* density — retune the shared rhythm tokens (buttons/inputs read --ctl-h) */
+html[data-density="touch"] {
+  --ctl-h: 3rem;   /* 48px — the touchscreen tap-target floor */
+  --row-h: 3rem;
+  --pad-x: 1rem;
+  --gap: 0.75rem;
+}
+html[data-density="touch"] .nav-inner { gap: var(--sp-2); }
+html[data-density="touch"] .nav-link {
+  padding: var(--sp-3) var(--sp-4);
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+}
+html[data-density="touch"] .demo-frame { height: calc(100dvh - 10.5rem); }
+html[data-density="compact"] {
+  --ctl-h: 1.75rem;
+  --row-h: 1.875rem;
+  --pad-x: 0.5rem;
+  --gap: 0.375rem;
+}
+
+/* reduce motion — neutralise transitions/animations */
+html[data-motion="reduced"] *,
+html[data-motion="reduced"] *::before,
+html[data-motion="reduced"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* high contrast — dim/muted text to full ink, hairlines to the hard rule */
+html[data-contrast="high"] {
+  --text-dim: var(--text);
+  --text-mute: var(--text-dim);
+  --border: var(--rule);
+}
+
+/* readable font — an opt-in legible sans for long-form reading (Writing) */
+html[data-readfont="on"] .post,
+html[data-readfont="on"] .prose {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+html[data-readfont="on"] .post code,
+html[data-readfont="on"] .post pre {
+  font-family: var(--font-mono);
+}
+
+/* ── the ⚙ Display trigger in the nav ─────────────────────────────────────*/
+.nav-spacer { flex: 1; }
+.nav-pref { text-decoration: none; }
+
+/* ── the pop-up body: segmented controls + switches ───────────────────────*/
+.prefs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+/* segmented rows fill the modal width; each option shares the space equally */
+.pref-seg-row .seg {
+  display: flex;
+  width: 100%;
+}
+.pref-seg-row .seg-btn {
+  flex: 1;
+}
+/* the three switches sit as an icon-over-switch row, no labels */
+.pref-toggles {
+  display: flex;
+  gap: var(--sp-3);
+  border-top: 1.5px solid var(--rule);
+  padding-top: var(--sp-4);
+  margin-top: var(--sp-1);
+}
+.pref-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  flex: 1;
+}
+.pref-row > .icon {
+  font-size: 1.4rem;
+  color: var(--text-dim);
+}
+.seg {
+  display: inline-flex;
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex: none;
+}
+.seg-btn {
+  min-height: var(--ctl-h);
+  min-width: 2.5rem;
+  padding: 0 var(--sp-3);
+  border: 0;
+  border-left: 1.5px solid var(--rule);
+  background: var(--surface);
+  color: var(--text-dim);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.seg-btn:first-child { border-left: 0; }
+.seg-btn:hover { color: var(--text); background: var(--hover); }
+.seg-btn[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
   font-weight: 600;
 }
+.switch {
+  flex: none;
+  width: 2.75rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  position: relative;
+  cursor: pointer;
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: transform var(--fast) var(--ease), background var(--fast) var(--ease);
+}
+.switch[aria-checked="true"] {
+  background: var(--signal-tint);
+  border-color: var(--signal);
+}
+.switch[aria-checked="true"]::after {
+  transform: translateX(1.15rem);
+  background: var(--signal);
+}
 
-footer {
-  max-width: var(--container);
-  margin: var(--sp-8) auto 0;
-  padding: var(--sp-6);
-  border-top: 1.5px solid var(--rule);
+/* ── mobile: icon-only nav (labels hide), a scrollable strip, tighter chrome ──*/
+@media (max-width: 40rem) {
+  .nav-inner {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: var(--sp-1);
+    padding: var(--sp-2) var(--sp-3);
+    scrollbar-width: none;
+  }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .nav-txt { display: none; }        /* icons carry the nav on small screens */
+  .nav-spacer { display: none; }
+  .nav-link { padding: var(--sp-2); }
+  .nav-link .icon { font-size: 1.15rem; }
+  .route { padding: var(--sp-5) var(--sp-4) var(--sp-6); }
+  .hero { padding-top: var(--sp-4); }
+  .hero h1 { font-size: var(--text-xl); }
+  .lab-fp-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ══ Bootstrap-Icons shim ══════════════════════════════════════════════════
+   amenan-ui's redtable/omni emit <i class="bi bi-*"> expecting the Bootstrap
+   Icons webfont. The site ships no such font (offline, zero deps), so map the
+   handful of classes actually used to Unicode — crisp, monochrome, no download. */
+.bi {
+  font-style: normal;
+  display: inline-block;
+  line-height: 1;
+}
+.bi-chevron-up::before { content: "\2191"; }
+.bi-chevron-down::before { content: "\2193"; }
+.bi-chevron-expand::before { content: "\21C5"; }
+.bi-search::before { content: "\2315"; }
+.bi-dot::before { content: "\2022"; }
+.bi-folder::before { content: "\25B8"; }
+
+/* ══ lab / mini-project pages ══════════════════════════════════════════════*/
+.lab-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-5);
+}
+.lab-head .amu-btn { text-decoration: none; flex: none; }
+.lab-head-txt h1 {
+  margin: 0;
+  font-size: var(--text-xl);
+  letter-spacing: -0.02em;
+}
+.lab-head-txt .sub {
+  margin: var(--sp-2) 0 0;
+  color: var(--text-dim);
+  font-size: var(--text-md);
+  max-width: 46rem;
+}
+.lab-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-4);
+  flex-wrap: wrap;
+}
+.lab-seg .seg-btn { gap: var(--sp-2); }
+.lab-status {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+.lab-table .amu-redtable-scroll {
+  height: 62vh;
+  overflow: auto;
+}
+.lab-note {
+  margin-top: var(--sp-4);
   color: var(--text-mute);
   font-size: var(--text-sm);
+  max-width: 46rem;
 }
-footer a {
+.lab-fp-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 320px) 1fr;
+  gap: var(--sp-5);
+  align-items: start;
+}
+.lab-query-label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: var(--sp-2);
+}
+.lab-query {
+  margin: 0;
+  padding: var(--sp-4);
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  color: var(--text);
+  min-height: 8rem;
+}
+
+/* ══ design-system showcase ════════════════════════════════════════════════*/
+.ds-block { margin: var(--sp-8) 0 0; }
+.ds-block h2 {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  border-top: 1.5px solid var(--rule);
+  padding-top: var(--sp-5);
+  margin-bottom: var(--sp-3);
+}
+.ds-sub {
+  color: var(--text-dim);
+  font-size: var(--text-md);
+  line-height: 1.6;
+  max-width: 46rem;
+}
+.ds-block code,
+.lab code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
   color: var(--accent);
 }
-</style></head><body><div id="termbar"></div>
-<header class="hero">
-  <h1>Emmanuel Doumouya</h1>
-  <p class="sub">Data engineer building privacy-by-design tools — small, fast, client-side apps whose data never leaves the browser, built through a system that records its own construction.</p>
-  <p class="note">Every project below is open source, runs in your browser, and is built to be read. Download this page (Code → Download ZIP) to try the demos offline.</p>
-</header>
-<main>
-  <div id="grid"></div>
-  <section class="method">
-    <h2>How these were built</h2>
-    <p>The four projects share one spine: a self-hosting <strong>build-engine</strong> — a workflow engine whose own database stores its build process, with an HTTP edge and an MCP tool surface over one validated core. The four apps each carry a <strong>Rust&nbsp;&rarr;&nbsp;WebAssembly</strong> engine, so computation happens on your device and your data never leaves the page. The UI layer is dependency-free <strong>TypeScript</strong> — no framework. Each repository is small, tested, and CI-green; the build-engine even recorded its own RBAC feature as a Case you can read.</p>
-  </section>
-</main>
-<footer>Open source · runs offline · <a href="https://github.com/doumouya" target="_blank" rel="noopener noreferrer">github.com/doumouya</a></footer>
+.ds-omni { max-width: 30rem; margin-top: var(--sp-3); }
+.ds-actions { margin-top: var(--sp-3); }
+.ds-actions .amu-btn { text-decoration: none; }
+.ds-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: var(--sp-4);
+}
+.ds-card {
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--sp-4);
+}
+.ds-card h3 {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+.ds-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
 
-<script type="module">// ../../amenan-ui/src/kernel/dom.ts
+/* ══ chart designer (dashboard-grid + ECharts tiles) ═══════════════════════*/
+.designer-grid {
+  margin-top: var(--sp-4);
+}
+.designer-grid .amu-dg {
+  height: 68vh;
+  min-height: 30rem;
+}
+.amu-dg-cell .amu-chart-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.amu-dg-cell .amu-chart-canvas {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+.lab-toolbar .amu-btn { text-decoration: none; }
+.designer-toolbar {
+  flex-wrap: wrap;
+  row-gap: var(--sp-3);
+}
+.opt-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.opt-label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-mute);
+  margin-right: var(--sp-1);
+}
+.opt-chip {
+  min-height: var(--ctl-h);
+  padding: 0 var(--sp-3);
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-dim);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.opt-chip:hover {
+  color: var(--text);
+}
+.opt-chip[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+</style></head><body><div id="root"></div>
+<noscript>
+  <div style="max-width:42rem;margin:0 auto;padding:2rem;font-family:ui-monospace,monospace">
+    <h1>Emmanuel Doumouya</h1>
+    <p>AI-native data engineer. Privacy-by-design tools that run entirely in your browser.</p>
+    <p>This site needs JavaScript to run its demos. Code and writing:
+      <a href="https://github.com/doumouya">github.com/doumouya</a> ·
+      <a href="mailto:em.doumouya@gmail.com">em.doumouya@gmail.com</a>
+    </p>
+  </div>
+</noscript>
+
+<script type="module">// ../amenan-ui/src/kernel/dom.ts
+function esc(v) {
+  return String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+}
 function el(tag, attrs, ...children) {
   const node = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs ?? {})) {
@@ -629,7 +1971,30 @@ function el(tag, attrs, ...children) {
   return node;
 }
 
-// ../../amenan-ui/src/theme/theme.ts
+// ../amenan-ui/src/kernel/events.ts
+var buffer = [];
+var CAP = 100;
+var DEDUP_WINDOW = 1e4;
+var seen = /* @__PURE__ */ new Map();
+function capture(kind, message, detail) {
+  const key = `${kind}|${message}`;
+  const now = Date.now();
+  for (const [k, ts] of seen) {
+    if (now - ts >= DEDUP_WINDOW) seen.delete(k);
+  }
+  const last = seen.get(key);
+  if (last !== void 0 && now - last < DEDUP_WINDOW) return;
+  seen.set(key, now);
+  if (buffer.length >= CAP) return;
+  buffer.push({ kind, message, detail, at: (/* @__PURE__ */ new Date()).toISOString() });
+  console.warn(`[amu:${kind}]`, message, detail ?? "");
+}
+function captureMountError(page, err) {
+  const message = err?.message;
+  capture("mount", `page ${page} failed`, String(message ?? err));
+}
+
+// ../amenan-ui/src/theme/theme.ts
 var THEME_KEY = "amu-theme";
 var MODE_KEY = "amu-mode";
 var DEFAULT_THEME = "redpash";
@@ -690,7 +2055,75 @@ function onThemeChange(fn) {
 }
 var prePaintSnippet = `(function(){try{var t=localStorage.getItem("${THEME_KEY}");var m=localStorage.getItem("${MODE_KEY}");var d=document.documentElement;var isMode=function(v){return v==="dark"||v==="light";};if(!isMode(m)){m=isMode(t)?t:"${DEFAULT_MODE}";}var theme=(t&&!isMode(t))?t:"${DEFAULT_THEME}";d.setAttribute("data-theme",theme);d.setAttribute("data-mode",m);}catch(e){}})();`;
 
-// ../../amenan-ui/src/components/termbar/termbar.ts
+// ../amenan-ui/src/router.ts
+function routeId() {
+  return (location.hash || "").replace(/^#\//, "").split("?")[0] ?? "";
+}
+function createRouter(cfg) {
+  let current2 = null;
+  function host() {
+    return cfg.host ?? document.querySelector("#app");
+  }
+  function ctxFor(id) {
+    return cfg.buildCtx ? cfg.buildCtx(id) : {};
+  }
+  async function navigate() {
+    const id = routeId();
+    const ctx = ctxFor(id);
+    for (const guard of cfg.guards ?? []) {
+      const redirect = guard(id, ctx);
+      if (redirect != null) {
+        location.hash = "#/" + redirect;
+        return;
+      }
+    }
+    const def = cfg.routes[id];
+    if (!def) {
+      cfg.notFound?.(ctx);
+      const landing = cfg.resolveLanding(ctx);
+      location.hash = "#/" + landing;
+      return;
+    }
+    try {
+      current2?.destroy?.();
+    } catch (err) {
+      captureMountError(id, err);
+    }
+    current2 = null;
+    try {
+      if (def.load) await def.load();
+      if (cfg.loadModule && typeof def.meta?.["module"] === "string") {
+        await cfg.loadModule(def.meta["module"]);
+      }
+      const handle = await cfg.mount(host(), def, ctx);
+      current2 = handle ?? null;
+    } catch (err) {
+      current2 = null;
+      captureMountError(id, err);
+    }
+  }
+  function onHashChange() {
+    void navigate();
+  }
+  return {
+    start() {
+      addEventListener("hashchange", onHashChange);
+      void navigate();
+    },
+    stop() {
+      removeEventListener("hashchange", onHashChange);
+      try {
+        current2?.destroy?.();
+      } catch (err) {
+        captureMountError("router-stop", err);
+      }
+      current2 = null;
+    },
+    navigate
+  };
+}
+
+// ../amenan-ui/src/components/termbar/termbar.ts
 function mountTermbar(host, cfg) {
   const cwd = el("span", { class: "amu-termbar-cwd" }, cfg.cwd);
   const status = el("span", { class: "amu-termbar-status" }, cfg.status ?? "\u25CF client-side");
@@ -705,29 +2138,66 @@ function mountTermbar(host, cfg) {
   toggle.addEventListener("click", () => toggleMode());
   const unsub = onThemeChange(() => syncToggle());
   syncToggle();
-  const root = el("div", { class: "amu-termbar" });
-  root.appendChild(el("span", { class: "amu-termbar-dot" }));
-  root.appendChild(el("span", { class: "amu-termbar-dot" }));
-  root.appendChild(el("span", { class: "amu-termbar-dot" }));
-  root.appendChild(el("span", { class: "amu-termbar-name" }, "doumouya"));
-  root.appendChild(cwd);
-  root.appendChild(toggle);
-  root.appendChild(status);
-  host.appendChild(root);
+  const root2 = el("div", { class: "amu-termbar" });
+  root2.appendChild(el("span", { class: "amu-termbar-dot" }));
+  root2.appendChild(el("span", { class: "amu-termbar-dot" }));
+  root2.appendChild(el("span", { class: "amu-termbar-dot" }));
+  root2.appendChild(el("span", { class: "amu-termbar-name" }, "doumouya"));
+  root2.appendChild(cwd);
+  root2.appendChild(toggle);
+  root2.appendChild(status);
+  host.appendChild(root2);
   return {
-    el: root,
+    el: root2,
     update(p) {
       if (p.cwd != null) cwd.textContent = p.cwd;
       if (p.status != null) status.textContent = p.status;
     },
     destroy() {
       unsub();
-      root.remove();
+      root2.remove();
     }
   };
 }
 
-// ../../amenan-ui/src/components/atoms/atoms.ts
+// ../amenan-ui/src/components/atoms/atoms.ts
+function button(cfg) {
+  const cls = ["amu-btn"];
+  if (cfg.variant) cls.push(`amu-btn--${cfg.variant}`);
+  if (cfg.size) cls.push(`amu-btn--${cfg.size}`);
+  if (cfg.icon && cfg.label == null) cls.push("amu-btn--icon");
+  const b = el(
+    "button",
+    {
+      class: cls.join(" "),
+      type: cfg.type ?? "button",
+      onclick: cfg.onClick,
+      title: cfg.title ?? null,
+      "aria-label": cfg.ariaLabel ?? cfg.title ?? null
+    },
+    cfg.icon ? el("i", { class: "bi " + cfg.icon }) : null,
+    cfg.label ?? null
+  );
+  if (cfg.disabled) b.disabled = true;
+  return b;
+}
+function input(cfg = {}) {
+  const i = el("input", {
+    class: "amu-input",
+    type: cfg.type ?? "text",
+    placeholder: cfg.placeholder ?? ""
+  });
+  if (cfg.value != null) i.value = cfg.value;
+  const onInput = cfg.onInput;
+  if (onInput) i.addEventListener("input", () => onInput(i.value));
+  const onEnter = cfg.onEnter;
+  if (onEnter) {
+    i.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") onEnter(i.value);
+    });
+  }
+  return i;
+}
 function badge(cfg) {
   return el(
     "span",
@@ -735,8 +2205,11 @@ function badge(cfg) {
     cfg.label
   );
 }
+function kbd(label) {
+  return el("kbd", { class: "amu-kbd" }, label);
+}
 
-// ../../amenan-ui/src/components/card/card.ts
+// ../amenan-ui/src/components/card/card.ts
 function mountCard(host, cfg) {
   const tag = cfg.href ? "a" : cfg.onClick ? "button" : "div";
   const card = el(
@@ -756,7 +2229,589 @@ function mountCard(host, cfg) {
   }, destroy: () => card.remove() };
 }
 
-// ../../amenan-ui/src/components/chart/build.ts
+// ../amenan-ui/src/components/empty-state/empty-state.ts
+function mountEmptyState(host, cfg) {
+  const node = el(
+    "div",
+    { class: "amu-empty" },
+    el("h3", { class: "amu-empty-title" }, cfg.title),
+    cfg.line ? el("p", { class: "amu-empty-line" }, cfg.line) : null,
+    cfg.action ? button({ variant: "accent", ...cfg.action }) : null
+  );
+  host.append(node);
+  return { el: node, update() {
+  }, destroy: () => node.remove() };
+}
+
+// ../amenan-ui/src/components/modal/modal.ts
+function openModal(cfg) {
+  const overlay = el("div", { class: "amu-modal-overlay", role: "dialog", "aria-modal": "true" });
+  const foot = el("div", { class: "amu-modal-foot" });
+  const box = el(
+    "div",
+    { class: "amu-modal" },
+    el("h2", { class: "amu-modal-title" }, cfg.title),
+    el("div", { class: "amu-modal-body" }, cfg.body ?? ""),
+    foot
+  );
+  function close() {
+    overlay.remove();
+    document.removeEventListener("keydown", onKey);
+  }
+  function onKey(e) {
+    if (e.key === "Escape") close();
+  }
+  for (const a of cfg.actions ?? []) {
+    const action = a;
+    foot.append(
+      button({
+        label: action.label,
+        variant: action.variant,
+        onClick: () => action.onClick?.({ close })
+      })
+    );
+  }
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) close();
+  });
+  document.addEventListener("keydown", onKey);
+  overlay.append(box);
+  document.body.append(overlay);
+  box.querySelector("input, select, button")?.focus();
+  return { el: overlay, close };
+}
+
+// ../amenan-ui/src/components/select/select.ts
+function mountSelect(host, cfg) {
+  const sel = el("select", { class: "amu-select" });
+  function render(options, value) {
+    sel.replaceChildren(
+      ...options.map((o) => {
+        const opt = el("option", { value: o.value }, o.label);
+        if (o.value === value) opt.selected = true;
+        return opt;
+      })
+    );
+  }
+  render(cfg.options ?? [], cfg.value);
+  sel.addEventListener("change", () => cfg.onChange?.(sel.value));
+  host.append(sel);
+  return {
+    el: sel,
+    update: (p) => render(p.options ?? cfg.options ?? [], p.value ?? sel.value),
+    destroy: () => sel.remove()
+  };
+}
+
+// ../amenan-ui/src/components/pager/pager.ts
+function mountPager(host, cfg) {
+  const node = el("div", { class: "amu-pager" });
+  function render({ page, pages, total }) {
+    const btn = (label, p, opts = {}) => {
+      const b = el(
+        "button",
+        {
+          class: `amu-pager-btn${opts.active ? " is-active" : ""}`,
+          type: "button",
+          onclick: () => cfg.onPage?.(p)
+        },
+        label
+      );
+      if (opts.disabled) b.disabled = true;
+      return b;
+    };
+    const start = Math.max(1, Math.min(page - 2, pages - 4));
+    const end = Math.min(pages, start + 4);
+    const numbers = [];
+    for (let p = start; p <= end; p++) numbers.push(btn(String(p), p, { active: p === page }));
+    node.replaceChildren(
+      el("span", {}, `${total.toLocaleString()} rows`),
+      el(
+        "span",
+        { class: "amu-pager-pages" },
+        btn("\u2039", page - 1, { disabled: page <= 1 }),
+        ...numbers,
+        btn("\u203A", page + 1, { disabled: page >= pages })
+      )
+    );
+  }
+  render(cfg);
+  host.append(node);
+  return {
+    el: node,
+    update: (p) => render({ ...cfg, ...p }),
+    destroy: () => node.remove()
+  };
+}
+
+// ../amenan-ui/src/components/markdown/markdown.ts
+var SAFE_SCHEME = /^(https?:|mailto:)/i;
+var BLOCK_LEAD = /^(```|>\s?|\s*[-*]\s+|\s*\d+\.\s+)/;
+var INLINE = /`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|__([^_]+)__|\*([^*]+)\*|_([^_]+)_/;
+function inline(text) {
+  const out = [];
+  let rest = String(text);
+  while (rest) {
+    const m = INLINE.exec(rest);
+    if (!m) {
+      out.push(document.createTextNode(rest));
+      break;
+    }
+    if (m.index > 0) out.push(document.createTextNode(rest.slice(0, m.index)));
+    if (m[1] != null) {
+      out.push(el("code", {}, m[1]));
+    } else if (m[2] != null) {
+      const href = m[3] ?? "";
+      out.push(
+        SAFE_SCHEME.test(href) ? el("a", { href, target: "_blank", rel: "noopener noreferrer" }, ...inline(m[2])) : document.createTextNode(m[0])
+        // unsafe scheme → literal text
+      );
+    } else if (m[4] != null || m[5] != null) {
+      out.push(el("strong", {}, ...inline(m[4] ?? m[5] ?? "")));
+    } else if (m[6] != null || m[7] != null) {
+      out.push(el("em", {}, ...inline(m[6] ?? m[7] ?? "")));
+    }
+    rest = rest.slice(m.index + m[0].length);
+  }
+  return out;
+}
+var listItems = (lines, strip) => lines.map((ln) => el("li", {}, ...inline(ln.replace(strip, ""))));
+function renderMarkdown(text) {
+  const root2 = el("div", { class: "amu-md" });
+  const lines = String(text ?? "").replace(/\r\n/g, "\n").split("\n");
+  let i = 0;
+  const take = (pred) => {
+    const buf = [];
+    while (i < lines.length && pred(lines[i] ?? "")) {
+      buf.push(lines[i] ?? "");
+      i++;
+    }
+    return buf;
+  };
+  while (i < lines.length) {
+    const line = lines[i] ?? "";
+    if (/^```/.test(line)) {
+      i++;
+      const buf = take((l) => !/^```/.test(l));
+      i++;
+      root2.append(el("pre", {}, el("code", {}, buf.join("\n"))));
+    } else if (/^>\s?/.test(line)) {
+      const buf = take((l) => /^>\s?/.test(l)).map((l) => l.replace(/^>\s?/, ""));
+      root2.append(el("blockquote", {}, ...inline(buf.join("\n"))));
+    } else if (/^\s*[-*]\s+/.test(line)) {
+      root2.append(el("ul", {}, ...listItems(take((l) => /^\s*[-*]\s+/.test(l)), /^\s*[-*]\s+/)));
+    } else if (/^\s*\d+\.\s+/.test(line)) {
+      root2.append(el("ol", {}, ...listItems(take((l) => /^\s*\d+\.\s+/.test(l)), /^\s*\d+\.\s+/)));
+    } else if (line.trim() === "") {
+      i++;
+    } else {
+      const buf = take((l) => l.trim() !== "" && !BLOCK_LEAD.test(l));
+      const p = el("p", {});
+      buf.forEach((ln, k) => {
+        if (k) p.append(el("br"));
+        p.append(...inline(ln));
+      });
+      root2.append(p);
+    }
+  }
+  return root2;
+}
+
+// ../amenan-ui/src/components/dashboard-grid/dashboard-grid.ts
+var clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+function mountDashboardGrid(host, cfg = {}) {
+  const cols = cfg.cols || 15;
+  const rows = cfg.rows || 10;
+  let editable = !!cfg.editable;
+  const onLayoutChange = cfg.onLayoutChange;
+  const onRemove = cfg.onRemove;
+  const grid = el("div", { class: "amu-dg" });
+  grid.style.setProperty("--dg-cols", String(cols));
+  grid.style.setProperty("--dg-rows", String(rows));
+  grid.classList.toggle("is-editable", editable);
+  host.append(grid);
+  const cells = /* @__PURE__ */ new Map();
+  const cellW = () => grid.clientWidth / cols;
+  const cellH = () => grid.clientHeight / rows;
+  const place = (cell, e) => {
+    cell.style.gridColumn = `${e.x + 1} / span ${e.w}`;
+    cell.style.gridRow = `${e.y + 1} / span ${e.h}`;
+  };
+  const commit = () => onLayoutChange?.(getLayout());
+  function renderCell(e) {
+    const cell = el("div", { class: "amu-dg-cell", "data-dg-id": e.id });
+    place(cell, e);
+    const body = el("div", { class: "amu-dg-cell-body" });
+    cell.append(body);
+    if (editable) {
+      const bar = el(
+        "div",
+        { class: "amu-dg-cell-bar" },
+        el("span", { class: "amu-dg-grip", title: "Drag to move" }),
+        el(
+          "button",
+          {
+            class: "amu-dg-del",
+            type: "button",
+            title: "Remove",
+            onclick: () => {
+              removeElement(e.id);
+              onRemove?.(e.id);
+            }
+          },
+          "\xD7"
+        )
+      );
+      cell.append(bar, el("span", { class: "amu-dg-resize", title: "Drag to resize" }));
+      wireDrag(cell, e, bar);
+      wireResize(cell, e);
+    }
+    grid.append(cell);
+    const handle = e.mount ? e.mount(body) ?? null : null;
+    cells.set(e.id, { e, cell, handle });
+  }
+  function wireDrag(cell, e, grabEl) {
+    grabEl.addEventListener("pointerdown", (ev) => {
+      if (ev.target?.closest(".amu-dg-del")) return;
+      ev.preventDefault();
+      const sx = ev.clientX;
+      const sy = ev.clientY;
+      const ox = e.x;
+      const oy = e.y;
+      const cw = cellW();
+      const ch = cellH();
+      const move = (m) => {
+        e.x = clamp(ox + Math.round((m.clientX - sx) / cw), 0, cols - e.w);
+        e.y = clamp(oy + Math.round((m.clientY - sy) / ch), 0, rows - e.h);
+        place(cell, e);
+      };
+      const up = () => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+        cell.classList.remove("is-dragging");
+        commit();
+      };
+      cell.classList.add("is-dragging");
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+    });
+  }
+  function wireResize(cell, e) {
+    const handle = cell.querySelector(".amu-dg-resize");
+    handle?.addEventListener("pointerdown", (ev) => {
+      const p = ev;
+      p.preventDefault();
+      p.stopPropagation();
+      const sx = p.clientX;
+      const sy = p.clientY;
+      const ow = e.w;
+      const oh = e.h;
+      const cw = cellW();
+      const ch = cellH();
+      const move = (m) => {
+        e.w = clamp(ow + Math.round((m.clientX - sx) / cw), 1, cols - e.x);
+        e.h = clamp(oh + Math.round((m.clientY - sy) / ch), 1, rows - e.y);
+        place(cell, e);
+      };
+      const up = () => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+        cell.classList.remove("is-resizing");
+        commit();
+      };
+      cell.classList.add("is-resizing");
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+    });
+  }
+  function getLayout() {
+    return [...cells.values()].map(({ e }) => ({ id: e.id, x: e.x, y: e.y, w: e.w, h: e.h }));
+  }
+  function addElement(e) {
+    const rec = { x: 0, y: 0, w: 3, h: 2, ...e };
+    renderCell(rec);
+    commit();
+    return rec;
+  }
+  function removeElement(id) {
+    const c = cells.get(id);
+    if (!c) return;
+    c.handle?.destroy?.();
+    c.cell.remove();
+    cells.delete(id);
+    commit();
+  }
+  function setEditable(next) {
+    editable = !!next;
+    grid.classList.toggle("is-editable", editable);
+    const snapshot = [...cells.values()].map(({ e }) => e);
+    cells.forEach(({ cell }) => cell.remove());
+    cells.clear();
+    snapshot.forEach(renderCell);
+  }
+  (cfg.elements ?? []).forEach((e) => renderCell({ ...e }));
+  return {
+    el: grid,
+    getLayout,
+    addElement,
+    removeElement,
+    setEditable,
+    update: (p = {}) => {
+      if (p.elements) {
+        cells.forEach(({ cell, handle }) => {
+          handle?.destroy?.();
+          cell.remove();
+        });
+        cells.clear();
+        p.elements.forEach((e) => renderCell({ ...e }));
+      }
+    },
+    destroy: () => {
+      cells.forEach(({ handle }) => handle?.destroy?.());
+      grid.remove();
+    }
+  };
+}
+
+// ../amenan-ui/src/components/chart/theme.ts
+function getEcharts() {
+  if (typeof window === "undefined") return void 0;
+  return window.echarts;
+}
+var THEME_NAMES = ["theme-mocha", "theme-latte", "theme-dark", "theme-light"];
+var CHART_THEME = {
+  dark: "theme-dark",
+  light: "theme-light",
+  mocha: "theme-mocha",
+  latte: "theme-latte"
+};
+var registerP = null;
+var themeLoad = null;
+function configureChartThemes(cfg) {
+  themeLoad = cfg.load;
+  registerP = null;
+}
+function ensureRegisteredThemes() {
+  if (registerP) return registerP;
+  const echarts = getEcharts();
+  const load = themeLoad;
+  if (!echarts || !load) return Promise.resolve();
+  registerP = Promise.all(
+    THEME_NAMES.map(async (name) => {
+      try {
+        const theme = await load({ name });
+        if (theme != null) echarts.registerTheme(name, theme);
+      } catch {
+      }
+    })
+  );
+  return registerP;
+}
+function chartTheme() {
+  const ds = typeof document !== "undefined" ? document.documentElement?.dataset : void 0;
+  const mode = ds?.mode;
+  if (mode && CHART_THEME[mode]) return CHART_THEME[mode];
+  const legacy = ds?.theme;
+  if (legacy && CHART_THEME[legacy]) return CHART_THEME[legacy];
+  const light = typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: light)").matches;
+  return light ? "theme-light" : "theme-dark";
+}
+
+// ../amenan-ui/src/components/chart/chart.ts
+function mountChart(host, cfg = {}) {
+  const { title, option, theme, id } = cfg;
+  const echarts = getEcharts();
+  const empty = !option || !echarts;
+  const card = el("div", {
+    class: "amu-chart-card" + (empty ? " amu-chart-card--empty" : "")
+  });
+  if (title) card.appendChild(el("div", { class: "amu-chart-title" }, title));
+  const canvas = el("div", { class: "amu-chart-canvas", ...!empty && id ? { id } : {} });
+  card.appendChild(canvas);
+  host.appendChild(card);
+  function emptyHandle() {
+    card.classList.add("amu-chart-card--empty");
+    return {
+      el: card,
+      canvas,
+      chart: null,
+      resize() {
+      },
+      setOption() {
+      },
+      dispose() {
+      },
+      destroy() {
+        card.remove();
+      }
+    };
+  }
+  if (empty || !echarts) return emptyHandle();
+  let chart;
+  let current2 = option;
+  try {
+    ensureRegisteredThemes();
+    chart = echarts.init(canvas, theme || chartTheme());
+    chart.setOption(option);
+  } catch (e) {
+    captureMountError("chart", e);
+    return emptyHandle();
+  }
+  const onResize = () => {
+    try {
+      chart.resize();
+    } catch (e) {
+      captureMountError("chart", e);
+    }
+  };
+  window.addEventListener("resize", onResize);
+  const unsubTheme = onThemeChange(() => {
+    try {
+      chart.dispose();
+      chart = echarts.init(canvas, theme || chartTheme());
+      chart.setOption(current2);
+    } catch (e) {
+      captureMountError("chart", e);
+    }
+  });
+  return {
+    el: card,
+    canvas,
+    // A getter so the handle's `chart` field tracks the LIVE instance across the
+    // AC-16 dispose+re-init reaction (the binding is reassigned on a theme switch).
+    get chart() {
+      return chart;
+    },
+    resize() {
+      try {
+        chart.resize();
+      } catch (e) {
+        captureMountError("chart", e);
+      }
+    },
+    setOption(opt) {
+      current2 = opt;
+      try {
+        chart.setOption(opt);
+      } catch (e) {
+        captureMountError("chart", e);
+      }
+    },
+    dispose() {
+      unsubTheme();
+      window.removeEventListener("resize", onResize);
+      try {
+        chart.dispose();
+      } catch (e) {
+        captureMountError("chart", e);
+      }
+    },
+    destroy() {
+      unsubTheme();
+      window.removeEventListener("resize", onResize);
+      try {
+        chart.dispose();
+      } catch (e) {
+        captureMountError("chart", e);
+      }
+      card.remove();
+    }
+  };
+}
+
+// ../amenan-ui/src/components/chart/build.ts
+var THEMES = {
+  vintage: {
+    name: "Vintage",
+    series: ["#d87c7c", "#919e8b", "#d7ab82", "#6e7074", "#61a0a8", "#efa18d", "#787464", "#cc7e63"],
+    text: "#333333",
+    axis: "#333333",
+    split: "#dcdcdc",
+    bg: "#fef8ef"
+  },
+  latte: {
+    name: "Latte",
+    series: ["#1e66f5", "#8839ef", "#179299", "#fe640b", "#d20f39", "#df8e1d"],
+    text: "#4c4f69",
+    axis: "#9ca0b0",
+    split: "rgba(76,79,105,.12)",
+    bg: "transparent"
+  },
+  mocha: {
+    name: "Mocha",
+    series: ["#89b4fa", "#cba6f7", "#94e2d5", "#fab387", "#f38ba8", "#f9e2af"],
+    text: "#cdd6f4",
+    axis: "#6c7086",
+    split: "rgba(255,255,255,.08)",
+    bg: "transparent"
+  },
+  // Registered themes self-register via chart/theme.ts (the chart-theme JSON) or
+  // the consumer's echarts-themes scripts. `registered:true` flips buildOption into
+  // pass-through (no explicit color/text/axis) so the theme drives; `series` stays
+  // only for the Style-picker swatch.
+  macarons: {
+    name: "Macarons",
+    registered: true,
+    series: ["#2ec7c9", "#b6a2de", "#5ab1ef", "#ffb980", "#d87a80", "#8d98b3", "#e5cf0d", "#97b552"]
+  },
+  roma: {
+    name: "Roma",
+    registered: true,
+    series: ["#E01F54", "#001852", "#f5e8c8", "#b8d2c7", "#c6b38e", "#a4d8c2", "#f3d999", "#d3758f"]
+  },
+  shine: {
+    name: "Shine",
+    registered: true,
+    series: ["#c12e34", "#e6b600", "#0098d9", "#2b821d", "#005eaa", "#339ca8", "#cda819", "#32a487"]
+  },
+  infographic: {
+    name: "Infographic",
+    registered: true,
+    series: ["#C1232B", "#27727B", "#FCCE10", "#E87C25", "#B5C334", "#FE8463", "#9BCA63", "#FAD860"]
+  },
+  "theme-mocha": {
+    name: "Mocha (themed)",
+    registered: true,
+    series: ["#89b4fa", "#cba6f7", "#94e2d5", "#fab387", "#f38ba8", "#f9e2af", "#a6e3a1", "#74c7ec"]
+  },
+  "theme-latte": {
+    name: "Latte (themed)",
+    registered: true,
+    series: ["#1e66f5", "#8839ef", "#179299", "#fe640b", "#d20f39", "#df8e1d", "#40a02b", "#04a5e5"]
+  },
+  // The app's primary themes — listed so the editor's theme dropdown can offer the
+  // same identity the rest of the app wears.
+  "theme-dark": {
+    name: "Dark",
+    registered: true,
+    series: ["#89b4fa", "#cba6f7", "#94e2d5", "#fab387", "#f38ba8", "#f9e2af", "#a6e3a1", "#74c7ec"]
+  },
+  "theme-light": {
+    name: "Light",
+    registered: true,
+    series: ["#1e66f5", "#8839ef", "#179299", "#fe640b", "#d20f39", "#df8e1d", "#40a02b", "#04a5e5"]
+  },
+  dark: {
+    name: "Dark",
+    registered: true,
+    series: ["#4992ff", "#7cffb2", "#fddd60", "#ff6e76", "#58d9f9", "#05c091", "#ff8a45", "#8d48e3"]
+  },
+  "tech-blue": {
+    name: "Tech Blue",
+    registered: true,
+    series: ["#4d4d4d", "#3a5897", "#007bb6", "#7094db", "#0080ff", "#b3b3ff", "#00bdec", "#33ccff"]
+  },
+  v5: {
+    name: "ECharts v5",
+    registered: true,
+    series: ["#5470c6", "#91cc75", "#fac858", "#ee6666", "#73c0de", "#3ba272", "#fc8452", "#9a60b4"]
+  },
+  gray: {
+    name: "Gray",
+    registered: true,
+    series: ["#757575", "#c7c7c7", "#dadada", "#8b8b8b", "#b5b5b5", "#e9e9e9"]
+  }
+};
 var TYPES = {
   cartesian: [
     ["bar", "bi-bar-chart", "Bar"],
@@ -782,11 +2837,611 @@ Object.entries(TYPES).forEach(
   })
 );
 var TYPE_LIST = Object.values(TYPES).flat();
+var SMOOTHABLE = /* @__PURE__ */ new Set(["line", "area"]);
+function asNumberArray(data) {
+  return (data ?? []).map(
+    (v) => typeof v === "object" && v !== null && "value" in v ? Number(v.value) : Number(v)
+  );
+}
+function buildOption(cfg, t) {
+  const reg = !!t.registered;
+  const leg = {
+    show: cfg.legend,
+    type: "scroll",
+    icon: "roundRect",
+    itemWidth: 14,
+    itemHeight: 9,
+    ...reg ? {} : { textStyle: { color: t.text } }
+  };
+  if (cfg.legendPos) leg[cfg.legendPos] = cfg.legendPos === "top" ? 4 : 0;
+  const base = {
+    ...reg ? {} : {
+      color: t.series,
+      backgroundColor: t.bg,
+      textStyle: { color: t.text, fontFamily: "system-ui" }
+    },
+    legend: leg,
+    tooltip: {
+      show: cfg.tooltip,
+      trigger: cfg.kind === "pie" || cfg.kind === "gauge" || cfg.kind === "radar" ? "item" : "axis"
+    },
+    animationDuration: 600
+  };
+  const axisLineStyle = (show) => reg ? { show } : { show, lineStyle: { color: t.axis } };
+  const splitLineStyle = (show) => reg ? { show } : { show, lineStyle: { color: t.split } };
+  const axisLabelStyle = reg ? {} : { color: t.text };
+  const padT = cfg.legend && cfg.legendPos === "top" ? 34 : 14;
+  const padB = cfg.legend && cfg.legendPos === "bottom" ? 34 : 10;
+  const baked = cfg.option || null;
+  const fallbackX = ["A", "B", "C", "D", "E"];
+  const fallbackY = [12, 19, 8, 15, 22];
+  const labels = baked?.xAxis?.data || baked?.yAxis?.data || fallbackX;
+  const bakedSeries0 = baked?.series?.[0];
+  const values = bakedSeries0?.data?.length ? asNumberArray(bakedSeries0.data) : fallbackY;
+  const firstBaked = bakedSeries0?.data?.[0];
+  const pieData = bakedSeries0?.data?.length && typeof firstBaked === "object" && firstBaked !== null ? bakedSeries0.data : labels.map((n, i) => ({ name: String(n), value: Number(values[i]) || 0 }));
+  if (cfg.kind === "pie") {
+    const isDonut = cfg.type === "donut" || cfg.type === "half_donut";
+    const isHalf = cfg.type === "half_donut";
+    const isRose = cfg.type === "rose";
+    const radius = isDonut ? ["52%", "76%"] : isRose ? ["20%", "78%"] : ["0%", "72%"];
+    const angles = isHalf ? { startAngle: 180, endAngle: 360 } : {};
+    return {
+      ...base,
+      series: [
+        {
+          type: "pie",
+          radius,
+          ...angles,
+          roseType: isRose ? "area" : void 0,
+          center: ["50%", isHalf ? "70%" : cfg.legend && cfg.legendPos === "bottom" ? "44%" : "50%"],
+          data: pieData,
+          ...reg ? {} : {
+            label: { color: t.text },
+            itemStyle: {
+              borderColor: t.bg === "transparent" ? "rgba(0,0,0,0)" : t.bg,
+              borderWidth: 2
+            }
+          }
+        }
+      ]
+    };
+  }
+  if (cfg.kind === "barh") {
+    return {
+      ...base,
+      grid: { left: 6, right: 18, top: padT, bottom: padB, containLabel: true },
+      xAxis: {
+        type: "value",
+        axisLine: axisLineStyle(cfg.axisLine),
+        splitLine: splitLineStyle(cfg.splitLines),
+        axisLabel: axisLabelStyle
+      },
+      yAxis: {
+        type: "category",
+        data: labels,
+        axisTick: { show: false },
+        axisLine: axisLineStyle(cfg.axisLine),
+        axisLabel: axisLabelStyle
+      },
+      series: [
+        { type: "bar", data: values, barWidth: "56%", itemStyle: { borderRadius: [0, 4, 4, 0] } }
+      ]
+    };
+  }
+  if (cfg.kind === "scatter") {
+    const points = values.map((v, i) => [i, Number(v) || 0]);
+    return {
+      ...base,
+      grid: { left: 6, right: 14, top: padT, bottom: padB, containLabel: true },
+      xAxis: {
+        type: "value",
+        axisLine: axisLineStyle(cfg.axisLine),
+        splitLine: splitLineStyle(cfg.splitLines),
+        axisLabel: axisLabelStyle
+      },
+      yAxis: {
+        type: "value",
+        axisLine: axisLineStyle(cfg.axisLine),
+        splitLine: splitLineStyle(cfg.splitLines),
+        axisLabel: axisLabelStyle
+      },
+      series: [{ type: "scatter", data: points, symbolSize: 10 }]
+    };
+  }
+  if (cfg.kind === "radar") {
+    const max = Math.max(...values.map((v) => Number(v) || 0)) || 1;
+    return {
+      ...base,
+      radar: {
+        indicator: labels.map((n) => ({ name: String(n), max })),
+        ...reg ? {} : {
+          axisLine: { lineStyle: { color: t.split } },
+          splitLine: { lineStyle: { color: t.split } },
+          splitArea: { areaStyle: { color: ["transparent"] } },
+          axisName: { color: t.text }
+        }
+      },
+      series: [
+        {
+          type: "radar",
+          data: [
+            {
+              value: values,
+              name: cfg.title || "series",
+              areaStyle: { opacity: 0.22 },
+              lineStyle: { width: 2 }
+            }
+          ]
+        }
+      ]
+    };
+  }
+  if (cfg.kind === "gauge") {
+    const v = Number(values[0]) || values.reduce((a, b) => a + (Number(b) || 0), 0);
+    const max = Math.max(v, ...values.map((x) => Number(x) || 0)) * 1.25 || 100;
+    return {
+      ...base,
+      series: [
+        {
+          type: "gauge",
+          min: 0,
+          max,
+          ...reg ? {} : {
+            axisLine: { lineStyle: { width: 14, color: [[1, t.series[0]]] } },
+            detail: { formatter: "{value}", color: t.text, fontSize: 18 }
+          },
+          pointer: { length: "60%" },
+          progress: { show: true, width: 14 },
+          data: [{ value: Math.round(v * 100) / 100, name: cfg.title || "" }]
+        }
+      ]
+    };
+  }
+  if (cfg.kind === "pictorial") {
+    return {
+      ...base,
+      grid: { left: 6, right: 14, top: padT, bottom: padB, containLabel: true },
+      xAxis: {
+        type: "category",
+        data: labels,
+        axisTick: { show: false },
+        splitLine: { show: false },
+        axisLine: axisLineStyle(cfg.axisLine),
+        axisLabel: axisLabelStyle
+      },
+      yAxis: {
+        type: "value",
+        axisLine: axisLineStyle(cfg.axisLine),
+        splitLine: splitLineStyle(cfg.splitLines),
+        axisLabel: axisLabelStyle
+      },
+      series: [
+        {
+          type: "pictorialBar",
+          symbol: cfg.symbol || "circle",
+          symbolRepeat: cfg.symbol_repeat !== false,
+          symbolSize: [14, 14],
+          data: values
+        }
+      ]
+    };
+  }
+  const xData = baked?.xAxis?.data || labels;
+  const series = baked?.series?.length ? baked.series.map((s) => ({ name: s.name, data: s.data })) : [{ name: `${cfg.agg_fn}(${cfg.agg_col})`, data: values }];
+  return {
+    ...base,
+    grid: { left: 6, right: 14, top: padT, bottom: padB, containLabel: true },
+    xAxis: {
+      type: "category",
+      data: xData,
+      boundaryGap: cfg.type === "bar",
+      axisTick: { show: false },
+      splitLine: { show: false },
+      axisLine: axisLineStyle(cfg.axisLine),
+      axisLabel: axisLabelStyle
+    },
+    yAxis: {
+      type: "value",
+      axisLine: axisLineStyle(cfg.axisLine),
+      splitLine: splitLineStyle(cfg.splitLines),
+      axisLabel: axisLabelStyle
+    },
+    series: series.map((s) => ({
+      name: s.name,
+      data: s.data,
+      type: cfg.type === "area" ? "line" : cfg.type,
+      smooth: SMOOTHABLE.has(cfg.type ?? "") ? !!cfg.smooth : false,
+      areaStyle: cfg.type === "area" ? { opacity: 0.18 } : void 0,
+      barWidth: "56%",
+      itemStyle: cfg.type === "bar" ? { borderRadius: [4, 4, 0, 0] } : void 0,
+      lineStyle: cfg.type !== "bar" ? { width: 2.6 } : void 0,
+      symbol: "circle",
+      symbolSize: 7
+    }))
+  };
+}
 
-// ../../amenan-ui/src/components/redtable/editor-registry.ts
+// ../amenan-ui/src/components/filter-panel/filter-node.ts
+var PRED_OPS = [
+  { value: "eq", label: "equals" },
+  { value: "neq", label: "does not equal" },
+  { value: "contains", label: "contains" },
+  { value: "not_contains", label: "does not contain" },
+  { value: "starts_with", label: "starts with" },
+  { value: "ends_with", label: "ends with" },
+  { value: "gt", label: "greater than" },
+  { value: "gte", label: "greater than or equal" },
+  { value: "lt", label: "less than" },
+  { value: "lte", label: "less than or equal" },
+  { value: "between", label: "is between" },
+  { value: "in", label: "is one of" },
+  { value: "is_null", label: "is empty" },
+  { value: "not_null", label: "is not empty" }
+];
+var VALUELESS_OPS = /* @__PURE__ */ new Set(["is_null", "not_null"]);
+var RANGE_OPS = /* @__PURE__ */ new Set(["between"]);
+var LIST_OPS = /* @__PURE__ */ new Set(["in", "not_in"]);
+function blankRow() {
+  return { col: "", op: "eq", value: "", from: "", to: "", caseSensitive: false };
+}
+function isGroupRow(row) {
+  return !!row && row.group === true;
+}
+function rowComplete(row) {
+  if (!row || !row.col || !row.op) return false;
+  if (VALUELESS_OPS.has(row.op)) return true;
+  if (RANGE_OPS.has(row.op)) {
+    return String(row.from ?? "").trim() !== "" && String(row.to ?? "").trim() !== "";
+  }
+  return String(row.value ?? "").trim() !== "";
+}
+function predValue(row) {
+  const op = row.op ?? "";
+  if (VALUELESS_OPS.has(op)) return void 0;
+  if (RANGE_OPS.has(op)) {
+    return [coerceNumber(row.from), coerceNumber(row.to)];
+  }
+  if (LIST_OPS.has(op)) {
+    return String(row.value ?? "").split(",").map((s) => s.trim()).filter((s) => s !== "");
+  }
+  return String(row.value ?? "");
+}
+function coerceNumber(v) {
+  const s = String(v ?? "").trim();
+  if (s === "") return s;
+  const n = Number(s);
+  return Number.isFinite(n) && String(n) === s ? n : s;
+}
+function rowToPred(row) {
+  const pred = { node: "pred", col: row.col ?? "", op: row.op ?? "" };
+  const value = predValue(row);
+  if (value !== void 0) pred.value = value;
+  if (row.caseSensitive) pred.case_sensitive = true;
+  return pred;
+}
+function blankGroup() {
+  return { group: true, op: "and", children: [blankRow()] };
+}
+function rowToNode(row) {
+  if (isGroupRow(row)) {
+    const children = (row.children ?? []).map(rowToNode).filter((c) => c !== null);
+    return children.length ? { node: "group", op: row.op === "or" ? "or" : "and", children } : null;
+  }
+  return rowComplete(row) ? rowToPred(row) : null;
+}
+function assembleFilter(rows, combinator) {
+  const children = (rows ?? []).map(rowToNode).filter((c) => c !== null);
+  return { node: "group", op: combinator === "or" ? "or" : "and", children };
+}
+function nodeToRow(child) {
+  if (child && child.node === "group") {
+    return {
+      group: true,
+      op: child.op === "or" ? "or" : "and",
+      children: (child.children ?? []).map(nodeToRow)
+    };
+  }
+  return predToRow(child);
+}
+function decomposeFilter(node) {
+  if (!node || node.node !== "group" || !Array.isArray(node.children) || node.children.length === 0) {
+    return { combinator: "and", rows: [blankRow()] };
+  }
+  const combinator = node.op === "or" ? "or" : "and";
+  const rows = node.children.map(nodeToRow);
+  return { combinator, rows: rows.length ? rows : [blankRow()] };
+}
+function predToRow(pred) {
+  const row = blankRow();
+  if (!pred || pred.node !== "pred") return row;
+  row.col = pred.col ?? "";
+  row.op = pred.op ?? "eq";
+  row.caseSensitive = pred.case_sensitive === true;
+  const op = row.op;
+  if (RANGE_OPS.has(op) && Array.isArray(pred.value)) {
+    row.from = pred.value[0] != null ? String(pred.value[0]) : "";
+    row.to = pred.value[1] != null ? String(pred.value[1]) : "";
+  } else if (LIST_OPS.has(op) && Array.isArray(pred.value)) {
+    row.value = pred.value.join(", ");
+  } else if (!VALUELESS_OPS.has(op) && pred.value != null) {
+    row.value = String(pred.value);
+  }
+  return row;
+}
+
+// ../amenan-ui/src/components/filter-panel/filter-panel.ts
+var MAX_GROUP_DEPTH = 2;
+function isGroupRow2(row) {
+  return row.group === true;
+}
+function mountFilterPanel(host, cfg) {
+  let columns = cfg.columns ?? [];
+  const rows = [];
+  let combinator = "and";
+  const root2 = el("div", { class: "amu-fp" });
+  const combo = el("div", { class: "amu-fp-combo" });
+  const list = el("div", { class: "amu-fp-rows" });
+  const topAdd = addBar(rows, 0);
+  const foot = el(
+    "div",
+    { class: "amu-fp-foot" },
+    button({ label: "Clear", variant: "ghost", onClick: clearAll }),
+    button({ label: "Apply", variant: "accent", onClick: apply })
+  );
+  root2.append(combo, list, topAdd, foot);
+  function setRows(next) {
+    rows.length = 0;
+    rows.push(...next);
+  }
+  function seed(value) {
+    const d = decomposeFilter(value);
+    setRows(d.rows);
+    combinator = d.combinator;
+  }
+  function columnOptions() {
+    return columns.map((c) => ({ value: c.key, label: c.label ?? c.key }));
+  }
+  function valueCell(row) {
+    const cell = el("span", { class: "amu-fp-value" });
+    const op = row.op ?? "";
+    if (VALUELESS_OPS.has(op)) {
+      return cell;
+    }
+    if (RANGE_OPS.has(op)) {
+      const lo = input({
+        type: "number",
+        placeholder: "min",
+        value: row.from,
+        onInput: (v) => row.from = v
+      });
+      const hi = input({
+        type: "number",
+        placeholder: "max",
+        value: row.to,
+        onInput: (v) => row.to = v
+      });
+      lo.classList.add("amu-fp-num");
+      hi.classList.add("amu-fp-num");
+      cell.append(lo, el("span", { class: "amu-fp-and" }, "and"), hi);
+      return cell;
+    }
+    const placeholder = LIST_OPS.has(op) ? "a, b, c" : "value";
+    const txt = input({ placeholder, value: row.value, onInput: (v) => row.value = v });
+    txt.classList.add("amu-fp-text");
+    cell.append(txt);
+    return cell;
+  }
+  function comboSeg(activeOp, onChange2) {
+    const seg2 = el("div", { class: "amu-fp-seg", role: "group", "aria-label": "Match" });
+    for (const opt of [
+      { v: "and", l: "All" },
+      { v: "or", l: "Any" }
+    ]) {
+      seg2.append(
+        el(
+          "button",
+          {
+            class: `amu-fp-seg-btn${activeOp === opt.v ? " is-active" : ""}`,
+            type: "button",
+            "aria-pressed": activeOp === opt.v ? "true" : "false",
+            onclick: () => onChange2(opt.v)
+          },
+          opt.l
+        )
+      );
+    }
+    return seg2;
+  }
+  function predRow(row, arr, i) {
+    const colHost = el("span", { class: "amu-fp-col" });
+    mountSelect(colHost, {
+      options: [{ value: "", label: "Column\u2026" }, ...columnOptions()],
+      value: row.col,
+      onChange: (v) => row.col = v
+    });
+    const opHost = el("span", { class: "amu-fp-op" });
+    mountSelect(opHost, {
+      options: PRED_OPS,
+      value: row.op,
+      onChange: (v) => {
+        row.op = v;
+        render();
+      }
+    });
+    const remove = button({
+      label: "\u2715",
+      variant: "ghost",
+      size: "sm",
+      onClick: () => removeAt(arr, i)
+    });
+    remove.classList.add("amu-fp-remove");
+    remove.setAttribute("aria-label", "Remove condition");
+    return el("div", { class: "amu-fp-row" }, colHost, opHost, valueCell(row), remove);
+  }
+  function groupRow(row, arr, i, depth) {
+    const remove = button({
+      label: "\u2715",
+      variant: "ghost",
+      size: "sm",
+      onClick: () => removeAt(arr, i)
+    });
+    remove.classList.add("amu-fp-remove");
+    remove.setAttribute("aria-label", "Remove group");
+    const head = el(
+      "div",
+      { class: "amu-fp-group-head" },
+      comboSeg(row.op, (v) => {
+        row.op = v;
+        render();
+      }),
+      remove
+    );
+    const childList = el("div", { class: "amu-fp-rows" });
+    renderInto(childList, row.children, depth + 1);
+    return el("div", { class: "amu-fp-group" }, head, childList, addBar(row.children, depth + 1));
+  }
+  function buildRow(row, arr, i, depth) {
+    return isGroupRow2(row) ? groupRow(row, arr, i, depth) : predRow(row, arr, i);
+  }
+  function renderInto(container, arr, depth) {
+    container.replaceChildren(...arr.map((r, i) => buildRow(r, arr, i, depth)));
+  }
+  function addBar(arr, depth) {
+    const bar = el("div", { class: "amu-fp-add" });
+    bar.append(
+      button({
+        label: "+ Add condition",
+        variant: "ghost",
+        size: "sm",
+        onClick: () => {
+          arr.push(blankRow());
+          render();
+        }
+      })
+    );
+    if (depth < MAX_GROUP_DEPTH) {
+      bar.append(
+        button({
+          label: "+ Add group",
+          variant: "ghost",
+          size: "sm",
+          onClick: () => {
+            arr.push(blankGroup());
+            render();
+          }
+        })
+      );
+    }
+    return bar;
+  }
+  function removeAt(arr, i) {
+    arr.splice(i, 1);
+    if (arr === rows && rows.length === 0) rows.push(blankRow());
+    render();
+  }
+  function renderCombo() {
+    combo.replaceChildren();
+    if (rows.length <= 1) return;
+    combo.append(
+      el("span", { class: "amu-fp-combo-label" }, "Match"),
+      comboSeg(combinator, (v) => {
+        combinator = v;
+        renderCombo();
+      })
+    );
+  }
+  function render() {
+    renderInto(list, rows, 0);
+    renderCombo();
+  }
+  function clearAll() {
+    setRows([blankRow()]);
+    combinator = "and";
+    render();
+    cfg.onClear?.();
+  }
+  function apply() {
+    cfg.onApply?.(assembleFilter(rows, combinator));
+  }
+  seed(cfg.value);
+  render();
+  host.append(root2);
+  return {
+    el: root2,
+    update: (p = {}) => {
+      if (p.columns) columns = p.columns;
+      if ("value" in p) seed(p.value);
+      render();
+    },
+    destroy: () => root2.remove()
+  };
+}
+
+// ../amenan-ui/src/components/redtable/virtual-rows.ts
+var WINDOW = 40;
+var OVERSCAN = 10;
+function createVirtualRows({
+  scrollHost,
+  tbody,
+  rowCount,
+  rowHeight,
+  renderRow
+}) {
+  const topSpacer = document.createElement("tr");
+  const bottomSpacer = document.createElement("tr");
+  const topCell = document.createElement("td");
+  const bottomCell = document.createElement("td");
+  topSpacer.appendChild(topCell);
+  bottomSpacer.appendChild(bottomCell);
+  for (const cell of [topCell, bottomCell]) {
+    cell.colSpan = 999;
+    cell.style.padding = "0";
+    cell.style.border = "0";
+  }
+  let count = rowCount;
+  function paint() {
+    const scrollTop = scrollHost.scrollTop;
+    const first = Math.max(0, Math.floor(scrollTop / rowHeight) - OVERSCAN);
+    const last = Math.min(count, first + WINDOW + OVERSCAN * 2);
+    topCell.style.height = `${first * rowHeight}px`;
+    bottomCell.style.height = `${Math.max(0, (count - last) * rowHeight)}px`;
+    const frag = document.createDocumentFragment();
+    frag.append(topSpacer);
+    for (let i = first; i < last; i++) frag.append(renderRow(i));
+    frag.append(bottomSpacer);
+    tbody.replaceChildren(frag);
+  }
+  let raf = 0;
+  function onScroll() {
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      paint();
+    });
+  }
+  scrollHost.addEventListener("scroll", onScroll, { passive: true });
+  paint();
+  return {
+    repaint: paint,
+    setCount(n) {
+      count = n;
+      paint();
+    },
+    destroy() {
+      scrollHost.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    }
+  };
+}
+
+// ../amenan-ui/src/components/redtable/editor-registry.ts
 var editors = /* @__PURE__ */ new Map();
 function registerEditor(dtype, factory) {
   editors.set(dtype, factory);
+}
+function defaultEditorFor(col) {
+  return (col?.editor != null ? editors.get(col.editor) : void 0) ?? (col?.dtype != null ? editors.get(col.dtype) : void 0) ?? editors.get("text") ?? makeEditor();
 }
 function makeEditor({ type = "text", parse = (s) => s } = {}) {
   return (td, { value, onCommit }) => {
@@ -834,16 +3489,1193 @@ registerEditor("text", makeEditor());
 registerEditor("int", makeEditor({ type: "number", parse: parseNumber }));
 registerEditor("float", makeEditor({ type: "number", parse: parseNumber }));
 
+// ../amenan-ui/src/components/redtable/redtable.ts
+var AUTO_VIRTUAL_AT = 200;
+function cellHTML(row, col) {
+  const v = row[col.key];
+  if (v == null || v === "") return `<span class="amu-redtable-null">\u2014</span>`;
+  return esc(v);
+}
+function mountRedTable(host, cfg) {
+  if (typeof cfg.rowKey !== "function") {
+    throw new Error("redtable: rowKey(row) is required");
+  }
+  let rows = cfg.rows ?? [];
+  let interaction = cfg.interaction ?? (cfg.selectable ? "select" : "browse");
+  const selected = /* @__PURE__ */ new Set();
+  let activeEditor = null;
+  const resolveEditor = cfg.editorFor ?? defaultEditorFor;
+  const root2 = el("div", { class: "amu-redtable" });
+  const scroll = el("div", { class: "amu-redtable-scroll" });
+  const table = el("table");
+  const thead = el("thead");
+  const tbody = el("tbody");
+  table.append(thead, tbody);
+  scroll.append(table);
+  root2.append(scroll);
+  const foot = el("div", { class: "amu-redtable-foot" });
+  let footMounted = false;
+  let virt = null;
+  let page = 1;
+  const pageSize = cfg.pageSize ?? 50;
+  let emptyHandle = null;
+  function applyInteractionClass() {
+    root2.classList.toggle("is-select", interaction === "select");
+    root2.classList.toggle("is-edit", interaction === "edit");
+    root2.classList.toggle("is-delete", interaction === "delete");
+  }
+  function mode() {
+    if (cfg.mode && cfg.mode !== "auto") return cfg.mode;
+    return rows.length > AUTO_VIRTUAL_AT ? "virtual" : "pager";
+  }
+  function colCount() {
+    return cfg.columns.length + (interaction === "select" ? 1 : 0) + (cfg.rowNumbers ? 1 : 0);
+  }
+  function renderHead() {
+    const ths = cfg.columns.map((c) => {
+      if (!cfg.sortable) return el("th", { scope: "col" }, c.label ?? c.key);
+      const sorted = cfg.sort != null && cfg.sort.col === c.key;
+      const chev = !sorted ? "bi-chevron-expand" : cfg.sort?.descending ? "bi-chevron-down" : "bi-chevron-up";
+      return el(
+        "th",
+        {
+          scope: "col",
+          class: `amu-redtable-th-sort${sorted ? " is-sorted" : ""}`,
+          "data-col": c.key
+        },
+        c.label ?? c.key,
+        el("i", { class: `amu-redtable-sort bi ${chev}`, "aria-hidden": "true" })
+      );
+    });
+    const lead = [];
+    if (cfg.rowNumbers) lead.push(el("th", { class: "amu-redtable-rownum", scope: "col" }, "#"));
+    if (interaction === "select") {
+      lead.push(
+        el(
+          "th",
+          { class: "amu-redtable-check-cell", scope: "col" },
+          el("input", {
+            type: "checkbox",
+            class: "amu-redtable-check amu-redtable-check-all",
+            "aria-label": "Select all"
+          })
+        )
+      );
+    }
+    thead.replaceChildren(el("tr", {}, ...lead, ...ths));
+    syncSelectAll();
+  }
+  function rowEl(row, absIndex = 0) {
+    const key = cfg.rowKey(row);
+    const tr = el("tr", { "data-key": key });
+    if (selected.has(key)) tr.classList.add("is-selected");
+    const cells = cfg.columns.map(
+      (c) => `<td data-col="${esc(c.key)}"${c.dtype === "int" || c.dtype === "float" ? ' class="amu-redtable-num"' : ""}>${cellHTML(row, c)}</td>`
+    ).join("");
+    const hasLead = cfg.rowNumbers || interaction === "select";
+    if (!hasLead) {
+      tr.innerHTML = cells;
+      return tr;
+    }
+    if (cfg.rowNumbers) {
+      tr.append(el("td", { class: "amu-redtable-rownum" }, String(absIndex + 1)));
+    }
+    if (interaction === "select") {
+      const box = el("input", {
+        type: "checkbox",
+        class: "amu-redtable-check",
+        "aria-label": "Select row"
+      });
+      box.checked = selected.has(key);
+      tr.append(el("td", { class: "amu-redtable-check-cell" }, box));
+    }
+    const holder = el("template");
+    holder.innerHTML = cells;
+    tr.append(holder.content);
+    return tr;
+  }
+  function paint() {
+    virt?.destroy();
+    virt = null;
+    emptyHandle?.destroy?.();
+    emptyHandle = null;
+    if (!rows.length) {
+      tbody.replaceChildren();
+      foot.replaceChildren();
+      if (cfg.empty) {
+        const holder = el("td", { colspan: String(colCount()) });
+        emptyHandle = mountEmptyState(holder, cfg.empty);
+        tbody.append(el("tr", {}, holder));
+      }
+      return;
+    }
+    if (mode() === "virtual") {
+      foot.replaceChildren();
+      const rowHeight = parseFloat(getComputedStyle(document.documentElement).fontSize) * 2.25;
+      virt = createVirtualRows({
+        scrollHost: scroll,
+        tbody,
+        rowCount: rows.length,
+        rowHeight,
+        renderRow: (i) => {
+          const r = rows[i];
+          return r ? rowEl(r, i) : document.createElement("tr");
+        }
+      });
+    } else {
+      const pages = Math.max(1, Math.ceil(rows.length / pageSize));
+      page = Math.min(page, pages);
+      const slice = rows.slice((page - 1) * pageSize, page * pageSize);
+      tbody.replaceChildren(...slice.map((r, j) => rowEl(r, (page - 1) * pageSize + j)));
+      foot.replaceChildren();
+      mountPager(foot, {
+        page,
+        pages,
+        total: rows.length,
+        onPage: (p) => {
+          page = p;
+          paint();
+        }
+      });
+      if (!footMounted) {
+        root2.append(foot);
+        footMounted = true;
+      }
+    }
+    syncSelectAll();
+  }
+  function syncSelectAll() {
+    const box = thead.querySelector(".amu-redtable-check-all");
+    if (!box) return;
+    const total = rows.length;
+    const n = selected.size;
+    box.checked = total > 0 && n === total;
+    box.indeterminate = n > 0 && n < total;
+  }
+  function emitSelection() {
+    cfg.onSelectChange?.([...selected]);
+  }
+  tbody.addEventListener("click", (e) => {
+    const target = e.target instanceof Element ? e.target : null;
+    const tr = target?.closest("tr[data-key]");
+    if (!tr) return;
+    const key = tr.dataset.key ?? "";
+    const row = rows.find((r) => cfg.rowKey(r) === key);
+    if (interaction === "edit") {
+      const td = target?.closest("td[data-col]");
+      if (td && row) beginEdit(td, row);
+      cfg.onRowClick?.(row, key);
+      return;
+    }
+    if (interaction === "delete") {
+      cfg.onRowDelete?.(key);
+      cfg.onRowClick?.(row, key);
+      return;
+    }
+    if (interaction === "select") {
+      if (selected.has(key)) selected.delete(key);
+      else selected.add(key);
+      tr.classList.toggle("is-selected", selected.has(key));
+      const box = tr.querySelector(".amu-redtable-check");
+      if (box) box.checked = selected.has(key);
+      syncSelectAll();
+      emitSelection();
+    }
+    cfg.onRowClick?.(row, key);
+  });
+  thead.addEventListener("click", (e) => {
+    const target = e.target instanceof Element ? e.target : null;
+    const box = target?.closest(".amu-redtable-check-all");
+    if (box) {
+      if (box.checked) for (const r of rows) selected.add(cfg.rowKey(r));
+      else selected.clear();
+      for (const tr of tbody.querySelectorAll("tr[data-key]")) {
+        const on = selected.has(tr.dataset.key ?? "");
+        tr.classList.toggle("is-selected", on);
+        const c = tr.querySelector(".amu-redtable-check");
+        if (c) c.checked = on;
+      }
+      syncSelectAll();
+      emitSelection();
+      return;
+    }
+    if (cfg.sortable) {
+      const th = target?.closest("th[data-col]");
+      if (th?.dataset.col != null) cfg.onSort?.(th.dataset.col);
+    }
+  });
+  function beginEdit(td, row) {
+    if (activeEditor) {
+      activeEditor.commit();
+      activeEditor = null;
+    }
+    const colKey = td.dataset.col ?? "";
+    const col = cfg.columns.find((c) => c.key === colKey);
+    if (!col) return;
+    const key = cfg.rowKey(row);
+    const factory = resolveEditor(col);
+    activeEditor = factory(td, {
+      value: row[colKey],
+      onCommit: (value) => {
+        activeEditor = null;
+        cfg.onCellCommit?.(key, colKey, value);
+      }
+    }) ?? null;
+  }
+  applyInteractionClass();
+  renderHead();
+  paint();
+  host.append(root2);
+  return {
+    el: root2,
+    update: (p = {}) => {
+      if (p.rows) {
+        rows = p.rows;
+        page = 1;
+        if (selected.size) {
+          const live = new Set(rows.map((r) => cfg.rowKey(r)));
+          for (const k of [...selected]) if (!live.has(k)) selected.delete(k);
+        }
+      }
+      if ("sort" in p) cfg.sort = p.sort;
+      if ("rowNumbers" in p && p.rowNumbers !== void 0) cfg.rowNumbers = p.rowNumbers;
+      if (p.columns) cfg.columns = p.columns;
+      if (p.columns || "sort" in p || "rowNumbers" in p) renderHead();
+      paint();
+    },
+    selection: () => [...selected],
+    clearSelection: () => {
+      selected.clear();
+      for (const tr of tbody.querySelectorAll("tr.is-selected")) {
+        tr.classList.remove("is-selected");
+        const c = tr.querySelector(".amu-redtable-check");
+        if (c) c.checked = false;
+      }
+      syncSelectAll();
+      emitSelection();
+    },
+    /** Flip the interaction axis live (browse↔select↔edit↔delete). Re-renders
+        head + body so the checkbox column appears/disappears in one pass. */
+    setInteraction: (m) => {
+      if (m === interaction) return;
+      if (activeEditor) {
+        activeEditor.cancel();
+        activeEditor = null;
+      }
+      interaction = m;
+      applyInteractionClass();
+      renderHead();
+      paint();
+    },
+    destroy: () => {
+      virt?.destroy();
+      root2.remove();
+    }
+  };
+}
+
+// ../amenan-ui/src/components/omni/omni.ts
+var ctrlKBound = false;
+function mountOmni(host, cfg) {
+  const kinds = cfg.kinds ?? {};
+  const limit = cfg.limit ?? 20;
+  const kindLabel = (k) => kinds[k]?.label ?? k.charAt(0).toUpperCase() + k.slice(1) + "s";
+  const kindIcon = (k) => "bi " + (kinds[k]?.icon ?? "bi-dot");
+  const field = el("input", {
+    type: "search",
+    placeholder: cfg.placeholder ?? "Search\u2026",
+    "aria-label": "Search"
+  });
+  const menu = el("div", { class: "amu-omni-menu" });
+  menu.hidden = true;
+  const box = el(
+    "div",
+    { class: "amu-omni" },
+    el("i", { class: "bi bi-search" }),
+    field,
+    kbd("Ctrl K"),
+    menu
+  );
+  let results = [];
+  let cursor = -1;
+  let lastQ = "";
+  let timer = null;
+  let inflight = null;
+  const close = () => {
+    menu.hidden = true;
+    cursor = -1;
+  };
+  const open = () => {
+    menu.hidden = false;
+  };
+  async function search(q) {
+    if (inflight) inflight.abort();
+    inflight = new AbortController();
+    try {
+      const data = await cfg.source({ q, limit, signal: inflight.signal });
+      results = Array.isArray(data) ? data : [];
+      cursor = results.length ? 0 : -1;
+      render(q);
+      open();
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
+      const status = err?.status;
+      menu.replaceChildren(
+        el("div", { class: "amu-omni-state" }, "Search failed" + (status ? ` (${status})` : "") + ".")
+      );
+      open();
+    }
+  }
+  function render(q) {
+    if (!results.length) {
+      menu.replaceChildren(el("div", { class: "amu-omni-state" }, "No results."));
+      return;
+    }
+    const kids = [];
+    let lastKind = null;
+    results.forEach((r, idx) => {
+      if (r.kind !== lastKind) {
+        kids.push(el("div", { class: "amu-omni-section" }, kindLabel(r.kind)));
+        lastKind = r.kind;
+      }
+      kids.push(resultEl(r, idx, q));
+    });
+    menu.replaceChildren(...kids);
+  }
+  function resultEl(r, idx, q) {
+    const label = el("span", { class: "amu-omni-result-label" });
+    const hay = (r.label || "").toLowerCase();
+    const hit = q ? hay.indexOf(q.toLowerCase()) : -1;
+    if (hit < 0) {
+      label.textContent = r.label || "";
+    } else {
+      label.append(
+        document.createTextNode(r.label.slice(0, hit)),
+        el("span", { class: "amu-omni-hl" }, r.label.slice(hit, hit + q.length)),
+        document.createTextNode(r.label.slice(hit + q.length))
+      );
+    }
+    return el(
+      "button",
+      {
+        class: "amu-omni-result" + (idx === cursor ? " is-active" : ""),
+        type: "button",
+        "data-idx": String(idx)
+      },
+      el("i", { class: kindIcon(r.kind) }),
+      label,
+      r.sub ? el("span", { class: "amu-omni-result-sub" }, r.sub) : null
+    );
+  }
+  function scrollCursorIntoView() {
+    menu.querySelector(".amu-omni-result.is-active")?.scrollIntoView({ block: "nearest" });
+  }
+  function choose(r) {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    if (inflight) {
+      inflight.abort();
+      inflight = null;
+    }
+    close();
+    field.value = "";
+    lastQ = "";
+    results = [];
+    cfg.onSelect?.(r);
+  }
+  field.addEventListener("input", () => {
+    const q = field.value.trim();
+    if (q === lastQ) return;
+    lastQ = q;
+    if (timer) clearTimeout(timer);
+    if (!q) {
+      close();
+      return;
+    }
+    timer = setTimeout(() => void search(q), 200);
+  });
+  field.addEventListener("focus", () => {
+    if (results.length && field.value.trim()) open();
+  });
+  field.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      close();
+      field.blur();
+      return;
+    }
+    if (!results.length) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      cursor = (cursor + 1) % results.length;
+      render(lastQ);
+      scrollCursorIntoView();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      cursor = (cursor - 1 + results.length) % results.length;
+      render(lastQ);
+      scrollCursorIntoView();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const r = cursor >= 0 ? results[cursor] : void 0;
+      if (r) choose(r);
+    }
+  });
+  menu.addEventListener("mousedown", (e) => {
+    const target = e.target instanceof Element ? e.target : null;
+    const btn = target?.closest(".amu-omni-result");
+    if (!btn) return;
+    e.preventDefault();
+    const idx = Number.parseInt(btn.dataset.idx ?? "", 10);
+    const r = Number.isFinite(idx) ? results[idx] : void 0;
+    if (r) choose(r);
+  });
+  const onDocDown = (e) => {
+    const target = e.target instanceof Node ? e.target : null;
+    if (!target || !box.contains(target)) close();
+  };
+  document.addEventListener("mousedown", onDocDown);
+  if (!ctrlKBound) {
+    ctrlKBound = true;
+    document.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        const omni = document.querySelector(".amu-omni input");
+        if (omni) {
+          e.preventDefault();
+          omni.focus();
+        }
+      }
+    });
+  }
+  host.append(box);
+  return {
+    el: box,
+    focus: () => field.focus(),
+    destroy: () => {
+      if (timer) clearTimeout(timer);
+      if (inflight) inflight.abort();
+      document.removeEventListener("mousedown", onDocDown);
+      box.remove();
+    }
+  };
+}
+
+// src/posts/immune-system.ts
+var IMMUNE_SYSTEM_MD = "# The immune system\n\n### Building a vanilla-JS SPA without a framework \u2014 and the gates that kept it honest\n\nI didn't skip React out of purism. I skipped it, then spent six weeks learning *exactly what it would have\nenforced* \u2014 by getting burned by the absence of it, and rebuilding that enforcement as machine checks.\n\n## The hard way\n\nRedPash is one idea \u2014 a browser-first data-quality tool where the data never leaves the device \u2014 rebuilt from the\nground up **six times in about six weeks**: Streamlit \u2192 Django \u2192 three vanilla front-end sandboxes \u2192 a Rust /\nWebAssembly PWA. Each rewrite was a response to a real ceiling the last one hit. The Streamlit and Django versions\nwere quick but monolithic: every object type hard-coded, nothing could grow. The front-end sandboxes taught the\nexpensive lesson \u2014 **uncontrolled component forking produced 137 same-class CSS divergences.** Two components quietly\nstyling the same class, drift nobody noticed until the UI stopped agreeing with itself.\n\nOn a solo project directed through a fleet of AI agents committing to one branch, nobody reads every diff. So the\ndefenses had to be **encoded, not remembered**: a static check fails the *tool*, not the person who forgot.\n\n## The immune system\n\nTwo layers. A small from-scratch **component framework** \u2014 self-registering components with single-ownership of\ntheir styles, three registries that make UI components, object types, and behaviour all *data*, and one token system\nevery surface reads from. And a **ratcheted audit suite**: ~25\u201328 static analyzers, one per slice of the codebase\n(the CSS families, the JS\u2194Rust seam, the Rust structure, RBAC/auth, privacy, the docs spine), auto-discovered and\nrun on every commit.\n\nThe clever part is the **ratchet**. Each analyzer counts violations and compares to a committed baseline; CI fails\nonly when a count climbs *above* it. **Green means no _new_ drift \u2014 not zero findings.** The large backlog of honest,\npre-existing debt sits in the baseline so it never blocks, but it can only ever go down. A few that earned their\nplace:\n\n- **`ui-fork-audit`** \u2014 the 137-divergence lesson, turned into a CI failure. Forking a framework style is now\n  mechanically forbidden; one class has one owner, by gate.\n- **`purity-check`** \u2014 the `data` crate must compile to `wasm32` with zero IO, threads, HTTP, or clock. That purity\n  is *what makes* \"one engine, two surfaces\" possible \u2014 the same compute runs byte-identical on the server and in the\n  browser \u2014 and it's held by a machine, not by vigilance.\n- **`capability-audit`** \u2014 an anti-amnesia gate: it diffs the live capability manifest against a committed ledger and\n  fails CI on anything silently dropped during a rebuild.\n- **atomic-docs** \u2014 every code change updates its own documentation in the same commit, or the gate fails.\n\nVersion-controlled git hooks run the same gate locally before a push leaves the machine. And the same gates fence\n*every* agent \u2014 including a local open-weight model wired in alongside Claude, with the foundation hard-denied to it.\nThe discipline lives at git, not in any one prompt.\n\n## Honesty as a feature\n\nThe baseline doubles as an honest ledger of what *isn't* done \u2014 at last read it openly tracked 82 UI-doc gaps, 23\nlist-endpoints still needing RBAC coverage, 19 framework-reuse violations, 17 observability gaps. A system that\ncounts its own debt in CI and refuses to let it grow is telling you the truth about itself. The same instinct, turned\non privacy: an internal Privacy-by-Design audit produced 12 GDPR-mapped findings, which I then **encoded as another\nanalyzer** \u2014 privacy stopped being asserted in a document and became a number the build won't let regress. The\nenforced count fell 11 \u2192 2; the two remainders are a documented pre-launch workstream, not quietly dropped.\n\n## What it taught me\n\nThe transferable skill isn't \"frameworkless JS.\" It's **measure, don't assert** \u2014 take a fuzzy quality nobody has\nquantified (consistency, privacy, \"the design system is intact\") and turn it into a gate that holds the line as the\nsystem changes. That's the same loop whether the subject is CSS drift or an LLM evaluation harness.\n\nIt also taught me where the manual discipline was load-bearing: I reached for **TypeScript** on my next project,\nbecause a type-aware language gives you a chunk of this enforcement for free. But the lesson stands on its own \u2014 the\nframework and its gates were strong enough to carry a real single-page app in vanilla JS, no React, no Vue, without\nthe UI eroding under a fleet of agents.\n\n---\n\n*Honest framing: RedPash is a pre-production, solo, six-week build \u2014 localhost, n=1, no real users. The asset here\nisn't scale; it's the methodology, and the fact that I came to it by getting it wrong first. Full story and the\npublic repos: [redpash-deep-dive](https://github.com/doumouya/redpash-rust-pwa/blob/main/docs/redpash-deep-dive.md) \xB7\n[github.com/doumouya](https://github.com/doumouya).*\n";
+
+// src/icons.ts
+var ATTRS = 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+var PATHS = {
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>',
+  contrast: '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/>',
+  motion: '<path d="M3 12h4l3 7 4-14 3 7h4"/>',
+  reading: '<path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M4 20a2 2 0 0 1 2-2h13"/>',
+  textsize: '<path d="M4 20 9 5l5 15"/><path d="M6 15h6"/><path d="M15 20l3-9 3 9"/><path d="M16.2 17h3.6"/>',
+  comfortable: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+  touch: '<path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10"/><path d="M12 10V4.5a1.5 1.5 0 0 1 3 0V11"/><path d="M15 6.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6 6 6 0 0 1-5-2.6l-2.2-3a1.4 1.4 0 0 1 2.2-1.7L9 14"/>',
+  compact: '<path d="M4 6h16M4 10h16M4 14h16M4 18h16"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/>',
+  home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>',
+  work: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  writing: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  about: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  contact: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  back: '<path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>',
+  external: '<path d="M14 4h6v6"/><path d="M20 4l-8 8"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/>',
+  code: '<path d="M8 6l-6 6 6 6"/><path d="M16 6l6 6-6 6"/>',
+  docs: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/>',
+  play: '<path d="M6 4l14 8-14 8z" fill="currentColor" stroke="none"/>',
+  github: '<path d="M9 19c-5 1.4-5-2.5-7-3m14 6v-3.9a3.4 3.4 0 0 0-.9-2.6c3-.3 6.1-1.5 6.1-6.6A5.1 5.1 0 0 0 19.9 5 4.8 4.8 0 0 0 19.8 1.5S18.7 1.2 16 3a12.3 12.3 0 0 0-6.6 0C6.7 1.2 5.6 1.5 5.6 1.5A4.8 4.8 0 0 0 5.5 5 5.1 5.1 0 0 0 4.1 8.6c0 5 3.1 6.3 6.1 6.6a3.4 3.4 0 0 0-.9 2.6V21"/>',
+  download: '<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/>'
+};
+function icon(name, title) {
+  const span = document.createElement("span");
+  span.className = "icon";
+  span.innerHTML = `<svg ${ATTRS}>${PATHS[name]}</svg>`;
+  if (title) {
+    span.setAttribute("role", "img");
+    span.setAttribute("aria-label", title);
+    span.setAttribute("title", title);
+  } else {
+    span.setAttribute("aria-hidden", "true");
+  }
+  return span;
+}
+
+// src/prefs.ts
+var T = {
+  display: "Display",
+  light: "Light",
+  dark: "Dark",
+  smaller: "Smaller text",
+  sizeDefault: "Default text size",
+  larger: "Larger text",
+  largest: "Largest text",
+  comfortable: "Comfortable",
+  touch: "Touch",
+  compact: "Compact",
+  reduceMotion: "Reduce motion",
+  highContrast: "High contrast",
+  readableFont: "Readable font",
+  done: "Done"
+};
+var lsKey = (k) => `amu-pref-${k}`;
+function current(k) {
+  return document.documentElement.getAttribute(`data-${k}`) ?? "";
+}
+function setPref2(k, value) {
+  const d = document.documentElement;
+  if (value) d.setAttribute(`data-${k}`, value);
+  else d.removeAttribute(`data-${k}`);
+  try {
+    if (value) localStorage.setItem(lsKey(k), value);
+    else localStorage.removeItem(lsKey(k));
+  } catch {
+  }
+}
+function initPrefs() {
+  const keys = ["fontsize", "density", "motion", "contrast", "readfont"];
+  for (const k of keys) {
+    let v = "";
+    try {
+      v = localStorage.getItem(lsKey(k)) ?? "";
+    } catch {
+      v = "";
+    }
+    if (v) document.documentElement.setAttribute(`data-${k}`, v);
+  }
+  if (!current("density")) {
+    try {
+      if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
+        document.documentElement.setAttribute("data-density", "touch");
+      }
+    } catch {
+    }
+  }
+}
+function seg(active, opts, onPick) {
+  const row = el("div", { class: "seg", role: "group" });
+  for (const o of opts) {
+    const b = el("button", { class: "seg-btn", type: "button", title: o.title, "aria-label": o.title });
+    if (o.icon) b.appendChild(icon(o.icon));
+    else if (o.label) b.appendChild(document.createTextNode(o.label));
+    if (o.value === active) b.setAttribute("aria-pressed", "true");
+    b.addEventListener("click", () => {
+      for (const c of Array.from(row.children)) c.removeAttribute("aria-pressed");
+      b.setAttribute("aria-pressed", "true");
+      onPick(o.value);
+    });
+    row.appendChild(b);
+  }
+  return row;
+}
+function segRow(control) {
+  return el("div", { class: "pref-seg-row" }, control);
+}
+function toggleRow(iconName, title, on, onChange2) {
+  const sw = el("button", { class: "switch", type: "button", role: "switch", title, "aria-label": title });
+  sw.setAttribute("aria-checked", on ? "true" : "false");
+  sw.addEventListener("click", () => {
+    const next = sw.getAttribute("aria-checked") !== "true";
+    sw.setAttribute("aria-checked", next ? "true" : "false");
+    onChange2(next);
+  });
+  return el("div", { class: "pref-row" }, icon(iconName, title), sw);
+}
+function openDisplayModal() {
+  const body = el(
+    "div",
+    { class: "prefs" },
+    segRow(
+      seg(
+        getMode(),
+        [
+          { value: "light", icon: "sun", title: T.light },
+          { value: "dark", icon: "moon", title: T.dark }
+        ],
+        (v) => setMode(v)
+      )
+    ),
+    segRow(
+      seg(
+        current("fontsize") || "default",
+        [
+          { value: "sm", label: "A\u2212", title: T.smaller },
+          { value: "default", label: "A", title: T.sizeDefault },
+          { value: "lg", label: "A+", title: T.larger },
+          { value: "xl", label: "A++", title: T.largest }
+        ],
+        (v) => setPref2("fontsize", v === "default" ? "" : v)
+      )
+    ),
+    segRow(
+      seg(
+        current("density") || "comfortable",
+        [
+          { value: "comfortable", icon: "comfortable", title: T.comfortable },
+          { value: "touch", icon: "touch", title: T.touch },
+          { value: "compact", icon: "compact", title: T.compact }
+        ],
+        (v) => setPref2("density", v === "comfortable" ? "" : v)
+      )
+    ),
+    el(
+      "div",
+      { class: "pref-toggles" },
+      toggleRow(
+        "motion",
+        T.reduceMotion,
+        current("motion") === "reduced",
+        (on) => setPref2("motion", on ? "reduced" : "")
+      ),
+      toggleRow(
+        "contrast",
+        T.highContrast,
+        current("contrast") === "high",
+        (on) => setPref2("contrast", on ? "high" : "")
+      ),
+      toggleRow(
+        "reading",
+        T.readableFont,
+        current("readfont") === "on",
+        (on) => setPref2("readfont", on ? "on" : "")
+      )
+    )
+  );
+  openModal({
+    title: T.display,
+    body,
+    actions: [{ label: T.done, variant: "accent", onClick: ({ close }) => close() }]
+  });
+}
+
+// src/lab.ts
+var LAB_PROJECTS = [
+  {
+    title: "amenan-ui",
+    kind: "Framework",
+    blurb: "The dependency-free TypeScript UI framework this whole site runs on \u2014 a two-axis theme platform (O(1) switching), a component library, and page-assembly + router primitives. This page is a live tour of it.",
+    stack: "TypeScript \xB7 zero runtime deps",
+    route: "design-system",
+    repo: "https://github.com/doumouya/amenan-ui"
+  },
+  {
+    title: "redtable",
+    kind: "Component",
+    blurb: "amenan-ui's data grid: one component, virtual-scrolling ~600 rows here, with click-to-sort and a live interaction switch \u2014 browse, select, edit, delete. Mounted below with mock data.",
+    stack: "TypeScript \xB7 amenan-ui",
+    route: "lab/redtable",
+    repo: "https://github.com/doumouya/amenan-ui"
+  },
+  {
+    title: "filter-panel",
+    kind: "Component",
+    blurb: "A visual query builder over a shared filter-node algebra: nested All/Any groups compile to a typed predicate tree. Build a filter and watch the assembled query update live.",
+    stack: "TypeScript \xB7 amenan-ui",
+    route: "lab/filter-panel",
+    repo: "https://github.com/doumouya/amenan-ui"
+  }
+];
+var FIRST = ["Amina", "Liam", "Noa", "Kwame", "Sofia", "Yuki", "Ravi", "Elena", "Tomas", "Fatou", "Owen", "Mei", "Idris", "Clara", "Diego", "Aoife"];
+var LAST = ["Traor\xE9", "Byrne", "Cohen", "Mensah", "Rossi", "Tanaka", "Patel", "Novak", "Silva", "Diallo", "Murphy", "Chen", "Okoye", "Weber", "Costa", "Kelly"];
+var ROLES = ["Data Engineer", "Analyst", "SRE", "Product Manager", "Designer", "ML Engineer"];
+var TEAMS = ["Platform", "Growth", "Payments", "Search", "Infra"];
+var CITIES = ["Dublin", "Paris", "Berlin", "London", "Lisbon", "Remote"];
+var pick = (arr, i) => arr[i % arr.length];
+function genRows(n) {
+  return Array.from({ length: n }, (_, i) => ({
+    id: `E${1e3 + i}`,
+    name: `${pick(FIRST, i * 7)} ${pick(LAST, i * 13)}`,
+    role: pick(ROLES, i * 5),
+    team: pick(TEAMS, i * 3),
+    city: pick(CITIES, i * 11),
+    salary: 45e3 + i * 137 % 65 * 1e3,
+    joined: `20${15 + i % 9}-${String(1 + i % 12).padStart(2, "0")}-${String(1 + i % 27).padStart(2, "0")}`
+  }));
+}
+var COLUMNS = [
+  { key: "id", label: "ID" },
+  { key: "name", label: "Name" },
+  { key: "role", label: "Role" },
+  { key: "team", label: "Team" },
+  { key: "city", label: "City" },
+  { key: "salary", label: "Salary (\u20AC)", dtype: "int" },
+  { key: "joined", label: "Joined" }
+];
+function labView(build) {
+  return (host) => {
+    const node = build();
+    host.appendChild(node);
+    return { el: node, destroy: () => node.remove() };
+  };
+}
+function labHeader(title, sub) {
+  return el(
+    "div",
+    { class: "lab-head" },
+    el("a", { class: "amu-btn", href: "#/work" }, icon("back"), el("span", {}, "Work")),
+    el("div", { class: "lab-head-txt" }, el("h1", {}, title), el("p", { class: "sub" }, sub))
+  );
+}
+var redtableView = labView(() => {
+  const base = genRows(600);
+  let rows = base;
+  let sort = null;
+  let handle = null;
+  const cmp = (a, b, s) => {
+    const col = COLUMNS.find((c) => c.key === s.col);
+    const av = a[s.col];
+    const bv = b[s.col];
+    let r;
+    if (col?.dtype === "int") r = Number(av) - Number(bv);
+    else r = String(av).localeCompare(String(bv));
+    return s.descending ? -r : r;
+  };
+  const status = el("span", { class: "lab-status" }, `${base.length} rows`);
+  const tableHost = el("div", { class: "lab-table" });
+  const modes = [
+    { m: "browse", label: "Browse", ico: "reading" },
+    { m: "select", label: "Select", ico: "comfortable" },
+    { m: "edit", label: "Edit", ico: "writing" },
+    { m: "delete", label: "Delete", ico: "back" }
+  ];
+  const seg2 = el("div", { class: "seg lab-seg", role: "group", "aria-label": "Interaction" });
+  modes.forEach((opt, idx) => {
+    const b = el("button", { class: "seg-btn", type: "button", title: opt.label }, icon(opt.ico), el("span", {}, opt.label));
+    if (idx === 0) b.setAttribute("aria-pressed", "true");
+    b.addEventListener("click", () => {
+      for (const c of Array.from(seg2.children)) c.removeAttribute("aria-pressed");
+      b.setAttribute("aria-pressed", "true");
+      handle?.setInteraction(opt.m);
+      status.textContent = opt.m === "select" ? "0 selected" : `${rows.length} rows`;
+    });
+    seg2.appendChild(b);
+  });
+  handle = mountRedTable(tableHost, {
+    columns: COLUMNS,
+    rows,
+    rowKey: (r) => String(r["id"]),
+    mode: "virtual",
+    sortable: true,
+    sort,
+    interaction: "browse",
+    onSort: (col) => {
+      if (!sort || sort.col !== col) sort = { col, descending: false };
+      else if (!sort.descending) sort = { col, descending: true };
+      else sort = null;
+      rows = sort ? [...base].sort((a, b) => cmp(a, b, sort)) : base;
+      handle?.update({ rows, sort });
+    },
+    onSelectChange: (keys) => {
+      status.textContent = `${keys.length} selected`;
+    },
+    onRowDelete: (key) => {
+      rows = rows.filter((r) => String(r["id"]) !== key);
+      handle?.update({ rows });
+      status.textContent = `${rows.length} rows`;
+    }
+  });
+  return el(
+    "section",
+    { class: "route lab" },
+    labHeader("redtable", "amenan-ui's data grid \u2014 virtual scrolling, click-to-sort, and a live interaction switch. Mock data; your clicks stay on the page."),
+    el("div", { class: "lab-toolbar" }, seg2, status),
+    tableHost,
+    el("p", { class: "lab-note" }, "Click a header to sort. Switch interaction to select rows, edit a cell inline, or delete on click. One component, four behaviours \u2014 config, not forks.")
+  );
+});
+function describe(node, depth = 0) {
+  if (!node) return "(empty)";
+  const pad = "  ".repeat(depth);
+  const n = node;
+  if (Array.isArray(n.children)) {
+    const join = (n.op ?? "and").toUpperCase();
+    const kids = n.children.map((c) => describe(c, depth + 1)).join("\n");
+    return `${pad}${join} {
+${kids}
+${pad}}`;
+  }
+  const val = n.from != null || n.to != null ? `${n.from ?? ""}\u2026${n.to ?? ""}` : String(n.value ?? "");
+  return `${pad}${n.col ?? "?"} ${n.op ?? "?"} ${val}`.trimEnd();
+}
+var filterPanelView = labView(() => {
+  const out = el("pre", { class: "lab-query" }, "(build a filter, then Apply)");
+  const panelHost = el("div", { class: "lab-fp" });
+  mountFilterPanel(panelHost, {
+    columns: COLUMNS.map((c) => ({ key: c.key, label: c.label })),
+    onApply: (node) => {
+      out.textContent = describe(node);
+    },
+    onClear: () => {
+      out.textContent = "(cleared)";
+    }
+  });
+  return el(
+    "section",
+    { class: "route lab" },
+    labHeader("filter-panel", "A visual query builder over a shared filter-node algebra. Nested All/Any groups compile to a typed predicate tree \u2014 shown live on the right."),
+    el("div", { class: "lab-fp-grid" }, panelHost, el("div", { class: "lab-query-wrap" }, el("div", { class: "lab-query-label" }, "Assembled query"), out))
+  );
+});
+var SITE_INDEX = [
+  { kind: "page", label: "Home", sub: "The front door", hash: "#/home" },
+  { kind: "page", label: "Work", sub: "All projects", hash: "#/work" },
+  { kind: "page", label: "About", sub: "Bio & CV", hash: "#/about" },
+  { kind: "page", label: "Contact", sub: "Get in touch", hash: "#/contact" },
+  { kind: "project", label: "csv-workbench", sub: "Polars \u2192 wasm CSV tool", hash: "#/demo/csv-workbench" },
+  { kind: "project", label: "echarts-dashboard", sub: "Client-side analytics", hash: "#/demo/echarts-dashboard" },
+  { kind: "project", label: "rbac-explorer", sub: "Scoped-ownership access", hash: "#/demo/rbac-explorer" },
+  { kind: "project", label: "redtable", sub: "The data grid", hash: "#/lab/redtable" },
+  { kind: "project", label: "filter-panel", sub: "Visual query builder", hash: "#/lab/filter-panel" },
+  { kind: "writing", label: "The immune system", sub: "Case study", hash: "#/writing/immune-system" }
+];
+var designSystemView = labView(() => {
+  const s = el("section", { class: "route lab prose-wide" });
+  s.append(
+    labHeader("amenan-ui", "The framework this site runs on. Dependency-free TypeScript: a two-axis theme platform, a component library, and page-assembly + router primitives \u2014 all on display here.")
+  );
+  const omniHost = el("div", { class: "ds-omni" });
+  mountOmni(omniHost, {
+    placeholder: "Search the site\u2026  (Ctrl-K)",
+    kinds: {
+      page: { label: "Pages", icon: "bi-folder" },
+      project: { label: "Projects", icon: "bi-folder" },
+      writing: { label: "Writing", icon: "bi-folder" }
+    },
+    source: ({ q }) => {
+      const needle = q.toLowerCase();
+      const hits = SITE_INDEX.filter(
+        (e) => e.label.toLowerCase().includes(needle) || e.sub.toLowerCase().includes(needle)
+      ).map((e) => ({ kind: e.kind, label: e.label, sub: e.sub, hash: e.hash }));
+      return Promise.resolve(hits);
+    },
+    onSelect: (r) => {
+      if (r.hash) location.hash = r.hash;
+    }
+  });
+  s.append(el("div", { class: "ds-block" }, el("h2", {}, "Omnisearch"), el("p", { class: "ds-sub" }, "amenan-ui's ", el("code", {}, "omni"), " \u2014 injected search source, keyboard nav, debounced. This one indexes the site; press Enter to jump."), omniHost));
+  s.append(
+    el(
+      "div",
+      { class: "ds-block" },
+      el("h2", {}, "One platform, many looks"),
+      el(
+        "p",
+        { class: "ds-sub" },
+        "Theme, light/dark, text size, density and motion are all attributes on ",
+        el("code", {}, "<html>"),
+        " filling a frozen token contract \u2014 switching is one attribute write + the CSS cascade (O(1)), persisted and applied before paint."
+      ),
+      el("div", { class: "ds-actions" }, (() => {
+        const b = el("button", { class: "amu-btn amu-btn--accent", type: "button" }, icon("gear"), el("span", {}, "Open Display settings"));
+        b.addEventListener("click", () => openDisplayModal());
+        return b;
+      })())
+    )
+  );
+  const gallery = el("div", { class: "ds-gallery" });
+  gallery.append(
+    galleryCard("Buttons", el(
+      "div",
+      { class: "ds-row" },
+      button({ label: "Primary", variant: "accent" }),
+      button({ label: "Default" }),
+      button({ label: "Ghost", variant: "ghost" }),
+      button({ label: "Danger", variant: "danger" })
+    )),
+    galleryCard("Badges", el(
+      "div",
+      { class: "ds-row" },
+      badge({ label: "Data table" }),
+      badge({ label: "Analytics" }),
+      badge({ label: "Framework" }),
+      badge({ label: "Case study" })
+    )),
+    galleryCard("Keyboard", el("div", { class: "ds-row" }, kbd("Ctrl"), kbd("K"), el("span", { class: "ds-sub" }, "focuses omni"))),
+    galleryCard("Cards", (() => {
+      const h = el("div", { class: "ds-mini-cards" });
+      mountCard(h, { title: "A card", sub: "with a subtitle", body: el("p", { class: "ds-sub" }, "The tile the project grid is built from.") });
+      return h;
+    })())
+  );
+  s.append(el("div", { class: "ds-block" }, el("h2", {}, "Component gallery"), gallery));
+  const grid = el("div", { class: "grid" });
+  for (const p of LAB_PROJECTS.filter((x) => x.route.startsWith("lab/"))) {
+    mountCard(grid, {
+      title: p.title,
+      body: el(
+        "div",
+        { class: "card-body" },
+        badge({ label: p.kind }),
+        el("p", { class: "blurb" }, p.blurb),
+        el(
+          "div",
+          { class: "links" },
+          el("a", { class: "amu-btn amu-btn--accent", href: `#/${p.route}` }, icon("play"), el("span", {}, "Open"))
+        )
+      )
+    });
+  }
+  s.append(el("div", { class: "ds-block" }, el("h2", {}, "Live component demos"), grid));
+  return s;
+});
+function galleryCard(title, body) {
+  return el("div", { class: "ds-card" }, el("h3", {}, title), body);
+}
+var labRoutes = {
+  "design-system": { mount: designSystemView },
+  "lab/redtable": { mount: redtableView },
+  "lab/filter-panel": { mount: filterPanelView }
+};
+var LAB_TITLES = {
+  "design-system": "amenan-ui \u2014 Emmanuel Doumouya",
+  "lab/redtable": "redtable \u2014 Emmanuel Doumouya",
+  "lab/filter-panel": "filter-panel \u2014 Emmanuel Doumouya"
+};
+
+// src/designer.ts
+var echartsP = null;
+function loadECharts() {
+  if (getEcharts()) return Promise.resolve();
+  if (echartsP) return echartsP;
+  echartsP = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js";
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("echarts failed to load"));
+    document.head.appendChild(s);
+  });
+  return echartsP;
+}
+var themesConfigured = false;
+function configureThemes() {
+  if (themesConfigured) return;
+  themesConfigured = true;
+  const MAP = {
+    "theme-dark": "/themes/dark.project.json",
+    "theme-light": "/themes/shine.project.json"
+  };
+  configureChartThemes({
+    load: async (query) => {
+      const name = String(query?.["name"] ?? "");
+      const url = MAP[name];
+      if (!url) return null;
+      try {
+        const json = await fetch(url).then((r) => r.json());
+        return json.theme ?? null;
+      } catch {
+        return null;
+      }
+    }
+  });
+}
+var ROWS = genRows(240);
+function countBy(key) {
+  const m = /* @__PURE__ */ new Map();
+  for (const r of ROWS) {
+    const k = String(r[key]);
+    m.set(k, (m.get(k) ?? 0) + 1);
+  }
+  const labels = [...m.keys()];
+  return { labels, values: labels.map((l) => m.get(l) ?? 0) };
+}
+function avgBy(key, valKey) {
+  const sum = /* @__PURE__ */ new Map();
+  const cnt = /* @__PURE__ */ new Map();
+  for (const r of ROWS) {
+    const k = String(r[key]);
+    sum.set(k, (sum.get(k) ?? 0) + Number(r[valKey]));
+    cnt.set(k, (cnt.get(k) ?? 0) + 1);
+  }
+  const labels = [...sum.keys()];
+  return { labels, values: labels.map((l) => Math.round((sum.get(l) ?? 0) / (cnt.get(l) || 1))) };
+}
+var CT = THEMES["theme-dark"] ?? { name: "d", series: [], registered: true };
+function baseSpecs() {
+  const team = countBy("team");
+  const role = avgBy("role", "salary");
+  const city = countBy("city");
+  return [
+    {
+      id: "team",
+      title: "Headcount by team",
+      kind: "cartesian",
+      type: "bar",
+      baked: { xAxis: { data: team.labels }, series: [{ name: "Headcount", data: team.values }] }
+    },
+    {
+      id: "city",
+      title: "Distribution by city",
+      kind: "pie",
+      type: "donut",
+      baked: {
+        series: [{ data: city.labels.map((n, i) => ({ name: n, value: city.values[i] ?? 0 })) }]
+      }
+    },
+    {
+      id: "role",
+      title: "Avg salary by role",
+      kind: "cartesian",
+      type: "line",
+      baked: { xAxis: { data: role.labels }, series: [{ name: "Avg salary (\u20AC)", data: role.values }] }
+    }
+  ];
+}
+var designerView = (host) => {
+  const chrome2 = {
+    legend: false,
+    tooltip: true,
+    axisLine: true,
+    splitLines: false,
+    smooth: true
+  };
+  const charts = [];
+  const optionFor = (spec) => {
+    const cfg = {
+      kind: spec.kind,
+      type: spec.type,
+      legend: chrome2.legend,
+      legendPos: "bottom",
+      tooltip: chrome2.tooltip,
+      axisLine: chrome2.axisLine,
+      splitLines: chrome2.splitLines,
+      smooth: chrome2.smooth,
+      option: spec.baked
+    };
+    return buildOption(cfg, CT);
+  };
+  const tileMount = (spec) => (body) => {
+    const h = mountChart(body, { title: spec.title, option: optionFor(spec) });
+    charts.push({ spec, handle: h });
+    requestAnimationFrame(() => h.resize());
+    return h;
+  };
+  const reRenderAll = () => {
+    for (const c of charts) c.handle.setOption(optionFor(c.spec));
+  };
+  const section2 = el("section", { class: "route lab designer" });
+  section2.append(
+    el(
+      "div",
+      { class: "lab-head" },
+      el("a", { class: "amu-btn", href: "#/work" }, icon("back"), el("span", {}, "Work")),
+      el(
+        "div",
+        { class: "lab-head-txt" },
+        el("h1", {}, "chart designer"),
+        el(
+          "p",
+          { class: "sub" },
+          "amenan-ui's dashboard-grid \u2014 drag to move, drag the corner to resize. Live ECharts tiles from the mock data; toggle the chrome options below, and switch \u2600/\u263E in Display to reskin (dark & shine ECharts palettes)."
+        )
+      )
+    )
+  );
+  const stage = el("div", { class: "designer-grid" });
+  const loading = el("p", { class: "lab-note" }, "Loading ECharts\u2026");
+  section2.append(loading, stage);
+  host.appendChild(section2);
+  let grid = null;
+  let editable = false;
+  let added = 0;
+  configureThemes();
+  loadECharts().then(() => ensureRegisteredThemes()).then(() => {
+    loading.remove();
+    const editBtn = el("button", { class: "amu-btn", type: "button" }, icon("writing"), el("span", {}, "Edit layout"));
+    editBtn.addEventListener("click", () => {
+      editable = !editable;
+      grid?.setEditable(editable);
+      editBtn.classList.toggle("amu-btn--accent", editable);
+    });
+    const addBtn = el("button", { class: "amu-btn", type: "button" }, icon("play"), el("span", {}, "Add chart"));
+    addBtn.addEventListener("click", () => {
+      added += 1;
+      const spec = { ...baseSpecs()[0], id: `extra-${added}` };
+      grid?.addElement({ id: spec.id, x: 0, y: 0, w: 5, h: 4, mount: tileMount(spec) });
+      if (!editable) {
+        editable = true;
+        grid?.setEditable(true);
+        editBtn.classList.add("amu-btn--accent");
+      }
+    });
+    const optBar = el("div", { class: "opt-bar", role: "group", "aria-label": "Chart options" });
+    optBar.append(el("span", { class: "opt-label" }, "Show:"));
+    const optionDefs = [
+      { key: "legend", label: "Legend" },
+      { key: "tooltip", label: "Tooltip" },
+      { key: "axisLine", label: "Axis" },
+      { key: "splitLines", label: "Grid lines" },
+      { key: "smooth", label: "Smooth" }
+    ];
+    for (const od of optionDefs) {
+      const chip2 = el(
+        "button",
+        { class: "opt-chip", type: "button", "aria-pressed": chrome2[od.key] ? "true" : "false" },
+        od.label
+      );
+      chip2.addEventListener("click", () => {
+        chrome2[od.key] = !chrome2[od.key];
+        chip2.setAttribute("aria-pressed", chrome2[od.key] ? "true" : "false");
+        reRenderAll();
+      });
+      optBar.append(chip2);
+    }
+    const toolbar = el("div", { class: "lab-toolbar designer-toolbar" }, editBtn, addBtn, optBar);
+    section2.insertBefore(toolbar, stage);
+    grid = mountDashboardGrid(stage, {
+      cols: 15,
+      rows: 10,
+      editable: false,
+      onRemove: (id) => {
+        const i = charts.findIndex((c) => c.spec.id === id);
+        if (i >= 0) charts.splice(i, 1);
+      },
+      elements: [
+        { id: "team", x: 0, y: 0, w: 8, h: 5, mount: tileMount(baseSpecs()[0]) },
+        { id: "city", x: 8, y: 0, w: 7, h: 5, mount: tileMount(baseSpecs()[1]) },
+        { id: "role", x: 0, y: 5, w: 15, h: 5, mount: tileMount(baseSpecs()[2]) }
+      ]
+    });
+  }).catch(() => {
+    loading.textContent = "Charts need a network connection to load ECharts. The echarts-dashboard demo (Work) carries its own copy and runs offline.";
+  });
+  return {
+    el: section2,
+    destroy: () => {
+      grid?.destroy();
+      section2.remove();
+    }
+  };
+};
+var designerRoutes = {
+  "lab/designer": { mount: designerView }
+};
+var DESIGNER_TITLE = {
+  "lab/designer": "chart designer \u2014 Emmanuel Doumouya"
+};
+var DESIGNER_PROJECT = {
+  title: "chart designer",
+  kind: "Component",
+  blurb: "amenan-ui's dashboard-grid + ECharts tiles: a drag-and-resize chart builder with live chrome options (legend, tooltip, axis, grid, smooth). Themed with dark & shine ECharts palettes that follow the site's light/dark toggle.",
+  stack: "TypeScript \xB7 amenan-ui \xB7 ECharts",
+  route: "lab/designer",
+  repo: "https://github.com/doumouya/amenan-ui"
+};
+
 // src/landing.ts
 var PROJECTS = [
   {
     title: "csv-workbench",
     kind: "Data table",
-    blurb: "Open a CSV and work it like a spreadsheet \u2014 live full-text search, click-to-sort, inline cell edits, and row select/delete \u2014 then clean it with a tools panel: normalize headers, change column types (locale-aware: it reads 1 234,56 and oui/non), fill or drop empties, split, combine, find & replace. Every change is an undoable step with a visible history; export when done. The full Polars data engine, compiled to WebAssembly and run in a Web Worker; your data never leaves the page.",
+    blurb: "Open a CSV and work it like a spreadsheet \u2014 live full-text search, click-to-sort, inline cell edits, row select/delete \u2014 then clean it with a tools panel: normalize headers, change column types (locale-aware: it reads 1 234,56 and oui/non), fill or drop empties, split, combine, find & replace. Every change is an undoable step with a visible history; export when done. The full Polars data engine, compiled to WebAssembly in a Web Worker; your data never leaves the page.",
     stack: "Rust \xB7 Polars \u2192 wasm \xB7 Web Worker \xB7 TypeScript",
     repo: "https://github.com/doumouya/doumouya-portfolio/tree/main/csv-workbench",
     demo: "apps/csv-workbench/index.html",
-    docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/csv-workbench/README.md"
+    docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/csv-workbench/README.md",
+    featured: true
   },
   {
     title: "echarts-dashboard",
@@ -852,7 +4684,8 @@ var PROJECTS = [
     stack: "Rust \u2192 wasm \xB7 ECharts \xB7 TypeScript",
     repo: "https://github.com/doumouya/doumouya-portfolio/tree/main/echarts-dashboard",
     demo: "apps/echarts-dashboard/index.html",
-    docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/echarts-dashboard/docs/spec.md"
+    docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/echarts-dashboard/docs/spec.md",
+    featured: true
   },
   {
     title: "rbac-explorer",
@@ -861,7 +4694,8 @@ var PROJECTS = [
     stack: "Rust \u2192 wasm \xB7 TypeScript",
     repo: "https://github.com/doumouya/doumouya-portfolio/tree/main/rbac-explorer",
     demo: "apps/rbac-explorer/index.html",
-    docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/rbac-explorer/docs/spec.md"
+    docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/rbac-explorer/docs/spec.md",
+    featured: true
   },
   {
     title: "build-engine",
@@ -872,24 +4706,29 @@ var PROJECTS = [
     docs: "https://github.com/doumouya/build-engine-demo/blob/main/docs/build-log/entity-rbac.md"
   }
 ];
-function linkButton(label, href, accent = false) {
-  const external = href.startsWith("http");
+function extBtn(label, href, accent = false, ico) {
   return el(
     "a",
-    {
-      class: accent ? "amu-btn amu-btn--accent" : "amu-btn",
-      href,
-      target: "_blank",
-      rel: external ? "noopener noreferrer" : "noopener"
-    },
-    label
+    { class: accent ? "amu-btn amu-btn--accent" : "amu-btn", href, target: "_blank", rel: "noopener noreferrer" },
+    ico ? icon(ico) : null,
+    el("span", {}, label)
   );
 }
+function routeBtn(label, hash, accent = false, ico) {
+  return el(
+    "a",
+    { class: accent ? "amu-btn amu-btn--accent" : "amu-btn", href: hash },
+    ico ? icon(ico) : null,
+    el("span", {}, label)
+  );
+}
+var demoHash = (p) => `#/demo/${p.title}`;
+var demoRoute = (p) => `demo/${p.title}`;
 function cardBody(p) {
   const links = el("div", { class: "links" });
-  if (p.demo) links.append(linkButton("Try it", p.demo, true));
-  links.append(linkButton("Code", p.repo));
-  if (p.docs) links.append(linkButton("Docs", p.docs));
+  if (p.demo) links.append(routeBtn("Demo", demoHash(p), true, "play"));
+  links.append(extBtn("Code", p.repo, false, "code"));
+  if (p.docs) links.append(extBtn("Docs", p.docs, false, "docs"));
   return el(
     "div",
     { class: "card-body" },
@@ -899,12 +4738,362 @@ function cardBody(p) {
     links
   );
 }
-var termbarHost = document.getElementById("termbar");
-if (termbarHost) {
-  mountTermbar(termbarHost, { cwd: "~/portfolio", status: "\u25CF open source \xB7 runs offline" });
+function labCardBody(p) {
+  return el(
+    "div",
+    { class: "card-body" },
+    badge({ label: p.kind }),
+    el("p", { class: "blurb" }, p.blurb),
+    el("p", { class: "stack" }, p.stack),
+    el(
+      "div",
+      { class: "links" },
+      routeBtn("Open", `#/${p.route}`, true, "play"),
+      extBtn("Code", p.repo, false, "code")
+    )
+  );
 }
-var grid = document.getElementById("grid");
-if (grid) {
+function view(build) {
+  return (host) => {
+    const node = build();
+    host.appendChild(node);
+    return { el: node, destroy: () => node.remove() };
+  };
+}
+function section(cls, ...children) {
+  return el("section", { class: `route ${cls}` }, ...children);
+}
+var homeView = view(() => {
+  const s = section("home");
+  const hero = el(
+    "header",
+    { class: "hero" },
+    el("h1", {}, "Emmanuel Doumouya"),
+    el(
+      "p",
+      { class: "sub" },
+      "AI-native data engineer. I build small, fast, privacy-by-design tools \u2014 your data never leaves the browser \u2014 and I build them with AI, behind CI guardrails that keep the work honest."
+    ),
+    el(
+      "p",
+      { class: "note" },
+      "Everything here runs entirely on your device: no server, no upload, no account. All of it is open source and built to be read."
+    ),
+    el(
+      "div",
+      { class: "cta" },
+      routeBtn("Explore the work", "#/work", true, "work"),
+      routeBtn("Read the story", "#/writing/immune-system", false, "writing"),
+      extBtn("CV", "/cv/Emmanuel_Doumouya_CV.pdf", false, "download"),
+      extBtn("GitHub", "https://github.com/doumouya", false, "github")
+    )
+  );
+  s.append(hero);
+  const featured = el("div", { class: "grid" });
+  for (const p of PROJECTS.filter((x) => x.featured)) {
+    mountCard(featured, { title: p.title, body: cardBody(p) });
+  }
+  const amenan = LAB_PROJECTS.find((p) => p.route === "design-system");
+  if (amenan) mountCard(featured, { title: amenan.title, body: labCardBody(amenan) });
+  s.append(
+    el("div", { class: "section-head" }, el("h2", {}, "Featured work"), routeBtn("See all \u2192", "#/work")),
+    featured
+  );
+  s.append(
+    el(
+      "section",
+      { class: "method" },
+      el("h2", {}, "How these were built"),
+      el(
+        "p",
+        {},
+        "The projects share one spine: a self-hosting build-engine \u2014 a workflow engine whose own database stores its build process, with an HTTP edge and an MCP tool surface over one validated core. Each app carries a Rust \u2192 WebAssembly engine, so computation happens on your device and your data never leaves the page. The UI layer is dependency-free TypeScript \u2014 amenan-ui, a framework I built from scratch. Each repository is small, tested, and CI-green."
+      )
+    )
+  );
+  return s;
+});
+var workView = view(() => {
+  const s = section("work");
+  s.append(
+    el(
+      "header",
+      { class: "page-head" },
+      el("h1", {}, "Work"),
+      el(
+        "p",
+        { class: "sub" },
+        "Live, in-browser demos \u2014 open any one in place, no download. Code and docs open on GitHub."
+      )
+    )
+  );
+  const grid = el("div", { class: "grid" });
   for (const p of PROJECTS) mountCard(grid, { title: p.title, body: cardBody(p) });
+  s.append(grid);
+  const fw = el("div", { class: "grid" });
+  for (const p of [...LAB_PROJECTS, DESIGNER_PROJECT]) mountCard(fw, { title: p.title, body: labCardBody(p) });
+  s.append(
+    el(
+      "div",
+      { class: "section-head" },
+      el("h2", {}, "Framework & components"),
+      routeBtn("Design system \u2192", "#/design-system")
+    ),
+    fw
+  );
+  return s;
+});
+function demoView(p) {
+  return view(() => {
+    const s = section("demo");
+    const bar = el(
+      "div",
+      { class: "demo-bar" },
+      routeBtn("Work", "#/work", false, "back"),
+      el("span", { class: "demo-title" }, p.title),
+      el("span", { class: "spacer" }),
+      extBtn("Code", p.repo, false, "code"),
+      ...p.docs ? [extBtn("Docs", p.docs, false, "docs")] : []
+    );
+    const frame = el("iframe", {
+      class: "demo-frame",
+      src: p.demo ?? "",
+      title: `${p.title} \u2014 live demo`,
+      loading: "lazy",
+      allow: "clipboard-read; clipboard-write; fullscreen"
+    });
+    s.append(bar, frame);
+    return s;
+  });
 }
+var writingIndexView = view(() => {
+  const s = section("writing");
+  s.append(el("header", { class: "page-head" }, el("h1", {}, "Writing")));
+  const grid = el("div", { class: "grid" });
+  mountCard(grid, {
+    title: "The immune system",
+    body: el(
+      "div",
+      { class: "card-body" },
+      badge({ label: "Case study" }),
+      el(
+        "p",
+        { class: "blurb" },
+        "Building a vanilla-JS SPA without a framework \u2014 and the gates that kept it honest. 137 same-class CSS divergences turned into a CI failure; measure, don't assert."
+      ),
+      el("div", { class: "links" }, routeBtn("Read", "#/writing/immune-system", true, "writing"))
+    )
+  });
+  s.append(grid);
+  return s;
+});
+function renderPost(md) {
+  const art = el("article", { class: "post" });
+  const isHeading = (l) => /^#{1,6}\s/.test(l);
+  const isHr = (l) => /^---+\s*$/.test(l);
+  const isFence = (l) => /^```/.test(l);
+  const isListStart = (l) => /^\s*([-*]|\d+\.)\s+/.test(l);
+  const blank = (l) => l.trim() === "";
+  const src = md.replace(/\r\n/g, "\n").split("\n");
+  const lines = [];
+  for (const line of src) {
+    const prev = lines[lines.length - 1];
+    const cont = !blank(line) && !isHeading(line) && !isHr(line) && !isFence(line) && !isListStart(line);
+    const joinable = prev !== void 0 && !blank(prev) && !isHeading(prev) && !isHr(prev) && !isFence(prev);
+    if (cont && joinable) lines[lines.length - 1] = `${prev} ${line.trim()}`;
+    else lines.push(line);
+  }
+  let buf = [];
+  const flush = () => {
+    const block = buf.join("\n").trim();
+    buf = [];
+    if (block) art.appendChild(renderMarkdown(block));
+  };
+  for (const line of lines) {
+    if (isHeading(line)) {
+      flush();
+      const h = /^(#{1,6})\s+(.*)$/.exec(line);
+      const level = Math.min((h?.[1] ?? "").length, 6);
+      art.appendChild(el(`h${level}`, {}, h?.[2] ?? ""));
+    } else if (isHr(line)) {
+      flush();
+      art.appendChild(el("hr", {}));
+    } else {
+      buf.push(line);
+    }
+  }
+  flush();
+  return art;
+}
+var immuneSystemView = view(() => {
+  const s = section("post-route");
+  s.append(el("div", { class: "post-nav" }, routeBtn("Writing", "#/writing", false, "back")));
+  s.append(renderPost(IMMUNE_SYSTEM_MD));
+  return s;
+});
+var aboutView = view(() => {
+  const s = section("about prose");
+  s.append(el("header", { class: "page-head" }, el("h1", {}, "About")));
+  s.append(
+    el("p", {}, "I'm Emmanuel Doumouya \u2014 a data engineer in Dublin who builds production-discipline software with AI."),
+    el(
+      "p",
+      {},
+      "For about three years I was the technical advisor to enterprise data teams at Salesforce and Informatica \u2014 root-causing complex integrations across SQL, ETL/ELT pipelines, REST/SOAP APIs, and distributed systems, and turning them into reliable outcomes for high-stakes customers. Then I started building. Solo and part-time, alongside the day job, I designed and shipped a multi-crate Rust / WebAssembly platform by directing a team of AI coding agents \u2014 and turned every hard-won lesson into a mechanical guardrail. That drift-prevention system \u2014 the \u201Cimmune system\u201D \u2014 is written up in the ",
+      el("a", { href: "#/writing/immune-system" }, "writing"),
+      "."
+    ),
+    el(
+      "p",
+      {},
+      "The projects here are the proof: a Polars\u2192WebAssembly CSV workbench, an in-browser analytics dashboard, an access-control explorer, a self-hosting build engine, and amenan-ui \u2014 a dependency-free TypeScript UI framework I built from scratch (this site runs on it). All open source, all client-side, all built to be read."
+    ),
+    el(
+      "p",
+      {},
+      el("strong", {}, "What I'm good at: "),
+      "turning a fuzzy quality nobody has measured into an enforced gate \u2014 measure, don't assert; building with Claude at production discipline (MCP, sub-agents, CI guardrails for AI output); SQL and data engineering; Rust\u2192wasm; and shipping fast without eroding quality."
+    ),
+    el(
+      "p",
+      {},
+      el("strong", {}, "Honest framing: "),
+      "it's early. The builds are pre-production and solo \u2014 what they show is how I work, not scale. I'm finishing a BSc (final year), I'm a native French speaker and fluent in English, EU-authorized, and open to relocation or remote-EU. A part-time-to-full-time start suits me while I finish the degree."
+    ),
+    el(
+      "div",
+      { class: "cta" },
+      routeBtn("Contact", "#/contact", true, "contact"),
+      extBtn("CV", "/cv/Emmanuel_Doumouya_CV.pdf", false, "download"),
+      extBtn("GitHub", "https://github.com/doumouya", false, "github"),
+      extBtn("LinkedIn", "https://www.linkedin.com/in/doumouya", false, "external")
+    ),
+    el(
+      "section",
+      { class: "colophon" },
+      el("h2", {}, "On the name"),
+      el(
+        "p",
+        {},
+        "numu is the Mand\xE9 word for the blacksmith caste of West Africa \u2014 the makers, the forgers who turn raw iron into the tools a whole village depends on. I'm a Numu by ancestry; Doumouya is the name that carries it. I don't forge iron \u2014 I forge software \u2014 but it's the same craft, a few generations on. The framework this site runs on is amenan-ui, named for my mother, Amenan."
+      )
+    )
+  );
+  return s;
+});
+var contactView = view(() => {
+  const s = section("contact prose");
+  s.append(el("header", { class: "page-head" }, el("h1", {}, "Contact")));
+  s.append(
+    el("p", {}, "The fastest way to reach me is email \u2014 I read everything."),
+    el(
+      "p",
+      { class: "contact-lines" },
+      el("a", { class: "email", href: "mailto:em.doumouya@gmail.com" }, "em.doumouya@gmail.com"),
+      el("br"),
+      el("a", { href: "https://github.com/doumouya", target: "_blank", rel: "noopener noreferrer" }, "GitHub \u2014 github.com/doumouya"),
+      el("br"),
+      el("a", { href: "https://www.linkedin.com/in/doumouya", target: "_blank", rel: "noopener noreferrer" }, "LinkedIn \u2014 linkedin.com/in/doumouya")
+    ),
+    el(
+      "p",
+      { class: "avail" },
+      el("strong", {}, "Currently: "),
+      "open to roles in data / AI / software engineering \u2014 Dublin, relocation, or remote-EU. Native French, fluent English, EU work authorization, ~4 weeks' notice. If a part-time-to-full-time start helps while I finish the BSc, I'm glad to talk about it."
+    )
+  );
+  return s;
+});
+var routes = {
+  home: { mount: homeView },
+  work: { mount: workView },
+  writing: { mount: writingIndexView },
+  "writing/immune-system": { mount: immuneSystemView },
+  about: { mount: aboutView },
+  contact: { mount: contactView }
+};
+for (const p of PROJECTS) {
+  if (p.demo) routes[demoRoute(p)] = { mount: demoView(p) };
+}
+Object.assign(routes, labRoutes, designerRoutes);
+var TITLES = {
+  home: "Emmanuel Doumouya \u2014 AI-native data engineer",
+  work: "Work \u2014 Emmanuel Doumouya",
+  writing: "Writing \u2014 Emmanuel Doumouya",
+  "writing/immune-system": "The immune system \u2014 Emmanuel Doumouya",
+  about: "About \u2014 Emmanuel Doumouya",
+  contact: "Contact \u2014 Emmanuel Doumouya"
+};
+Object.assign(TITLES, LAB_TITLES, DESIGNER_TITLE);
+function navSection(id) {
+  if (id.startsWith("demo/") || id.startsWith("lab/") || id === "design-system") return "work";
+  if (id.startsWith("writing")) return "writing";
+  return id;
+}
+function currentRouteId() {
+  return (location.hash || "").replace(/^#\//, "").split("?")[0] ?? "";
+}
+var root = document.getElementById("root");
+if (!root) throw new Error("portfolio: missing #root");
+var termbarHost = el("div", { id: "termbar" });
+var NAV = [
+  { id: "home", label: "Home", icon: "home" },
+  { id: "work", label: "Work", icon: "work" },
+  { id: "writing", label: "Writing", icon: "writing" },
+  { id: "about", label: "About", icon: "about" },
+  { id: "contact", label: "Contact", icon: "contact" }
+];
+var navLinks = NAV.map(
+  (n) => el(
+    "a",
+    { class: "nav-link", href: `#/${n.id}`, "data-route": n.id, title: n.label },
+    icon(n.icon),
+    el("span", { class: "nav-txt" }, n.label)
+  )
+);
+var prefBtn = el(
+  "button",
+  {
+    class: "nav-pref amu-btn amu-btn--icon",
+    type: "button",
+    "aria-haspopup": "dialog",
+    "aria-label": "Display preferences",
+    title: "Display preferences"
+  },
+  icon("gear")
+);
+prefBtn.addEventListener("click", () => openDisplayModal());
+var nav = el(
+  "nav",
+  { class: "nav", "aria-label": "Primary" },
+  el("div", { class: "nav-inner" }, ...navLinks, el("span", { class: "nav-spacer" }), prefBtn)
+);
+var appHost = el("main", { id: "app", class: "app" });
+var chrome = el("header", { class: "chrome" }, termbarHost, nav);
+root.append(chrome, appHost);
+mountTermbar(termbarHost, { cwd: "~/portfolio", status: "\u25CF open source \xB7 runs offline" });
+initPrefs();
+function updateChrome() {
+  const active = navSection(currentRouteId());
+  for (const a of navLinks) {
+    if (a.dataset.route === active) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
+  }
+  const id = currentRouteId();
+  const demo = id.startsWith("demo/") ? id.slice("demo/".length) : "";
+  document.title = TITLES[id] ?? (demo ? `${demo} \u2014 Emmanuel Doumouya` : "Emmanuel Doumouya \u2014 portfolio");
+}
+var router = createRouter({
+  routes,
+  host: appHost,
+  mount(host, def, ctx) {
+    host.replaceChildren();
+    const handle = def.mount?.(host, ctx);
+    updateChrome();
+    window.scrollTo(0, 0);
+    return handle ?? void 0;
+  },
+  resolveLanding: () => "home"
+});
+router.start();
 </script><script>if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})});if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})})}</script></body></html>

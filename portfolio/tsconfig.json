@@ -15,7 +15,7 @@
     "allowImportingTsExtensions": true,
     "baseUrl": ".",
     "paths": {
-      "amenan-ui": ["../../amenan-ui/src/index.ts"]
+      "amenan-ui": ["../amenan-ui/src/index.ts", "../../amenan-ui/src/index.ts"]
     }
   },
   "include": ["src"]

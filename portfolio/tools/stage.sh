@@ -13,5 +13,7 @@ cp manifest.webmanifest  dist/manifest.webmanifest
 cp service-worker.js     dist/service-worker.js
 cp -r icons              dist/icons
 cp -r apps               dist/apps
+[ -d cv ] && cp -r cv    dist/cv
+[ -d themes ] && cp -r themes dist/themes
 
 echo "staged dist/ for firebase hosting: $(ls dist | tr '\n' ' ')"

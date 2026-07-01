@@ -40,6 +40,9 @@ mkdir -p .build apps
   printf '<meta name="viewport" content="width=device-width,initial-scale=1">'
   printf '<meta name="theme-color" content="#0B0B0C">'
   printf '<script>(function(){try{var m=localStorage.getItem("amu-mode");var d=document.documentElement;d.setAttribute("data-theme","portfolio");d.setAttribute("data-mode",(m==="dark"||m==="light")?m:"light");}catch(e){}})();</script>'
+  # Display-preference prepaint: apply persisted text-size/density/motion/contrast/reading-font
+  # (mirrors written by prefs.ts under amu-pref-*) as html[data-*] before first paint (no flash).
+  printf '<script>(function(){try{var d=document.documentElement;["fontsize","density","motion","contrast","readfont"].forEach(function(k){var v=localStorage.getItem("amu-pref-"+k);if(v){d.setAttribute("data-"+k,v);}});}catch(e){}})();</script>'
   printf '<link rel="canonical" href="https://em.numu.im/">'
   printf '<link rel="icon" href="/icons/favicon.svg"><link rel="apple-touch-icon" href="/icons/icon-192.png"><link rel="manifest" href="/manifest.webmanifest">'
   printf '<title>Emmanuel Doumouya — portfolio</title><style>'
@@ -47,7 +50,17 @@ mkdir -p .build apps
       "$AMU/src/theme/themes/portfolio.css" \
       "$AMU/src/components/atoms/atoms.css" \
       "$AMU/src/components/card/card.css" \
-      "$AMU/src/components/termbar/termbar.css"
+      "$AMU/src/components/termbar/termbar.css" \
+      "$AMU/src/components/markdown/markdown.css" \
+      "$AMU/src/components/modal/modal.css" \
+      "$AMU/src/components/redtable/redtable.css" \
+      "$AMU/src/components/pager/pager.css" \
+      "$AMU/src/components/empty-state/empty-state.css" \
+      "$AMU/src/components/filter-panel/filter-panel.css" \
+      "$AMU/src/components/select/select.css" \
+      "$AMU/src/components/omni/omni.css" \
+      "$AMU/src/components/chart/chart.css" \
+      "$AMU/src/components/dashboard-grid/dashboard-grid.css"
   cat src/landing.css
   printf '</style></head><body>'
   cat src/body.html

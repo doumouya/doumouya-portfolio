@@ -41,7 +41,8 @@ B64=$(base64 -w0 crates/wasm/pkg-web/rbac_wasm_bg.wasm)
       "$AMU/src/theme/themes/portfolio.css" \
       "$AMU/src/components/atoms/atoms.css" \
       "$AMU/src/components/select/select.css" \
-      "$AMU/src/components/stat/stat.css"
+      "$AMU/src/components/stat/stat.css" \
+      "$AMU/src/components/perm-cell/perm-cell.css"
   cat web/app.css
   printf '</style></head><body>'
   cat web/body.html
