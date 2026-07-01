@@ -1,9 +1,0 @@
-{
-  "name": "numu-shell-web",
-  "version": "0.1.0",
-  "description": "RedPash unified shell prototype — qir Correspondence (built with web-kit).",
-  "type": "module",
-  "private": true,
-  "scripts": { "typecheck": "tsc --noEmit" },
-  "devDependencies": { "esbuild": "^0.23.1", "typescript": "^5.6.3" }
-}

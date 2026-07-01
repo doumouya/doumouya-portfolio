@@ -5,6 +5,12 @@
 # (Prefer to vendor it? Remove this line and add it as a submodule instead.)
 /amenan-ui/
 
+# ── private / local-only projects ────────────────────────────────────────────
+# Kept local, out of this public repo. They were tracked before, so untrack once:
+#   git rm -r --cached numu-shell build-engine && git commit -m "untrack private projects"
+/numu-shell/
+/build-engine/
+
 # ── dependencies & build outputs (regenerable; never commit) ──────────────────
 **/node_modules/
 **/target/
