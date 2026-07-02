@@ -46,6 +46,23 @@
     if (cfg.disabled) b.disabled = true;
     return b;
   }
+  function input(cfg = {}) {
+    const i = el("input", {
+      class: "amu-input",
+      type: cfg.type ?? "text",
+      placeholder: cfg.placeholder ?? ""
+    });
+    if (cfg.value != null) i.value = cfg.value;
+    const onInput = cfg.onInput;
+    if (onInput) i.addEventListener("input", () => onInput(i.value));
+    const onEnter = cfg.onEnter;
+    if (onEnter) {
+      i.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") onEnter(i.value);
+      });
+    }
+    return i;
+  }
   function badge(cfg) {
     return el(
       "span",
@@ -116,6 +133,69 @@
     })
   );
   var TYPE_LIST = Object.values(TYPES).flat();
+
+  // ../../amenan-ui/src/components/sql-editor/sql-editor.ts
+  function mountSqlEditor(host, cfg) {
+    const root = el("div", { class: "amu-sqleditor" });
+    const area = el("textarea", {
+      class: "amu-sqleditor-input",
+      placeholder: "SELECT * FROM t LIMIT 100",
+      spellcheck: "false",
+      rows: "6"
+    });
+    area.value = cfg.value ?? "";
+    const status = el("div", { class: "amu-sqleditor-status" });
+    const setStatus2 = (msg, tone) => {
+      status.textContent = msg ?? "";
+      status.dataset.tone = tone ?? "";
+    };
+    const name = input({ placeholder: "result name", value: cfg.suggestName?.() ?? "" });
+    name.classList.add("amu-sqleditor-name");
+    const run = button({ label: "Run", variant: "accent", onClick: doRun });
+    const save = button({ label: "Save as file", variant: "ghost", onClick: doSave });
+    const actions = cfg.onMaterialize ? el("div", { class: "amu-sqleditor-actions" }, name, save, run) : el("div", { class: "amu-sqleditor-actions" }, run);
+    root.append(
+      el(
+        "div",
+        { class: "amu-sqleditor-hint" },
+        "Query the open file as table ",
+        el("code", { class: "amu-sqleditor-t" }, "t"),
+        " \u2014 read-only."
+      ),
+      area,
+      el("div", { class: "amu-sqleditor-foot" }, status, actions)
+    );
+    async function doRun() {
+      const q = area.value.trim();
+      if (!q) return;
+      setStatus2("Running\u2026", "muted");
+      run.disabled = true;
+      try {
+        await cfg.onRun?.(q);
+        setStatus2("");
+      } catch (e) {
+        setStatus2(e instanceof Error ? e.message : "Query failed", "danger");
+      } finally {
+        run.disabled = false;
+      }
+    }
+    async function doSave() {
+      const q = area.value.trim();
+      if (!q) return;
+      setStatus2("Saving\u2026", "muted");
+      save.disabled = true;
+      try {
+        await cfg.onMaterialize?.(q, name.value.trim() || "query_result");
+        setStatus2("Saved as a new file.", "ok");
+      } catch (e) {
+        setStatus2(e instanceof Error ? e.message : "Save failed", "danger");
+      } finally {
+        save.disabled = false;
+      }
+    }
+    host.append(root);
+    return { el: root, query: () => area.value, destroy: () => root.remove() };
+  }
 
   // ../../amenan-ui/src/components/redtable/editor-registry.ts
   var editors = /* @__PURE__ */ new Map();
@@ -329,6 +409,7 @@
       searchQ = "";
       mode = "";
       totalRows = dims.rows;
+      document.getElementById("sql-result")?.replaceChildren();
       resetToolbarUi();
       await refresh();
       setStatus("");
@@ -516,6 +597,49 @@
     renderTools();
     if (!cols.length) setKids(byId("tools"), el("div", { class: "tools-section" }, el("p", { class: "muted" }, "Load a CSV to use the cleaning tools.")));
     byId("tools-drawer").showModal();
+  }
+  var sqlMounted = false;
+  var lastSql = "";
+  function openSqlDrawer() {
+    const host = byId("sql-pane");
+    if (!cols.length) {
+      sqlMounted = false;
+      setKids(host, el("div", { class: "tools-section" }, el("p", { class: "muted" }, "Load a CSV to query it with SQL.")));
+    } else if (!sqlMounted) {
+      sqlMounted = true;
+      const result = el("div", { id: "sql-result", class: "sql-result" });
+      const editorHost = el("div", { class: "sql-editor-host" });
+      mountSqlEditor(editorHost, {
+        value: lastSql,
+        onRun: async (query) => {
+          lastSql = query;
+          const raw = await engineCall("sql", { query });
+          renderSqlResult(result, JSON.parse(raw));
+        }
+      });
+      setKids(
+        host,
+        el("div", { class: "tools-head" }, el("h2", {}, "SQL")),
+        editorHost,
+        result
+      );
+    }
+    byId("sql-drawer").showModal();
+  }
+  function renderSqlResult(host, page) {
+    const shown = page.rows.length;
+    const note = shown < page.total ? ` \xB7 showing first ${shown}` : "";
+    const head = el("tr", {}, ...page.columns.map((c) => el("th", {}, c)));
+    const body = page.rows.map((r) => el("tr", {}, ...r.map((v) => el("td", {}, v ?? "\u2014"))));
+    setKids(
+      host,
+      el("div", { class: "sql-result-meta" }, `${page.total} row${page.total === 1 ? "" : "s"} \xD7 ${page.columns.length} col${page.columns.length === 1 ? "" : "s"}${note}`),
+      el(
+        "div",
+        { class: "sql-result-scroll" },
+        el("table", {}, el("thead", {}, head), el("tbody", {}, ...body))
+      )
+    );
   }
   function wireTable() {
     const host = byId("table");
@@ -892,6 +1016,7 @@
       columnsDropdown(),
       el("span", { id: "selChip", class: "dt-selchip" }),
       el("span", { class: "spacer" }),
+      button({ label: "SQL", size: "sm", onClick: openSqlDrawer }),
       button({ label: "Clean tools", size: "sm", onClick: openToolsDrawer })
     );
     const drawer = el(
@@ -907,6 +1032,19 @@
     drawer.addEventListener("click", (e) => {
       if (e.target === drawer) drawer.close();
     });
+    const sqlDrawer = el(
+      "dialog",
+      { id: "sql-drawer", class: "tools-drawer sql-drawer" },
+      el(
+        "div",
+        { class: "drawer-head" },
+        button({ label: "\u2715", variant: "ghost", size: "sm", ariaLabel: "close SQL", title: "close SQL", onClick: () => sqlDrawer.close() })
+      ),
+      el("aside", { id: "sql-pane", class: "tools-pane" })
+    );
+    sqlDrawer.addEventListener("click", (e) => {
+      if (e.target === sqlDrawer) sqlDrawer.close();
+    });
     byId("root").append(
       header,
       el(
@@ -921,7 +1059,8 @@
           el("div", { id: "pager", class: "pager" })
         )
       ),
-      drawer
+      drawer,
+      sqlDrawer
     );
     wireTable();
   }

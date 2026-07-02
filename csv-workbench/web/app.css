@@ -85,6 +85,17 @@ body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--
 .tools-pane { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); }
 .tools-body { flex: 1 1 auto; min-height: 0; overflow: auto; }
 
+/* ---------- SQL console — a wider slide-over; result grid under the editor ---------- */
+.sql-drawer { width: min(46rem, 96vw); }
+.sql-editor-host { flex: none; }
+.sql-result { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-2); margin-top: var(--sp-3); }
+.sql-result-meta { flex: none; font-size: var(--text-xs); color: var(--text-mute); }
+.sql-result-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.sql-result-scroll table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+.sql-result-scroll th { position: sticky; top: 0; z-index: 1; text-align: left; background: var(--surface-2); color: var(--text-dim);
+  padding: var(--sp-1) var(--sp-2); border-bottom: 1.5px solid var(--rule); white-space: nowrap; }
+.sql-result-scroll td { padding: var(--sp-1) var(--sp-2); border-bottom: 1px solid var(--border); white-space: nowrap; }
+
 @media (max-width: 46rem) {
   .page { padding: var(--sp-3); }
   .table-card { max-height: none; }

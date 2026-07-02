@@ -7,7 +7,7 @@
    so undo/redo and "revert to here" are just "replay a shorter list". Built on
    amenan-ui components + its `portfolio` (Console) theme; the DOM is built with
    el() — no innerHTML. */
-import { el, button, mountSelect, mountEmptyState, badge } from "amenan-ui";
+import { el, button, mountSelect, mountEmptyState, mountSqlEditor, badge } from "amenan-ui";
 
 // ---------- types ----------
 interface ColumnMeta {
@@ -163,6 +163,7 @@ async function openFile(file: File | undefined): Promise<void> {
     selection.clear(); selectedRows.clear(); hiddenCols.clear();
     sort = null; offset = 0; searchQ = ""; mode = "";
     totalRows = dims.rows;
+    document.getElementById("sql-result")?.replaceChildren(); // a result from the previous file is stale
     resetToolbarUi();
     await refresh();
     setStatus("");
@@ -355,6 +356,50 @@ function openToolsDrawer(): void {
   renderTools();
   if (!cols.length) setKids(byId("tools"), el("div", { class: "tools-section" }, el("p", { class: "muted" }, "Load a CSV to use the cleaning tools.")));
   (byId("tools-drawer") as HTMLDialogElement).showModal();
+}
+
+// ---------- SQL console (read-only Polars SQL over the current frame) ----------
+let sqlMounted = false;
+let lastSql = "";
+
+function openSqlDrawer(): void {
+  const host = byId("sql-pane");
+  if (!cols.length) {
+    sqlMounted = false;
+    setKids(host, el("div", { class: "tools-section" }, el("p", { class: "muted" }, "Load a CSV to query it with SQL.")));
+  } else if (!sqlMounted) {
+    sqlMounted = true;
+    const result = el("div", { id: "sql-result", class: "sql-result" });
+    const editorHost = el("div", { class: "sql-editor-host" });
+    mountSqlEditor(editorHost, {
+      value: lastSql,
+      onRun: async (query) => {
+        lastSql = query;
+        // engine errors (parse / non-read-only / row cap) reject → the editor's
+        // own status line shows the message and keeps the panel open
+        const raw = await engineCall<string>("sql", { query });
+        renderSqlResult(result, JSON.parse(raw) as Page);
+      },
+    });
+    setKids(host,
+      el("div", { class: "tools-head" }, el("h2", {}, "SQL")),
+      editorHost,
+      result);
+  }
+  (byId("sql-drawer") as HTMLDialogElement).showModal();
+}
+
+// A compact read-only result grid. The engine caps the payload at 500 rows —
+// `total` is the full result size, so the truncation is stated, never silent.
+function renderSqlResult(host: HTMLElement, page: Page): void {
+  const shown = page.rows.length;
+  const note = shown < page.total ? ` · showing first ${shown}` : "";
+  const head = el("tr", {}, ...page.columns.map((c) => el("th", {}, c)));
+  const body = page.rows.map((r) => el("tr", {}, ...r.map((v) => el("td", {}, v ?? "—"))));
+  setKids(host,
+    el("div", { class: "sql-result-meta" }, `${page.total} row${page.total === 1 ? "" : "s"} × ${page.columns.length} col${page.columns.length === 1 ? "" : "s"}${note}`),
+    el("div", { class: "sql-result-scroll" },
+      el("table", {}, el("thead", {}, head), el("tbody", {}, ...body))));
 }
 
 // Delegated table interactions — attached once to the persistent #table host, so they
@@ -657,6 +702,7 @@ function buildChrome(): void {
     columnsDropdown(),
     el("span", { id: "selChip", class: "dt-selchip" }),
     el("span", { class: "spacer" }),
+    button({ label: "SQL", size: "sm", onClick: openSqlDrawer }),
     button({ label: "Clean tools", size: "sm", onClick: openToolsDrawer }));
 
   // The cleaning tools live in a right slide-over so the centered table card stays the hero.
@@ -667,6 +713,13 @@ function buildChrome(): void {
   // a backdrop click lands on the <dialog> itself (never an inner node) — use that to close
   drawer.addEventListener("click", (e) => { if (e.target === drawer) drawer.close(); });
 
+  // The SQL console gets its own (wider) slide-over — same pattern, its own pane.
+  const sqlDrawer = el("dialog", { id: "sql-drawer", class: "tools-drawer sql-drawer" },
+    el("div", { class: "drawer-head" },
+      button({ label: "✕", variant: "ghost", size: "sm", ariaLabel: "close SQL", title: "close SQL", onClick: () => sqlDrawer.close() })),
+    el("aside", { id: "sql-pane", class: "tools-pane" })) as HTMLDialogElement;
+  sqlDrawer.addEventListener("click", (e) => { if (e.target === sqlDrawer) sqlDrawer.close(); });
+
   byId("root").append(
     header,
     el("main", { class: "page" },
@@ -674,7 +727,8 @@ function buildChrome(): void {
         toolbar,                                                  // the toolbar is the card's top — coupled to the table it drives
         el("section", { id: "table", class: "table-pane" }),
         el("div", { id: "pager", class: "pager" }))),
-    drawer);
+    drawer,
+    sqlDrawer);
 
   wireTable();
 }

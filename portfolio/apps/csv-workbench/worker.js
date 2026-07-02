@@ -50,6 +50,11 @@ const HANDLERS = {
   async score() {
     return wb.score();
   },
+  // read-only SQL over the current frame (exposed as table `t`); returns the
+  // engine's page JSON string, capped at 500 rows.
+  async sql({ query }) {
+    return wb.sql(query);
+  },
   async to_csv() {
     return wb.to_csv();
   },

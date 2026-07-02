@@ -23,7 +23,8 @@ cat "$AMU/src/theme/base.css" \
     "$AMU/src/theme/themes/portfolio.css" \
     "$AMU/src/components/atoms/atoms.css" \
     "$AMU/src/components/select/select.css" \
-    "$AMU/src/components/empty-state/empty-state.css" > web/tokens.css
+    "$AMU/src/components/empty-state/empty-state.css" \
+    "$AMU/src/components/sql-editor/sql-editor.css" > web/tokens.css
 
 echo "== 3/4 typecheck =="
 [ -d node_modules ] || npm install --silent
