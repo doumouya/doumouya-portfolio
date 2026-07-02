@@ -25,7 +25,7 @@ export const LAB_PROJECTS: LabProject[] = [
     title: "amenan-ui",
     kind: "Framework",
     blurb:
-      "The dependency-free TypeScript UI framework this whole site runs on — a two-axis theme platform (O(1) switching), a component library, and page-assembly + router primitives. This page is a live tour of it.",
+      "The dependency-free TypeScript UI framework this whole site runs on — a two-axis theme platform (O(1) switching), a component library, and page-assembly + router primitives. Open it for a live tour.",
     stack: "TypeScript · zero runtime deps",
     route: "design-system",
     repo: "https://github.com/doumouya/amenan-ui",
@@ -46,6 +46,15 @@ export const LAB_PROJECTS: LabProject[] = [
       "A visual query builder over a shared filter-node algebra: nested All/Any groups compile to a typed predicate tree. Build a filter and watch the assembled query update live.",
     stack: "TypeScript · amenan-ui",
     route: "lab/filter-panel",
+    repo: "https://github.com/doumouya/amenan-ui",
+  },
+  {
+    title: "chart designer",
+    kind: "Component",
+    blurb:
+      "amenan-ui's dashboard-grid + ECharts tiles: a drag-and-resize chart builder with live chrome options (legend, tooltip, axis, grid, smooth). Themed with dark & shine ECharts palettes that follow the site's light/dark toggle.",
+    stack: "TypeScript · amenan-ui · ECharts",
+    route: "lab/designer",
     repo: "https://github.com/doumouya/amenan-ui",
   },
 ];
@@ -152,14 +161,14 @@ const redtableView = labView(() => {
       else if (!sort.descending) sort = { col, descending: true };
       else sort = null;
       rows = sort ? [...base].sort((a, b) => cmp(a, b, sort as RedTableSort)) : base;
-      handle?.update({ rows, sort });
+      handle?.update?.({ rows, sort });
     },
     onSelectChange: (keys) => {
       status.textContent = `${keys.length} selected`;
     },
     onRowDelete: (key) => {
       rows = rows.filter((r) => String(r["id"]) !== key);
-      handle?.update({ rows });
+      handle?.update?.({ rows });
       status.textContent = `${rows.length} rows`;
     },
   });
@@ -250,8 +259,8 @@ const designSystemView = labView(() => {
       project: { label: "Projects", icon: "bi-folder" },
       writing: { label: "Writing", icon: "bi-folder" },
     },
-    source: ({ q }) => {
-      const needle = q.toLowerCase();
+    source: (query) => {
+      const needle = String(query?.["q"] ?? "").toLowerCase();
       const hits = SITE_INDEX.filter(
         (e) => e.label.toLowerCase().includes(needle) || e.sub.toLowerCase().includes(needle),
       ).map<OmniResult>((e) => ({ kind: e.kind, label: e.label, sub: e.sub, hash: e.hash }));

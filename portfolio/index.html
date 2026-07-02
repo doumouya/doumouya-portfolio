@@ -1407,6 +1407,15 @@ a {
   color: var(--text-dim);
 }
 
+/* A one-sentence lead under a .section-head: states a group's shared claim once,
+   so the card blurbs don't have to repeat it. */
+.group-intro {
+  margin: calc(-1 * var(--sp-2)) 0 var(--sp-5);
+  color: var(--text-dim);
+  font-size: var(--text-md);
+  max-width: 44rem;
+}
+
 /* ── project grid + card bodies (card frame is amenan-ui's .amu-card) ─────── */
 .grid {
   display: grid;
@@ -1942,7 +1951,7 @@ html[data-readfont="on"] .post pre {
 <noscript>
   <div style="max-width:42rem;margin:0 auto;padding:2rem;font-family:ui-monospace,monospace">
     <h1>Emmanuel Doumouya</h1>
-    <p>AI-native data engineer. Privacy-by-design tools that run entirely in your browser.</p>
+    <p>AI-native engineer. A dependency-free UI framework, Rust → wasm apps, and an AI-agent build system — all open source.</p>
     <p>This site needs JavaScript to run its demos. Code and writing:
       <a href="https://github.com/doumouya">github.com/doumouya</a> ·
       <a href="mailto:em.doumouya@gmail.com">em.doumouya@gmail.com</a>
@@ -1950,7 +1959,7 @@ html[data-readfont="on"] .post pre {
   </div>
 </noscript>
 
-<script type="module">// ../amenan-ui/src/kernel/dom.ts
+<script type="module">// ../../amenan-ui/src/kernel/dom.ts
 function esc(v) {
   return String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
@@ -1971,7 +1980,7 @@ function el(tag, attrs, ...children) {
   return node;
 }
 
-// ../amenan-ui/src/kernel/events.ts
+// ../../amenan-ui/src/kernel/events.ts
 var buffer = [];
 var CAP = 100;
 var DEDUP_WINDOW = 1e4;
@@ -1994,7 +2003,7 @@ function captureMountError(page, err) {
   capture("mount", `page ${page} failed`, String(message ?? err));
 }
 
-// ../amenan-ui/src/theme/theme.ts
+// ../../amenan-ui/src/theme/theme.ts
 var THEME_KEY = "amu-theme";
 var MODE_KEY = "amu-mode";
 var DEFAULT_THEME = "redpash";
@@ -2055,7 +2064,7 @@ function onThemeChange(fn) {
 }
 var prePaintSnippet = `(function(){try{var t=localStorage.getItem("${THEME_KEY}");var m=localStorage.getItem("${MODE_KEY}");var d=document.documentElement;var isMode=function(v){return v==="dark"||v==="light";};if(!isMode(m)){m=isMode(t)?t:"${DEFAULT_MODE}";}var theme=(t&&!isMode(t))?t:"${DEFAULT_THEME}";d.setAttribute("data-theme",theme);d.setAttribute("data-mode",m);}catch(e){}})();`;
 
-// ../amenan-ui/src/router.ts
+// ../../amenan-ui/src/router.ts
 function routeId() {
   return (location.hash || "").replace(/^#\//, "").split("?")[0] ?? "";
 }
@@ -2123,7 +2132,7 @@ function createRouter(cfg) {
   };
 }
 
-// ../amenan-ui/src/components/termbar/termbar.ts
+// ../../amenan-ui/src/components/termbar/termbar.ts
 function mountTermbar(host, cfg) {
   const cwd = el("span", { class: "amu-termbar-cwd" }, cfg.cwd);
   const status = el("span", { class: "amu-termbar-status" }, cfg.status ?? "\u25CF client-side");
@@ -2160,7 +2169,7 @@ function mountTermbar(host, cfg) {
   };
 }
 
-// ../amenan-ui/src/components/atoms/atoms.ts
+// ../../amenan-ui/src/components/atoms/atoms.ts
 function button(cfg) {
   const cls = ["amu-btn"];
   if (cfg.variant) cls.push(`amu-btn--${cfg.variant}`);
@@ -2209,7 +2218,7 @@ function kbd(label) {
   return el("kbd", { class: "amu-kbd" }, label);
 }
 
-// ../amenan-ui/src/components/card/card.ts
+// ../../amenan-ui/src/components/card/card.ts
 function mountCard(host, cfg) {
   const tag = cfg.href ? "a" : cfg.onClick ? "button" : "div";
   const card = el(
@@ -2229,7 +2238,7 @@ function mountCard(host, cfg) {
   }, destroy: () => card.remove() };
 }
 
-// ../amenan-ui/src/components/empty-state/empty-state.ts
+// ../../amenan-ui/src/components/empty-state/empty-state.ts
 function mountEmptyState(host, cfg) {
   const node = el(
     "div",
@@ -2243,7 +2252,7 @@ function mountEmptyState(host, cfg) {
   }, destroy: () => node.remove() };
 }
 
-// ../amenan-ui/src/components/modal/modal.ts
+// ../../amenan-ui/src/components/modal/modal.ts
 function openModal(cfg) {
   const overlay = el("div", { class: "amu-modal-overlay", role: "dialog", "aria-modal": "true" });
   const foot = el("div", { class: "amu-modal-foot" });
@@ -2281,7 +2290,7 @@ function openModal(cfg) {
   return { el: overlay, close };
 }
 
-// ../amenan-ui/src/components/select/select.ts
+// ../../amenan-ui/src/components/select/select.ts
 function mountSelect(host, cfg) {
   const sel = el("select", { class: "amu-select" });
   function render(options, value) {
@@ -2303,7 +2312,7 @@ function mountSelect(host, cfg) {
   };
 }
 
-// ../amenan-ui/src/components/pager/pager.ts
+// ../../amenan-ui/src/components/pager/pager.ts
 function mountPager(host, cfg) {
   const node = el("div", { class: "amu-pager" });
   function render({ page, pages, total }) {
@@ -2344,7 +2353,7 @@ function mountPager(host, cfg) {
   };
 }
 
-// ../amenan-ui/src/components/markdown/markdown.ts
+// ../../amenan-ui/src/components/markdown/markdown.ts
 var SAFE_SCHEME = /^(https?:|mailto:)/i;
 var BLOCK_LEAD = /^(```|>\s?|\s*[-*]\s+|\s*\d+\.\s+)/;
 var INLINE = /`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|__([^_]+)__|\*([^*]+)\*|_([^_]+)_/;
@@ -2417,7 +2426,7 @@ function renderMarkdown(text) {
   return root2;
 }
 
-// ../amenan-ui/src/components/dashboard-grid/dashboard-grid.ts
+// ../../amenan-ui/src/components/dashboard-grid/dashboard-grid.ts
 var clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 function mountDashboardGrid(host, cfg = {}) {
   const cols = cfg.cols || 15;
@@ -2573,7 +2582,7 @@ function mountDashboardGrid(host, cfg = {}) {
   };
 }
 
-// ../amenan-ui/src/components/chart/theme.ts
+// ../../amenan-ui/src/components/chart/theme.ts
 function getEcharts() {
   if (typeof window === "undefined") return void 0;
   return window.echarts;
@@ -2617,7 +2626,7 @@ function chartTheme() {
   return light ? "theme-light" : "theme-dark";
 }
 
-// ../amenan-ui/src/components/chart/chart.ts
+// ../../amenan-ui/src/components/chart/chart.ts
 function mountChart(host, cfg = {}) {
   const { title, option, theme, id } = cfg;
   const echarts = getEcharts();
@@ -2719,7 +2728,7 @@ function mountChart(host, cfg = {}) {
   };
 }
 
-// ../amenan-ui/src/components/chart/build.ts
+// ../../amenan-ui/src/components/chart/build.ts
 var THEMES = {
   vintage: {
     name: "Vintage",
@@ -3062,7 +3071,7 @@ function buildOption(cfg, t) {
   };
 }
 
-// ../amenan-ui/src/components/filter-panel/filter-node.ts
+// ../../amenan-ui/src/components/filter-panel/filter-node.ts
 var PRED_OPS = [
   { value: "eq", label: "equals" },
   { value: "neq", label: "does not equal" },
@@ -3170,7 +3179,7 @@ function predToRow(pred) {
   return row;
 }
 
-// ../amenan-ui/src/components/filter-panel/filter-panel.ts
+// ../../amenan-ui/src/components/filter-panel/filter-panel.ts
 var MAX_GROUP_DEPTH = 2;
 function isGroupRow2(row) {
   return row.group === true;
@@ -3378,7 +3387,7 @@ function mountFilterPanel(host, cfg) {
   };
 }
 
-// ../amenan-ui/src/components/redtable/virtual-rows.ts
+// ../../amenan-ui/src/components/redtable/virtual-rows.ts
 var WINDOW = 40;
 var OVERSCAN = 10;
 function createVirtualRows({
@@ -3435,7 +3444,7 @@ function createVirtualRows({
   };
 }
 
-// ../amenan-ui/src/components/redtable/editor-registry.ts
+// ../../amenan-ui/src/components/redtable/editor-registry.ts
 var editors = /* @__PURE__ */ new Map();
 function registerEditor(dtype, factory) {
   editors.set(dtype, factory);
@@ -3489,7 +3498,7 @@ registerEditor("text", makeEditor());
 registerEditor("int", makeEditor({ type: "number", parse: parseNumber }));
 registerEditor("float", makeEditor({ type: "number", parse: parseNumber }));
 
-// ../amenan-ui/src/components/redtable/redtable.ts
+// ../../amenan-ui/src/components/redtable/redtable.ts
 var AUTO_VIRTUAL_AT = 200;
 function cellHTML(row, col) {
   const v = row[col.key];
@@ -3774,7 +3783,7 @@ function mountRedTable(host, cfg) {
   };
 }
 
-// ../amenan-ui/src/components/omni/omni.ts
+// ../../amenan-ui/src/components/omni/omni.ts
 var ctrlKBound = false;
 function mountOmni(host, cfg) {
   const kinds = cfg.kinds ?? {};
@@ -4156,7 +4165,7 @@ var LAB_PROJECTS = [
   {
     title: "amenan-ui",
     kind: "Framework",
-    blurb: "The dependency-free TypeScript UI framework this whole site runs on \u2014 a two-axis theme platform (O(1) switching), a component library, and page-assembly + router primitives. This page is a live tour of it.",
+    blurb: "The dependency-free TypeScript UI framework this whole site runs on \u2014 a two-axis theme platform (O(1) switching), a component library, and page-assembly + router primitives. Open it for a live tour.",
     stack: "TypeScript \xB7 zero runtime deps",
     route: "design-system",
     repo: "https://github.com/doumouya/amenan-ui"
@@ -4175,6 +4184,14 @@ var LAB_PROJECTS = [
     blurb: "A visual query builder over a shared filter-node algebra: nested All/Any groups compile to a typed predicate tree. Build a filter and watch the assembled query update live.",
     stack: "TypeScript \xB7 amenan-ui",
     route: "lab/filter-panel",
+    repo: "https://github.com/doumouya/amenan-ui"
+  },
+  {
+    title: "chart designer",
+    kind: "Component",
+    blurb: "amenan-ui's dashboard-grid + ECharts tiles: a drag-and-resize chart builder with live chrome options (legend, tooltip, axis, grid, smooth). Themed with dark & shine ECharts palettes that follow the site's light/dark toggle.",
+    stack: "TypeScript \xB7 amenan-ui \xB7 ECharts",
+    route: "lab/designer",
     repo: "https://github.com/doumouya/amenan-ui"
   }
 ];
@@ -4266,14 +4283,14 @@ var redtableView = labView(() => {
       else if (!sort.descending) sort = { col, descending: true };
       else sort = null;
       rows = sort ? [...base].sort((a, b) => cmp(a, b, sort)) : base;
-      handle?.update({ rows, sort });
+      handle?.update?.({ rows, sort });
     },
     onSelectChange: (keys) => {
       status.textContent = `${keys.length} selected`;
     },
     onRowDelete: (key) => {
       rows = rows.filter((r) => String(r["id"]) !== key);
-      handle?.update({ rows });
+      handle?.update?.({ rows });
       status.textContent = `${rows.length} rows`;
     }
   });
@@ -4344,8 +4361,8 @@ var designSystemView = labView(() => {
       project: { label: "Projects", icon: "bi-folder" },
       writing: { label: "Writing", icon: "bi-folder" }
     },
-    source: ({ q }) => {
-      const needle = q.toLowerCase();
+    source: (query) => {
+      const needle = String(query?.["q"] ?? "").toLowerCase();
       const hits = SITE_INDEX.filter(
         (e) => e.label.toLowerCase().includes(needle) || e.sub.toLowerCase().includes(needle)
       ).map((e) => ({ kind: e.kind, label: e.label, sub: e.sub, hash: e.hash }));
@@ -4645,7 +4662,7 @@ var designerView = (host) => {
   return {
     el: section2,
     destroy: () => {
-      grid?.destroy();
+      grid?.destroy?.();
       section2.remove();
     }
   };
@@ -4656,54 +4673,44 @@ var designerRoutes = {
 var DESIGNER_TITLE = {
   "lab/designer": "chart designer \u2014 Emmanuel Doumouya"
 };
-var DESIGNER_PROJECT = {
-  title: "chart designer",
-  kind: "Component",
-  blurb: "amenan-ui's dashboard-grid + ECharts tiles: a drag-and-resize chart builder with live chrome options (legend, tooltip, axis, grid, smooth). Themed with dark & shine ECharts palettes that follow the site's light/dark toggle.",
-  stack: "TypeScript \xB7 amenan-ui \xB7 ECharts",
-  route: "lab/designer",
-  repo: "https://github.com/doumouya/amenan-ui"
-};
 
 // src/landing.ts
 var PROJECTS = [
   {
     title: "csv-workbench",
     kind: "Data table",
-    blurb: "Open a CSV and work it like a spreadsheet \u2014 live full-text search, click-to-sort, inline cell edits, row select/delete \u2014 then clean it with a tools panel: normalize headers, change column types (locale-aware: it reads 1 234,56 and oui/non), fill or drop empties, split, combine, find & replace. Every change is an undoable step with a visible history; export when done. The full Polars data engine, compiled to WebAssembly in a Web Worker; your data never leaves the page.",
+    blurb: "Open a CSV and work it like a spreadsheet \u2014 live full-text search, click-to-sort, inline cell edits, row select/delete \u2014 then clean it with a tools panel: normalize headers, change column types (locale-aware: it reads 1 234,56 and oui/non), fill or drop empties, split, combine, find & replace. Or query it with SQL, right in the browser. Every change is an undoable step with a visible history; export when done. The full Polars data engine (SQL included), compiled to WebAssembly in a Web Worker.",
     stack: "Rust \xB7 Polars \u2192 wasm \xB7 Web Worker \xB7 TypeScript",
     repo: "https://github.com/doumouya/doumouya-portfolio/tree/main/csv-workbench",
     demo: "apps/csv-workbench/index.html",
-    docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/csv-workbench/README.md",
-    featured: true
+    docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/csv-workbench/README.md"
   },
   {
     title: "echarts-dashboard",
     kind: "Analytics",
-    blurb: "Open a CSV, group and aggregate it, and chart it with ECharts \u2014 all client-side. The aggregation runs in a Rust\u2192wasm engine on-device; nothing is uploaded.",
+    blurb: "The same engine family pointed at analytics: open a CSV, pick a group-by and a measure, and chart the aggregate with ECharts \u2014 instant chart cards, all client-side.",
     stack: "Rust \u2192 wasm \xB7 ECharts \xB7 TypeScript",
     repo: "https://github.com/doumouya/doumouya-portfolio/tree/main/echarts-dashboard",
     demo: "apps/echarts-dashboard/index.html",
-    docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/echarts-dashboard/docs/spec.md",
-    featured: true
+    docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/echarts-dashboard/docs/spec.md"
   },
   {
     title: "rbac-explorer",
     kind: "Access control",
-    blurb: "An interactive picture of scoped-ownership access: pick an actor and watch what they can reach light up; grant or revoke and see it recompute live. The reach rule is a pure, cycle-safe Rust resolver.",
+    blurb: "The build-engine's scoped-ownership access model, made visible: pick an actor and watch what they can reach light up; grant or revoke and see it recompute live. The same pure, cycle-safe Rust reach resolver the engine enforces.",
     stack: "Rust \u2192 wasm \xB7 TypeScript",
     repo: "https://github.com/doumouya/doumouya-portfolio/tree/main/rbac-explorer",
     demo: "apps/rbac-explorer/index.html",
-    docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/rbac-explorer/docs/spec.md",
-    featured: true
+    docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/rbac-explorer/docs/spec.md"
   },
   {
     title: "build-engine",
     kind: "System",
-    blurb: "A self-hosting build system whose own database stores its build process \u2014 a workflow engine, an HTTP edge, and an MCP tool surface that share one validated core. It recorded its own RBAC feature as a Case. This is the system the demos are built through.",
+    blurb: "A self-hosting build system: AI agents drive development through its MCP tool surface, and every feature lands as a Case in its own database \u2014 a workflow engine, an HTTP edge, and an agent tool surface over one validated core. This is the system the apps here are built through; the Case where it built its own RBAC is public.",
     stack: "Rust \xB7 Axum \xB7 sqlx \xB7 Postgres \xB7 MCP",
     repo: "https://github.com/doumouya/build-engine-demo",
-    docs: "https://github.com/doumouya/build-engine-demo/blob/main/docs/build-log/entity-rbac.md"
+    docs: "https://github.com/doumouya/build-engine-demo/blob/main/docs/build-log/entity-rbac.md",
+    docsLabel: "Read the RBAC Case"
   }
 ];
 function extBtn(label, href, accent = false, ico) {
@@ -4728,7 +4735,7 @@ function cardBody(p) {
   const links = el("div", { class: "links" });
   if (p.demo) links.append(routeBtn("Demo", demoHash(p), true, "play"));
   links.append(extBtn("Code", p.repo, false, "code"));
-  if (p.docs) links.append(extBtn("Docs", p.docs, false, "docs"));
+  if (p.docs) links.append(extBtn(p.docsLabel ?? "Docs", p.docs, false, "docs"));
   return el(
     "div",
     { class: "card-body" },
@@ -4772,7 +4779,7 @@ var homeView = view(() => {
     el(
       "p",
       { class: "sub" },
-      "AI-native data engineer. I build small, fast, privacy-by-design tools \u2014 your data never leaves the browser \u2014 and I build them with AI, behind CI guardrails that keep the work honest."
+      "AI-native engineer. I build end-to-end \u2014 a dependency-free UI framework, Rust \u2192 wasm apps whose data never leaves your browser, and the AI-agent build system that constructs them \u2014 behind CI guardrails that keep the work honest."
     ),
     el(
       "p",
@@ -4790,11 +4797,12 @@ var homeView = view(() => {
   );
   s.append(hero);
   const featured = el("div", { class: "grid" });
-  for (const p of PROJECTS.filter((x) => x.featured)) {
-    mountCard(featured, { title: p.title, body: cardBody(p) });
-  }
-  const amenan = LAB_PROJECTS.find((p) => p.route === "design-system");
-  if (amenan) mountCard(featured, { title: amenan.title, body: labCardBody(amenan) });
+  const app = PROJECTS.find((p) => p.title === "csv-workbench");
+  const framework = LAB_PROJECTS.find((p) => p.route === "design-system");
+  const method = PROJECTS.find((p) => p.title === "build-engine");
+  if (app) mountCard(featured, { title: app.title, body: cardBody(app) });
+  if (framework) mountCard(featured, { title: framework.title, body: labCardBody(framework) });
+  if (method) mountCard(featured, { title: method.title, body: cardBody(method) });
   s.append(
     el("div", { class: "section-head" }, el("h2", {}, "Featured work"), routeBtn("See all \u2192", "#/work")),
     featured
@@ -4807,7 +4815,13 @@ var homeView = view(() => {
       el(
         "p",
         {},
-        "The projects share one spine: a self-hosting build-engine \u2014 a workflow engine whose own database stores its build process, with an HTTP edge and an MCP tool surface over one validated core. Each app carries a Rust \u2192 WebAssembly engine, so computation happens on your device and your data never leaves the page. The UI layer is dependency-free TypeScript \u2014 amenan-ui, a framework I built from scratch. Each repository is small, tested, and CI-green."
+        "The projects share one spine: a self-hosting ",
+        el("a", { href: "https://github.com/doumouya/build-engine-demo", target: "_blank", rel: "noopener noreferrer" }, "build-engine"),
+        " \u2014 a workflow engine whose own database stores its build process, with an HTTP edge and an MCP tool surface over one validated core; AI agents drove each feature through it. Each app carries a Rust \u2192 WebAssembly engine, so computation happens on your device and your data never leaves the page. The UI layer is ",
+        el("a", { href: "#/design-system" }, "amenan-ui"),
+        ", a dependency-free TypeScript framework I built from scratch \u2014 this site runs on it. The CI gates that keep AI-built code honest are the story of ",
+        el("a", { href: "#/writing/immune-system" }, "the immune system"),
+        ". Each repository is small, tested, and CI-green."
       )
     )
   );
@@ -4827,19 +4841,29 @@ var workView = view(() => {
       )
     )
   );
-  const grid = el("div", { class: "grid" });
-  for (const p of PROJECTS) mountCard(grid, { title: p.title, body: cardBody(p) });
-  s.append(grid);
-  const fw = el("div", { class: "grid" });
-  for (const p of [...LAB_PROJECTS, DESIGNER_PROJECT]) mountCard(fw, { title: p.title, body: labCardBody(p) });
+  const apps = el("div", { class: "grid" });
+  for (const p of PROJECTS.filter((x) => x.demo)) mountCard(apps, { title: p.title, body: cardBody(p) });
   s.append(
+    el("div", { class: "section-head" }, el("h2", {}, "Apps")),
     el(
-      "div",
-      { class: "section-head" },
-      el("h2", {}, "Framework & components"),
-      routeBtn("Design system \u2192", "#/design-system")
+      "p",
+      { class: "group-intro" },
+      "Three apps, each carrying its own Rust \u2192 WebAssembly engine \u2014 computation happens on your device, and your data never leaves the page."
     ),
-    fw
+    apps
+  );
+  const systems = el("div", { class: "grid" });
+  const framework = LAB_PROJECTS.find((p) => p.route === "design-system");
+  if (framework) mountCard(systems, { title: framework.title, body: labCardBody(framework) });
+  for (const p of PROJECTS.filter((x) => !x.demo)) mountCard(systems, { title: p.title, body: cardBody(p) });
+  s.append(
+    el("div", { class: "section-head" }, el("h2", {}, "Systems")),
+    el(
+      "p",
+      { class: "group-intro" },
+      "What the apps are made with \u2014 and made through: the UI framework they're rendered in, and the AI-agent build system that constructed them."
+    ),
+    systems
   );
   return s;
 });
@@ -4914,7 +4938,8 @@ function renderPost(md) {
       flush();
       const h = /^(#{1,6})\s+(.*)$/.exec(line);
       const level = Math.min((h?.[1] ?? "").length, 6);
-      art.appendChild(el(`h${level}`, {}, h?.[2] ?? ""));
+      const tag = ["h1", "h2", "h3", "h4", "h5", "h6"][level - 1] ?? "h6";
+      art.appendChild(el(tag, {}, h?.[2] ?? ""));
     } else if (isHr(line)) {
       flush();
       art.appendChild(el("hr", {}));
@@ -5017,7 +5042,7 @@ for (const p of PROJECTS) {
 }
 Object.assign(routes, labRoutes, designerRoutes);
 var TITLES = {
-  home: "Emmanuel Doumouya \u2014 AI-native data engineer",
+  home: "Emmanuel Doumouya \u2014 AI-native engineer",
   work: "Work \u2014 Emmanuel Doumouya",
   writing: "Writing \u2014 Emmanuel Doumouya",
   "writing/immune-system": "The immune system \u2014 Emmanuel Doumouya",

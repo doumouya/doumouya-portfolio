@@ -14,7 +14,7 @@ import { icon } from "./icons.ts";
 import type { IconName } from "./icons.ts";
 import { labRoutes, LAB_PROJECTS, LAB_TITLES } from "./lab.ts";
 import type { LabProject } from "./lab.ts";
-import { designerRoutes, DESIGNER_TITLE, DESIGNER_PROJECT } from "./designer.ts";
+import { designerRoutes, DESIGNER_TITLE } from "./designer.ts";
 
 type Kind =
   | "Data cleaning"
@@ -32,7 +32,7 @@ interface Project {
   repo: string;
   demo?: string; // a local, offline-runnable demo, embedded in-site
   docs?: string;
-  featured?: boolean;
+  docsLabel?: string; // override the generic "Docs" when the doc is a specific artifact
 }
 
 const PROJECTS: Project[] = [
@@ -40,43 +40,41 @@ const PROJECTS: Project[] = [
     title: "csv-workbench",
     kind: "Data table",
     blurb:
-      "Open a CSV and work it like a spreadsheet — live full-text search, click-to-sort, inline cell edits, row select/delete — then clean it with a tools panel: normalize headers, change column types (locale-aware: it reads 1 234,56 and oui/non), fill or drop empties, split, combine, find & replace. Every change is an undoable step with a visible history; export when done. The full Polars data engine, compiled to WebAssembly in a Web Worker; your data never leaves the page.",
+      "Open a CSV and work it like a spreadsheet — live full-text search, click-to-sort, inline cell edits, row select/delete — then clean it with a tools panel: normalize headers, change column types (locale-aware: it reads 1 234,56 and oui/non), fill or drop empties, split, combine, find & replace. Or query it with SQL, right in the browser. Every change is an undoable step with a visible history; export when done. The full Polars data engine (SQL included), compiled to WebAssembly in a Web Worker.",
     stack: "Rust · Polars → wasm · Web Worker · TypeScript",
     repo: "https://github.com/doumouya/doumouya-portfolio/tree/main/csv-workbench",
     demo: "apps/csv-workbench/index.html",
     docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/csv-workbench/README.md",
-    featured: true,
   },
   {
     title: "echarts-dashboard",
     kind: "Analytics",
     blurb:
-      "Open a CSV, group and aggregate it, and chart it with ECharts — all client-side. The aggregation runs in a Rust→wasm engine on-device; nothing is uploaded.",
+      "The same engine family pointed at analytics: open a CSV, pick a group-by and a measure, and chart the aggregate with ECharts — instant chart cards, all client-side.",
     stack: "Rust → wasm · ECharts · TypeScript",
     repo: "https://github.com/doumouya/doumouya-portfolio/tree/main/echarts-dashboard",
     demo: "apps/echarts-dashboard/index.html",
     docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/echarts-dashboard/docs/spec.md",
-    featured: true,
   },
   {
     title: "rbac-explorer",
     kind: "Access control",
     blurb:
-      "An interactive picture of scoped-ownership access: pick an actor and watch what they can reach light up; grant or revoke and see it recompute live. The reach rule is a pure, cycle-safe Rust resolver.",
+      "The build-engine's scoped-ownership access model, made visible: pick an actor and watch what they can reach light up; grant or revoke and see it recompute live. The same pure, cycle-safe Rust reach resolver the engine enforces.",
     stack: "Rust → wasm · TypeScript",
     repo: "https://github.com/doumouya/doumouya-portfolio/tree/main/rbac-explorer",
     demo: "apps/rbac-explorer/index.html",
     docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/rbac-explorer/docs/spec.md",
-    featured: true,
   },
   {
     title: "build-engine",
     kind: "System",
     blurb:
-      "A self-hosting build system whose own database stores its build process — a workflow engine, an HTTP edge, and an MCP tool surface that share one validated core. It recorded its own RBAC feature as a Case. This is the system the demos are built through.",
+      "A self-hosting build system: AI agents drive development through its MCP tool surface, and every feature lands as a Case in its own database — a workflow engine, an HTTP edge, and an agent tool surface over one validated core. This is the system the apps here are built through; the Case where it built its own RBAC is public.",
     stack: "Rust · Axum · sqlx · Postgres · MCP",
     repo: "https://github.com/doumouya/build-engine-demo",
     docs: "https://github.com/doumouya/build-engine-demo/blob/main/docs/build-log/entity-rbac.md",
+    docsLabel: "Read the RBAC Case",
   },
 ];
 
@@ -112,7 +110,7 @@ function cardBody(p: Project): HTMLElement {
   const links = el("div", { class: "links" });
   if (p.demo) links.append(routeBtn("Demo", demoHash(p), true, "play"));
   links.append(extBtn("Code", p.repo, false, "code"));
-  if (p.docs) links.append(extBtn("Docs", p.docs, false, "docs"));
+  if (p.docs) links.append(extBtn(p.docsLabel ?? "Docs", p.docs, false, "docs"));
   return el(
     "div",
     { class: "card-body" },
@@ -165,7 +163,7 @@ const homeView = view(() => {
     el(
       "p",
       { class: "sub" },
-      "AI-native data engineer. I build small, fast, privacy-by-design tools — your data never leaves the browser — and I build them with AI, behind CI guardrails that keep the work honest.",
+      "AI-native engineer. I build end-to-end — a dependency-free UI framework, Rust → wasm apps whose data never leaves your browser, and the AI-agent build system that constructs them — behind CI guardrails that keep the work honest.",
     ),
     el(
       "p",
@@ -183,12 +181,15 @@ const homeView = view(() => {
   );
   s.append(hero);
 
+  // One card per pillar — the app, the framework it's rendered with, the system
+  // it's built through. Everything else lives on Work; no story told twice.
   const featured = el("div", { class: "grid" });
-  for (const p of PROJECTS.filter((x) => x.featured)) {
-    mountCard(featured, { title: p.title, body: cardBody(p) });
-  }
-  const amenan = LAB_PROJECTS.find((p) => p.route === "design-system");
-  if (amenan) mountCard(featured, { title: amenan.title, body: labCardBody(amenan) });
+  const app = PROJECTS.find((p) => p.title === "csv-workbench");
+  const framework = LAB_PROJECTS.find((p) => p.route === "design-system");
+  const method = PROJECTS.find((p) => p.title === "build-engine");
+  if (app) mountCard(featured, { title: app.title, body: cardBody(app) });
+  if (framework) mountCard(featured, { title: framework.title, body: labCardBody(framework) });
+  if (method) mountCard(featured, { title: method.title, body: cardBody(method) });
   s.append(
     el("div", { class: "section-head" }, el("h2", {}, "Featured work"), routeBtn("See all →", "#/work")),
     featured,
@@ -202,7 +203,13 @@ const homeView = view(() => {
       el(
         "p",
         {},
-        "The projects share one spine: a self-hosting build-engine — a workflow engine whose own database stores its build process, with an HTTP edge and an MCP tool surface over one validated core. Each app carries a Rust → WebAssembly engine, so computation happens on your device and your data never leaves the page. The UI layer is dependency-free TypeScript — amenan-ui, a framework I built from scratch. Each repository is small, tested, and CI-green.",
+        "The projects share one spine: a self-hosting ",
+        el("a", { href: "https://github.com/doumouya/build-engine-demo", target: "_blank", rel: "noopener noreferrer" }, "build-engine"),
+        " — a workflow engine whose own database stores its build process, with an HTTP edge and an MCP tool surface over one validated core; AI agents drove each feature through it. Each app carries a Rust → WebAssembly engine, so computation happens on your device and your data never leaves the page. The UI layer is ",
+        el("a", { href: "#/design-system" }, "amenan-ui"),
+        ", a dependency-free TypeScript framework I built from scratch — this site runs on it. The CI gates that keep AI-built code honest are the story of ",
+        el("a", { href: "#/writing/immune-system" }, "the immune system"),
+        ". Each repository is small, tested, and CI-green.",
       ),
     ),
   );
@@ -223,20 +230,34 @@ const workView = view(() => {
       ),
     ),
   );
-  const grid = el("div", { class: "grid" });
-  for (const p of PROJECTS) mountCard(grid, { title: p.title, body: cardBody(p) });
-  s.append(grid);
-
-  const fw = el("div", { class: "grid" });
-  for (const p of [...LAB_PROJECTS, DESIGNER_PROJECT]) mountCard(fw, { title: p.title, body: labCardBody(p) });
+  // Two groups, five cards. Apps = the demos (each has a `demo`); Systems = what
+  // they're made with (the framework) and made through (the build system). The
+  // shared wasm/privacy claim lives here ONCE, not in every blurb; the component
+  // demos live on the design-system tour, their single home.
+  const apps = el("div", { class: "grid" });
+  for (const p of PROJECTS.filter((x) => x.demo)) mountCard(apps, { title: p.title, body: cardBody(p) });
   s.append(
+    el("div", { class: "section-head" }, el("h2", {}, "Apps")),
     el(
-      "div",
-      { class: "section-head" },
-      el("h2", {}, "Framework & components"),
-      routeBtn("Design system →", "#/design-system"),
+      "p",
+      { class: "group-intro" },
+      "Three apps, each carrying its own Rust → WebAssembly engine — computation happens on your device, and your data never leaves the page.",
     ),
-    fw,
+    apps,
+  );
+
+  const systems = el("div", { class: "grid" });
+  const framework = LAB_PROJECTS.find((p) => p.route === "design-system");
+  if (framework) mountCard(systems, { title: framework.title, body: labCardBody(framework) });
+  for (const p of PROJECTS.filter((x) => !x.demo)) mountCard(systems, { title: p.title, body: cardBody(p) });
+  s.append(
+    el("div", { class: "section-head" }, el("h2", {}, "Systems")),
+    el(
+      "p",
+      { class: "group-intro" },
+      "What the apps are made with — and made through: the UI framework they're rendered in, and the AI-agent build system that constructed them.",
+    ),
+    systems,
   );
   return s;
 });
@@ -327,7 +348,8 @@ function renderPost(md: string): HTMLElement {
       flush();
       const h = /^(#{1,6})\s+(.*)$/.exec(line);
       const level = Math.min((h?.[1] ?? "").length, 6);
-      art.appendChild(el(`h${level}`, {}, h?.[2] ?? ""));
+      const tag = (["h1", "h2", "h3", "h4", "h5", "h6"] as const)[level - 1] ?? "h6";
+      art.appendChild(el(tag, {}, h?.[2] ?? ""));
     } else if (isHr(line)) {
       flush();
       art.appendChild(el("hr", {}));
@@ -439,7 +461,7 @@ for (const p of PROJECTS) {
 Object.assign(routes, labRoutes, designerRoutes);
 
 const TITLES: Record<string, string> = {
-  home: "Emmanuel Doumouya — AI-native data engineer",
+  home: "Emmanuel Doumouya — AI-native engineer",
   work: "Work — Emmanuel Doumouya",
   writing: "Writing — Emmanuel Doumouya",
   "writing/immune-system": "The immune system — Emmanuel Doumouya",

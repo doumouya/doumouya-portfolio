@@ -287,7 +287,7 @@ const designerView: Mount = (host: Element) => {
   return {
     el: section,
     destroy: () => {
-      grid?.destroy();
+      grid?.destroy?.();
       section.remove();
     },
   };
@@ -298,13 +298,4 @@ export const designerRoutes: RouteMap = {
 };
 export const DESIGNER_TITLE: Record<string, string> = {
   "lab/designer": "chart designer — Emmanuel Doumouya",
-};
-export const DESIGNER_PROJECT = {
-  title: "chart designer",
-  kind: "Component",
-  blurb:
-    "amenan-ui's dashboard-grid + ECharts tiles: a drag-and-resize chart builder with live chrome options (legend, tooltip, axis, grid, smooth). Themed with dark & shine ECharts palettes that follow the site's light/dark toggle.",
-  stack: "TypeScript · amenan-ui · ECharts",
-  route: "lab/designer",
-  repo: "https://github.com/doumouya/amenan-ui",
 };

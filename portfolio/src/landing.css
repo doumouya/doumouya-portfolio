@@ -171,6 +171,15 @@ a {
   color: var(--text-dim);
 }
 
+/* A one-sentence lead under a .section-head: states a group's shared claim once,
+   so the card blurbs don't have to repeat it. */
+.group-intro {
+  margin: calc(-1 * var(--sp-2)) 0 var(--sp-5);
+  color: var(--text-dim);
+  font-size: var(--text-md);
+  max-width: 44rem;
+}
+
 /* ── project grid + card bodies (card frame is amenan-ui's .amu-card) ─────── */
 .grid {
   display: grid;
