@@ -1,0 +1,8 @@
+# build outputs (re-derived by tools/build.sh)
+node_modules/
+web/app.js
+web/tokens.css
+# build-copied from ../csv-workbench (the ONE committed wasm lives there)
+web/engine/
+# build-copied sample data (committed once at the front door apps/cleaner/data/)
+web/data/

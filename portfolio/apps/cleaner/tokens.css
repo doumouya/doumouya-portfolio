@@ -1,0 +1,1672 @@
+/* base.css — the theme-platform STRUCTURE tier (AC-1). Theme-AGNOSTIC :root
+   scales every theme shares: spacing, radius, the shared mono family, the type
+   scale, density rhythm, motion, breakpoints, and z-index. It carries NO
+   color/palette/`--font`-family/`--shadow` *value* token — those are per-theme
+   (the palette tier, in src/theme/themes/<name>.css under the two-axis selector).
+
+   This file is the structure half of the old tokens.css :root block; the palette
+   half moved into the per-theme files. base.css defines no .amu-* class — it is
+   theme-tier, excluded from the audit's R4 ownership exactly as tokens.css was. */
+
+:root {
+  /* spacing scale */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-8: 3rem;
+
+  /* radius (px on purpose — corners don't scale with font size) */
+  --radius-sm: 7px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* the shared mono family (structural — data/identifiers/code). The per-theme
+     display/body `--font` is a PALETTE token (per theme, e.g. mono-first for
+     portfolio); `--font-mono` is shared structure and stays here. */
+  --font-mono: ui-monospace, "Cascadia Code", "Segoe UI Mono", Consolas, monospace;
+
+  /* type scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-md: 0.9375rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2.25rem;
+
+  /* density rhythm — the Linear-calm knob set. Components consume these;
+     density attrs retune them globally (one knob, not per-sheet). */
+  --row-h: 2.25rem;      /* 36px table/list rows */
+  --ctl-h: 2rem;         /* 32px controls (buttons, inputs) */
+  --pad-x: 0.75rem;      /* horizontal cell/control padding */
+  --gap: 0.5rem;         /* default flex/grid gap */
+  --topbar-h: 3.25rem;   /* 52px */
+  --rail-w: 15rem;       /* 240px, fixed — no icon-only collapse */
+
+  /* motion */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --fast: 0.12s;
+  --slow: 0.22s;
+
+  /* z-index scale — the stacking contract (overlays above chrome above content) */
+  --z-base: 0;
+  --z-rail: 10;
+  --z-topbar: 20;
+  --z-side-panel: 30;
+  --z-popover: 100;
+  --z-toast: 200;
+  --z-modal: 300;
+
+  /* breakpoints — the documented source of truth. CSS can't var() inside a
+     @media query, so each media rule repeats the rem literal and tags it with
+     the matching token name in a comment to stay grep-synced. Floor = iPad Mini
+     landscape (1024x768 = 64rem).
+       --bp-lg 80rem (1280px): below, side panels overlay
+       --bp-md 64rem (1024px): the FLOOR; below, the rail also drawers
+       --bp-sm 48rem  (768px): portrait safety net (kept usable, not a target) */
+  --bp-lg: 80rem;
+  --bp-md: 64rem;
+  --bp-sm: 48rem;
+}
+/* themes/portfolio.css — the portfolio (Console) theme (AC-9). Ports web-kit's
+   "Datacore Console" identity into the amenan token contract for both modes:
+   near-monochrome ink/paper, ONE green --signal, mono-first --font, a hard 1.5px
+   --rule with a 4px offset block --rule-shadow, and FLAT base elevation (shadows
+   only for floating layers). Values lifted from web-kit
+   src/tokens/colors+charts+elevation+typography + the Console card offset block.
+
+   web-kit keyed light off :root and dark off [data-theme="dark"]; amenan splits
+   that into the two-axis [data-theme="portfolio"][data-mode="dark"|"light"].
+
+   Token map (web-kit → amenan contract):
+     ink/paper        → --bg / --text / --surface*
+     --rule (ink)     → --rule (1.5px ink/paper structural line)
+     --elev (ink)     → carried by --rule-shadow = 4px 4px 0 0 var(--rule)
+     --accent (ink)   → --accent (primary actions are ink)
+     --signal (green) → --signal / --ok / --status-progress / chart-1
+     --shadow-popover/-dialog → web-kit elevation.css
+     --font-sans (mono) → --font (mono-first)
+     --chart-1..8     → web-kit charts.css
+     --status-*       → web-kit workflow states */
+
+/* ── dark — ink surface, paper text, green-400 signal ────────────────────── */
+html[data-theme="portfolio"][data-mode="dark"] {
+  --bg: #0B0B0C;                 /* --ink */
+  --surface: #161618;            /* --gray-900 (surface-overlay tier) */
+  --surface-2: #000000;          /* --surface-sunken */
+  --border: #232327;             /* soft hairline (dividers, rows) */
+  --text: #F2F2F3;
+  --text-dim: #A1A1A6;           /* --gray-400 */
+  --text-mute: #54545A;          /* --text-subtle (dark) */
+  --accent: #F2F2F3;             /* accent = paper-ink in dark (primary actions) */
+  --accent-soft: #232327;        /* --accent-tint (dark) */
+  --on-accent: #0B0B0C;          /* --text-on-accent (dark) = ink */
+  --ok: #34C77B;                 /* --green-400 (success in dark) */
+  --warn: #B7791F;               /* --amber-500 */
+  --info: #22d3ee;               /* cyan series — restrained info */
+  --danger: #D63B3B;             /* --red-500 */
+  --hover: color-mix(in srgb, #F2F2F3 6%, transparent);
+  --glass: color-mix(in srgb, #F2F2F3 4%, transparent);
+  --glass-blur: 0px;             /* Console is FLAT — no glass blur */
+  --shadow: none;                /* base surfaces carry NO drop shadow */
+  --ring: inset 0 0 0 1px var(--border);
+  --font: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  color-scheme: dark;
+
+  /* the Console vocabulary */
+  --signal: #34C77B;             /* --green-400 */
+  --signal-hover: #1E9E5A;       /* --green-500 */
+  --signal-tint: color-mix(in srgb, #34C77B 16%, var(--surface));
+  --rule: #F2F2F3;               /* HARD ink structural line (paper-ink in dark) */
+  --rule-shadow: 4px 4px 0 0 var(--rule);  /* the Console card offset block shadow */
+  --focus-ring: #34C77B;         /* --focus = green in dark */
+  --chart-1: var(--signal);      /* brand green — default single series */
+  --chart-2: #22d3ee;
+  --chart-3: #a78bfa;
+  --chart-4: #fbbf24;
+  --chart-5: #f87171;
+  --chart-6: #f472b6;
+  --chart-7: #94a3b8;
+  --chart-8: #2dd4bf;
+  --status-backlog: #A1A1A6;     /* --gray-400 */
+  --status-progress: #34C77B;    /* --green-400 */
+  --status-review: #B7791F;      /* --amber-500 */
+  --status-done: #34C77B;        /* --green-400 */
+  --shadow-popover: 0 4px 12px -2px rgba(15, 23, 42, 0.12),
+                    0 2px 4px -2px rgba(15, 23, 42, 0.08);
+  --shadow-dialog: 0 16px 40px -8px rgba(15, 23, 42, 0.22),
+                   0 4px 10px -4px rgba(15, 23, 42, 0.10);
+}
+
+/* ── light — paper surface, ink text, green-500 signal (web-kit :root) ─────── */
+html[data-theme="portfolio"][data-mode="light"] {
+  --bg: #FFFFFF;                 /* --paper */
+  --surface: #FFFFFF;            /* --surface */
+  --surface-2: #ECECEE;          /* --surface-sunken / --gray-100 */
+  --border: #E0E0E3;             /* --gray-200 soft hairline */
+  --text: #0B0B0C;              /* --ink */
+  --text-dim: #717177;           /* --gray-500 */
+  --text-mute: #A1A1A6;          /* --gray-400 */
+  --accent: #0B0B0C;             /* accent = ink (primary actions) */
+  --accent-soft: #ECECEE;        /* --accent-tint (--gray-100) */
+  --on-accent: #FFFFFF;          /* --text-on-accent = paper */
+  --ok: #1E9E5A;                 /* --green-500 (success in light) */
+  --warn: #B7791F;               /* --amber-500 */
+  --info: #0891b2;               /* cyan-600 — restrained info */
+  --danger: #D63B3B;             /* --red-500 */
+  --hover: color-mix(in srgb, #0B0B0C 4%, transparent);
+  --glass: color-mix(in srgb, #FFFFFF 80%, transparent);
+  --glass-blur: 0px;             /* Console is FLAT — no glass blur */
+  --shadow: none;                /* base surfaces carry NO drop shadow */
+  --ring: inset 0 0 0 1px var(--border);
+  --font: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  color-scheme: light;
+
+  /* the Console vocabulary */
+  --signal: #1E9E5A;             /* --green-500 */
+  --signal-hover: #16864B;       /* --green-600 */
+  --signal-tint: color-mix(in srgb, #1E9E5A 12%, var(--surface));
+  --rule: #0B0B0C;               /* HARD ink structural line */
+  --rule-shadow: 4px 4px 0 0 var(--rule);  /* the Console card offset block shadow */
+  --focus-ring: #1E9E5A;         /* --focus = green */
+  --chart-1: var(--signal);      /* brand green — default single series */
+  --chart-2: #0891b2;            /* cyan-600 */
+  --chart-3: #7c3aed;            /* violet-600 */
+  --chart-4: #B7791F;            /* amber */
+  --chart-5: #dc2626;            /* red-600 */
+  --chart-6: #db2777;            /* pink-600 */
+  --chart-7: #475569;            /* slate-600 */
+  --chart-8: #0e7490;            /* teal-700 */
+  --status-backlog: #717177;     /* --gray-500 */
+  --status-progress: #1E9E5A;    /* --signal */
+  --status-review: #B7791F;      /* --amber-500 */
+  --status-done: #1E9E5A;        /* --green-500 */
+  --shadow-popover: 0 4px 12px -2px rgba(15, 23, 42, 0.12),
+                    0 2px 4px -2px rgba(15, 23, 42, 0.08);
+  --shadow-dialog: 0 16px 40px -8px rgba(15, 23, 42, 0.22),
+                   0 4px 10px -4px rgba(15, 23, 42, 0.10);
+}
+/* atoms — the lowest-level vocabulary: button, chip, input, textarea, badge,
+   spinner, kbd. Sole owner of these classes (ui-fork-audit R4).
+   knob: --atom-radius */
+
+/* ── amu-btn ── the text button. Variants: default · accent (ONE per view —
+   the primary action) · ghost (low-emphasis). */
+.amu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--gap) * 0.75);
+  height: var(--ctl-h);
+  padding: 0 var(--pad-x);
+  border: 1px solid var(--border);
+  border-radius: var(--atom-radius, var(--radius));
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease);
+  user-select: none;
+  white-space: nowrap;
+}
+.amu-btn:hover {
+  background: var(--hover);
+}
+.amu-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.amu-btn--accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+.amu-btn--accent:hover {
+  background: var(--accent);
+  filter: brightness(1.08);
+}
+.amu-btn--ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-dim);
+}
+.amu-btn--ghost:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.amu-btn--danger {
+  color: var(--danger);
+}
+.amu-btn--sm {
+  height: 1.625rem;
+  padding: 0 var(--sp-2);
+  font-size: var(--text-xs);
+}
+/* icon-only: square, no horizontal padding; the bi glyph centers via the
+   flex alignment already on .amu-btn. */
+.amu-btn--icon {
+  width: var(--ctl-h);
+  padding: 0;
+  font-size: var(--text-md);
+}
+
+/* ── amu-chip ── pill selector (single-select rows live in chip-row). */
+.amu-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 1.625rem;
+  padding: 0 var(--sp-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+  white-space: nowrap;
+}
+.amu-chip:hover {
+  color: var(--text);
+}
+.amu-chip.is-active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--ring), var(--shadow);
+}
+
+/* ── amu-input ── single-line text input. */
+.amu-input {
+  height: var(--ctl-h);
+  padding: 0 var(--pad-x);
+  border: 1px solid var(--border);
+  border-radius: var(--atom-radius, var(--radius));
+  background: var(--bg);
+  color: var(--text);
+  font-size: var(--text-sm);
+  width: 100%;
+}
+.amu-input::placeholder {
+  color: var(--text-mute);
+}
+.amu-input:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -1px;
+  border-color: var(--accent);
+}
+
+/* ── amu-textarea ── the multiline input (comment composers, descriptions). */
+.amu-textarea {
+  display: block;
+  width: 100%;
+  min-height: 4.5rem;
+  padding: 0.5rem var(--pad-x);
+  border: 1px solid var(--border);
+  border-radius: var(--atom-radius, var(--radius));
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  resize: vertical;
+}
+.amu-textarea::placeholder {
+  color: var(--text-mute);
+}
+.amu-textarea:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -1px;
+  border-color: var(--accent);
+}
+
+/* ── amu-badge ── soft-tint label pill (status / role / plan). */
+.amu-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 1.25rem;
+  padding: 0 var(--sp-2);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.amu-badge--ok { background: var(--signal-tint); color: var(--signal); }
+.amu-badge--warn { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); }
+.amu-badge--danger { background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--danger); }
+.amu-badge--info { background: color-mix(in srgb, var(--info) 14%, transparent); color: var(--info); }
+.amu-badge--accent { background: var(--accent-soft); color: var(--accent); }
+
+/* ── amu-spinner ── async feedback (used sparingly — optimistic UI first). */
+.amu-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: amu-spin 0.7s linear infinite;
+}
+@keyframes amu-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── amu-kbd ── keyboard hint. */
+.amu-kbd {
+  display: inline-block;
+  padding: 0.0625rem 0.375rem;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+/* select — native select, token-skinned (less is more: no custom listbox
+   until a real need arrives). Sole owner of .amu-select. */
+
+.amu-select {
+  height: var(--ctl-h);
+  padding: 0 var(--pad-x);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  min-width: 9rem;
+}
+
+.amu-select:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -1px;
+  border-color: var(--accent);
+}
+/* field — labeled form row. Sole owner of .amu-field*. */
+
+.amu-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: var(--sp-4);
+}
+
+.amu-field-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.amu-field-help {
+  font-size: var(--text-xs);
+  color: var(--text-mute);
+}
+
+.amu-field-error {
+  font-size: var(--text-xs);
+  color: var(--danger);
+}
+
+.amu-field--inline {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+
+/* bare: no outer margin — for hosts that own their own row rhythm
+   (settings-form rows, table cells). */
+.amu-field--bare {
+  margin-bottom: 0;
+}
+
+.amu-field--inline .amu-field-label {
+  flex: 1;
+}
+/* menu — delegated dropdown. Sole owner of .amu-menu*. */
+
+.amu-menu-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.amu-menu {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  right: 0;
+  min-width: 11rem;
+  padding: var(--sp-1);
+  background: var(--surface);
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius);
+  /* popover elevation token (dropdowns/menus). */
+  box-shadow: var(--shadow-popover);
+  z-index: 80;
+  display: none;
+}
+
+.amu-menu.is-open {
+  display: block;
+}
+
+.amu-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  width: 100%;
+  padding: 0.4375rem var(--sp-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.amu-menu-item:hover {
+  background: var(--hover);
+}
+/* icon + label cluster (icon for instant recognition, label kills ambiguity). */
+.amu-menu-item-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+.amu-menu-item-icon { color: var(--text-mute); font-size: 0.875rem; flex-shrink: 0; }
+
+/* the chosen option — the "selected/on" affordance (--signal, not the primary
+   --accent: this is a state mark, not the page's primary action). */
+.amu-menu-item.is-selected {
+  color: var(--signal);
+}
+
+.amu-menu-sep {
+  height: 1px;
+  margin: var(--sp-1) 0;
+  background: var(--border);
+}
+
+.amu-menu-label {
+  padding: 0.375rem var(--sp-3) 0.125rem;
+  font-size: var(--text-xs);
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+/* toast — async feedback with optional undo. Sole owner of .amu-toast*. */
+
+.amu-toast-stack {
+  position: fixed;
+  bottom: var(--sp-5);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  z-index: 120;
+}
+
+.amu-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface);
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius);
+  /* floating feedback elevation token. */
+  box-shadow: var(--shadow-popover);
+  font-size: var(--text-sm);
+  animation: amu-toast-in var(--slow) var(--ease);
+}
+
+.amu-toast--danger {
+  border-color: var(--danger);
+  box-shadow: var(--shadow-popover);
+}
+
+.amu-toast-action {
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: var(--text-sm);
+}
+
+@keyframes amu-toast-in {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: none; }
+}
+/* modal — create/confirm ONLY (the minimalism rule). Sole owner of .amu-modal*. */
+
+.amu-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: grid;
+  place-items: center;
+  z-index: 100;
+}
+
+.amu-modal {
+  width: min(26rem, 92vw);
+  max-height: 85vh;
+  overflow: auto;
+  background: var(--surface);
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius-lg);
+  /* dialog elevation token: portfolio's flat dialog shadow, redpash's soft one. */
+  box-shadow: var(--shadow-dialog);
+  padding: var(--sp-5);
+}
+
+.amu-modal-title {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.amu-modal-body {
+  margin-bottom: var(--sp-5);
+}
+
+.amu-modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--gap);
+}
+/* tabs — calm view switcher (AC-20). Sole owner of every .amu-tabs* class
+   (ui-fork-audit R4). Ported from web-kit's tabs CSS to amenan token names:
+   structural divider → --rule, active/selected affordance → --accent, the
+   segmented active pill floats on --shadow-popover, focus → --focus-ring. */
+
+.amu-tabs {
+  display: inline-flex;
+}
+
+.amu-tabs--block {
+  display: flex;
+}
+
+.amu-tabs-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-mute);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color var(--fast) var(--ease),
+    background-color var(--fast) var(--ease),
+    border-color var(--fast) var(--ease);
+}
+
+.amu-tabs--block .amu-tabs-tab {
+  flex: 1;
+  justify-content: center;
+}
+
+.amu-tabs-count {
+  font-size: var(--text-xs);
+  color: var(--text-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+/* underline — the quiet in-page switch */
+.amu-tabs--underline {
+  gap: var(--sp-4);
+  border-bottom: 1px solid var(--rule);
+}
+
+.amu-tabs--underline .amu-tabs-tab {
+  padding: var(--sp-2) 2px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+}
+
+.amu-tabs--underline .amu-tabs-tab:hover {
+  color: var(--text);
+}
+
+.amu-tabs--underline .amu-tabs-tab[aria-selected="true"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.amu-tabs--underline .amu-tabs-tab[aria-selected="true"] .amu-tabs-count {
+  color: var(--accent);
+}
+
+/* segmented — a bordered pill group for compact toolbars */
+.amu-tabs--segmented {
+  gap: 0;
+  padding: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.amu-tabs--segmented .amu-tabs-tab {
+  padding: var(--sp-1) var(--pad-x);
+  border-radius: var(--radius-sm);
+  height: calc(var(--ctl-h) - 6px);
+}
+
+.amu-tabs--segmented .amu-tabs-tab:hover {
+  color: var(--text);
+}
+
+.amu-tabs--segmented .amu-tabs-tab[aria-selected="true"] {
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: var(--shadow-popover);
+}
+
+.amu-tabs-tab:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+/* empty-state — THE onboarding surface: one sentence + the view's single
+   primary action. No tours, no hint chips. Sole owner of .amu-empty*. */
+
+.amu-empty {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: var(--sp-8) var(--sp-5);
+  gap: var(--sp-2);
+}
+
+.amu-empty-title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.amu-empty-line {
+  margin: 0 0 var(--sp-3);
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+  max-width: 26rem;
+}
+/* uploader — drop zone + file pick. Sole owner of .amu-uploader*. */
+
+.amu-uploader {
+  display: grid;
+  place-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-6);
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+  transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
+  cursor: pointer;
+}
+
+.amu-uploader:hover,
+.amu-uploader.is-over {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.amu-uploader.is-busy {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.amu-uploader-hint {
+  font-size: var(--text-xs);
+  color: var(--text-mute);
+}
+
+.amu-uploader input[type="file"] {
+  display: none;
+}
+/* pager — rows info + page controls. Sole owner of .amu-pager*. */
+
+.amu-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+/* at the 1024 floor, wrap rather than overflow when space is tight. */
+@media (max-width: 64rem) { /* --bp-md */
+  .amu-pager { flex-wrap: wrap; row-gap: var(--sp-2); }
+}
+
+.amu-pager-pages {
+  display: inline-flex;
+  gap: 0.125rem;
+}
+
+.amu-pager-btn {
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 0.375rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.amu-pager-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.amu-pager-btn.is-active {
+  background: var(--accent-soft);
+  color: var(--text);
+  font-weight: 600;
+}
+.amu-pager-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+/* redtable — THE data table (one implementation; virtual + pager modes are
+   config, never forks; interaction modes — select/edit/delete — are state
+   classes on the root). Calm density via the rhythm tokens. Sole owner of
+   .amu-redtable*.
+   knobs: --redtable-max-h */
+
+.amu-redtable {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--ring);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  /* Let the table FILL a flex-column parent (e.g. a `fill` surface section):
+     flex:1 grows it to the remaining height, min-height:0 lets the scroll
+     shrink below its content. Both inert in a block parent — pager/virtual
+     modes outside a sized flex column are unaffected (the scroll's max-height
+     still caps a free-standing table; lift it via --redtable-max-h). */
+  flex: 1;
+  min-height: 0;
+}
+
+.amu-redtable-scroll {
+  flex: 1;
+  overflow: auto;
+  max-height: var(--redtable-max-h, 60vh);
+}
+
+.amu-redtable table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.amu-redtable th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface-2);
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-dim);
+  height: var(--row-h);
+  padding: 0 var(--pad-x);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+/* sortable header — click cycles the server sort; the chevron shows the active
+   column + direction. The sorted column reads in the accent. */
+.amu-redtable th.amu-redtable-th-sort {
+  cursor: pointer;
+  user-select: none;
+}
+.amu-redtable th.amu-redtable-th-sort:hover { color: var(--text); }
+.amu-redtable th.amu-redtable-th-sort.is-sorted { color: var(--accent); }
+.amu-redtable-sort {
+  margin-left: 0.25rem;
+  font-size: 0.85em;
+  opacity: 0.5;
+}
+.amu-redtable th.amu-redtable-th-sort:hover .amu-redtable-sort,
+.amu-redtable th.amu-redtable-th-sort.is-sorted .amu-redtable-sort { opacity: 1; }
+
+/* row-number column — a narrow, muted leading "#" column (1-based view
+   position). Tabular figures so digits don't jitter the edge on scroll. */
+.amu-redtable-rownum {
+  width: 3rem;
+  min-width: 3rem;
+  text-align: right;
+  color: var(--text-mute);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+}
+
+.amu-redtable td {
+  height: var(--row-h);
+  padding: 0 var(--pad-x);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 20rem;
+}
+
+.amu-redtable tbody tr:hover td {
+  background: var(--hover);
+}
+
+.amu-redtable tbody tr.is-selected td {
+  background: var(--accent-soft);
+}
+
+.amu-redtable td.amu-redtable-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.amu-redtable-null {
+  color: var(--text-mute);
+  font-style: italic;
+}
+
+.amu-redtable-foot {
+  border-top: 1px solid var(--border);
+  padding: var(--sp-1) var(--pad-x);
+}
+
+/* ── interaction modes — state classes on the root (select / edit / delete).
+   The LAYOUT (pager/virtual) is orthogonal; these only retune what a cell or
+   row looks/behaves like. ─────────────────────────────────────────────── */
+
+/* select — a leading checkbox column (head select-all + per-row). The cell is
+   tight and centered; the box sizes off the text rhythm. */
+.amu-redtable-check-cell {
+  width: var(--row-h);
+  padding: 0 var(--pad-x);
+  text-align: center;
+}
+.amu-redtable-check {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+  vertical-align: middle;
+}
+/* the whole row is a click target in select mode (the row handler toggles). */
+.amu-redtable.is-select tbody tr {
+  cursor: pointer;
+}
+
+/* edit — cells read as editable (a subtle pointer); the cell holding an active
+   editor gets an accent inset so the focus is unmistakable. */
+.amu-redtable.is-edit tbody td {
+  cursor: text;
+}
+/* the editor input fills the cell flush — no double border, the inset is the
+   table's, not the atom's. (The atom's .amu-input supplies the base skin; this
+   only retunes — atoms.css remains the sole owner of .amu-input, R4.) */
+.amu-redtable-editor {
+  height: calc(var(--row-h) - 0.5rem);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--surface);
+}
+
+/* delete — row click removes; the hover reads destructive (danger tint + a
+   left danger bar) so the consequence is legible before the click. */
+.amu-redtable.is-delete tbody tr {
+  cursor: pointer;
+}
+.amu-redtable.is-delete tbody tr:hover td {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+.amu-redtable.is-delete tbody tr:hover td:first-child {
+  box-shadow: inset 0.1875rem 0 0 0 var(--danger);
+}
+/* grid-toolbar — a data-driven control strip above a grid. Composes the atoms
+   (button, input) + menu; declares only its own layout chrome. Sole owner of
+   every .amu-gtb* class (ui-fork-audit R4). */
+
+.amu-gtb {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  padding: var(--sp-2) 0;
+}
+
+/* a control whose `when`/`visible` predicate failed — folds out of the strip. */
+.amu-gtb .is-hidden { display: none; }
+
+/* a promise-returning action (e.g. refresh → reload) spins its icon until done. */
+@keyframes amu-gtb-spin { to { transform: rotate(360deg); } }
+.amu-gtb [data-gtb].is-spinning .bi {
+  display: inline-block;
+  animation: amu-gtb-spin 0.7s linear infinite;
+}
+
+/* menus wrap their trigger in a positioned item so the dropdown anchors. */
+.amu-gtb-item { display: inline-flex; }
+
+/* search: the input atom inside a search-icon overlay (the atom styles itself,
+   the toolbar only positions it). */
+.amu-gtb-search {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: 1 1 12rem;   /* grows to take ALL available space (no max cap); 12rem basis before grow */
+  min-width: 8rem;   /* floor before the flex-wrap strip drops it to its own row */
+}
+.amu-gtb-search-icon {
+  position: absolute;
+  left: var(--sp-3);
+  font-size: 0.8125rem;
+  color: var(--text-mute);
+  pointer-events: none;
+}
+/* the search input is the atom (.amu-input, owned by atoms.css); we add our own
+   .amu-gtb-input only to make room for the overlaid search icon (R4-clean). */
+.amu-gtb-input { padding-left: 1.875rem; }
+
+/* a toggle in its on state — accent-tinted (reuses the atom; only the state skin
+   is the toolbar's). */
+.amu-gtb-toggle.is-active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* an inline status chip (e.g. "3 selected") — quiet, label-driven. */
+.amu-gtb-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 1.625rem;
+  padding: 0 var(--sp-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.amu-gtb-chip:hover { color: var(--text); }
+
+/* a divider between control clusters. A hairline (sanctioned px exception). */
+.amu-gtb-sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 0.125rem var(--sp-1);
+  background: var(--border);
+}
+
+/* push everything after a flex spacer to the right edge: a search control with
+   flex grows; otherwise consumers add a {kind:"sep"} or rely on wrap. */
+.amu-gtb-search ~ .amu-gtb-item,
+.amu-gtb-search ~ [data-gtb] { flex-shrink: 0; }
+/* grid-view — a thin composer: [toolbar?] [sheet?] [redtable] in a flex column.
+   It owns only the column layout; the children style themselves. The column is
+   itself a sized flex parent so the redtable's fill kicks in. Sole owner of
+   .amu-gridview (ui-fork-audit R4). */
+
+.amu-gridview {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  gap: var(--sp-2);
+}
+
+/* toolbar + sheet are fixed-height bands; only the table grows. */
+.amu-gridview-toolbar { flex-shrink: 0; }
+
+.amu-gridview-sheet { flex-shrink: 0; }
+.amu-gridview-sheet.is-empty { display: none; }
+
+/* the table slot fills the remaining height; the redtable's own min-height:0 +
+   .amu-redtable-scroll flex:1 then makes the body scroll within it. */
+.amu-gridview-table {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* filter-panel — the FilterNode builder. Sole owner of .amu-fp*. Compact, calm
+   (Linear density); designed for a ~280px side panel. */
+
+.amu-fp {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  font-size: var(--text-sm);
+}
+
+/* combinator (All / Any) — only shown when >1 row */
+.amu-fp-combo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.amu-fp-combo:empty {
+  display: none;
+}
+
+.amu-fp-combo-label {
+  color: var(--text-mute);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.amu-fp-seg {
+  display: inline-flex;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--ring);
+  overflow: hidden;
+}
+
+.amu-fp-seg-btn {
+  padding: 0.1875rem var(--sp-3);
+  border: 0;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.amu-fp-seg-btn + .amu-fp-seg-btn {
+  border-left: 1px solid var(--border);
+}
+
+.amu-fp-seg-btn.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* the rows list */
+.amu-fp-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.amu-fp-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--sp-2);
+  align-items: center;
+  padding: var(--sp-2);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--ring);
+}
+
+/* column + op stack full width on the left; value spans the row below; remove
+   hugs the top-right — keeps the row legible at 280px without horizontal scroll */
+.amu-fp-col,
+.amu-fp-op,
+.amu-fp-value {
+  grid-column: 1;
+  min-width: 0;
+}
+
+/* the column/op selects own their width (.amu-select min-width) — we don't style
+   another component's class (ui-fork-audit R4). The select host is a block so
+   each control sits on its own line, comfortable at ~280px. */
+.amu-fp-col,
+.amu-fp-op {
+  display: block;
+}
+
+.amu-fp-remove {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+}
+
+.amu-fp-value {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.amu-fp-value:empty {
+  display: none;
+}
+
+.amu-fp-text {
+  width: 100%;
+}
+
+.amu-fp-num {
+  width: 100%;
+  min-width: 0;
+}
+
+.amu-fp-and {
+  color: var(--text-mute);
+  font-size: var(--text-xs);
+  flex: 0 0 auto;
+}
+
+/* a nested AND/OR group — recessed surface + hairline so the tree reads at a
+   glance; its head carries the group's own All/Any toggle + a remove. */
+.amu-fp-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.amu-fp-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.amu-fp-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.amu-fp-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--border);
+}
+/* column-manager — per-column cleaning surface. Sole owner of .amu-colmgr*.
+   Compact for a ~280px side panel. knob: --colmgr-cols-max-h */
+
+.amu-colmgr {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  font-size: var(--text-sm);
+}
+
+.amu-colmgr-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.amu-colmgr-title {
+  color: var(--text-mute);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.amu-colmgr-count {
+  margin-inline-start: auto;
+  color: var(--accent);
+  font-size: var(--text-xs);
+}
+
+/* the column checklist — scrolls within the panel rather than pushing the ops
+   off-screen on a wide file. */
+.amu-colmgr-cols {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  max-height: var(--colmgr-cols-max-h, 13rem);
+  overflow: auto;
+  padding: var(--sp-2);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--ring);
+}
+
+.amu-colmgr-col {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  cursor: pointer;
+}
+
+.amu-colmgr-col-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.amu-colmgr-empty {
+  margin: 0;
+  color: var(--text-mute);
+  font-size: var(--text-xs);
+  font-style: italic;
+}
+
+.amu-colmgr-ops {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.amu-colmgr-group-label {
+  color: var(--text-mute);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* stack ops full-width — the labels ("Find & replace in selected…") are long and
+   a 280px panel has no room for a button grid. */
+.amu-colmgr-op-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.amu-colmgr-op {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+/* the inline action-sheet for an op's params */
+.amu-colmgr-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.amu-colmgr-sheet:empty {
+  display: none;
+}
+
+.amu-colmgr-sheet:not(:empty) {
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border);
+}
+
+.amu-colmgr-sheet-title {
+  font-weight: 600;
+}
+
+.amu-colmgr-control {
+  display: block;
+}
+
+.amu-colmgr-sheet-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+/* steps-panel — the cleaning history timeline + undo/redo. Sole owner of
+   .amu-steps*. */
+
+.amu-steps {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--ring);
+  padding: var(--sp-3) var(--sp-4);
+}
+
+.amu-steps-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-2);
+}
+
+.amu-steps-title {
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.amu-steps-actions {
+  display: inline-flex;
+  gap: var(--gap);
+}
+
+.amu-steps-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.amu-steps-item {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: 0.375rem 0;
+  font-size: var(--text-sm);
+  border-bottom: 1px solid var(--border);
+}
+.amu-steps-item:last-child {
+  border-bottom: 0;
+}
+
+.amu-steps-item.is-undone {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+.amu-steps-kind {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent);
+}
+
+.amu-steps-detail {
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.amu-steps-none {
+  color: var(--text-mute);
+  font-size: var(--text-sm);
+  padding: var(--sp-2) 0;
+}
+/* score-badge — the cleanness pill + breakdown disclosure. Sole owner of
+   .amu-score*. */
+
+.amu-score {
+  display: inline-block;
+  position: relative;
+}
+
+.amu-score-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: var(--text-md);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.amu-score-pill.is-ok { background: var(--signal-tint); color: var(--signal); }
+.amu-score-pill.is-warn { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+.amu-score-pill.is-danger { background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger); }
+
+.amu-score-unit {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.amu-score-pop {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  left: 0;
+  min-width: 14rem;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface);
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius);
+  /* popover elevation token (the breakdown disclosure floats). */
+  box-shadow: var(--shadow-popover);
+  z-index: 80;
+  display: none;
+}
+.amu-score.is-open .amu-score-pop {
+  display: block;
+}
+
+.amu-score-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+  padding: 0.1875rem 0;
+}
+.amu-score-row b {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+/* side-panel — a tabbed, collapsible inline panel (the tab container that
+   lives inside a workspace region). NOT responsive itself; workspace-panels
+   owns the @media + drawer. Sole owner of every .amu-sidepanel* class
+   (ui-fork-audit R4). */
+
+.amu-sidepanel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  background: var(--bg);
+}
+
+/* ── tab strip: icon+label chips + the collapse chevron ─────────────────── */
+.amu-sidepanel-tabs {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: var(--sp-2) var(--sp-2);
+  /* the panel's header line — structural identity (--rule), portfolio's hard line. */
+  border-bottom: 1px solid var(--rule);
+}
+/* a left panel's tabs grow from the left, collapse chevron trails right; a
+   right panel mirrors (chevron leads, tabs fill the rest). */
+.amu-sidepanel--left .amu-sidepanel-collapse { margin-left: auto; }
+.amu-sidepanel--right .amu-sidepanel-collapse { margin-right: auto; }
+
+.amu-sidepanel-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: 1.75rem;
+  padding: 0 var(--sp-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.amu-sidepanel-tab:hover { color: var(--text); background: var(--hover); }
+.amu-sidepanel-tab.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.amu-sidepanel-tab-icon { font-size: 0.875rem; flex-shrink: 0; }
+.amu-sidepanel-tab-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* the collapse chevron is the .amu-btn--icon atom; the panel only marks it. */
+.amu-sidepanel-collapse { flex-shrink: 0; }
+
+/* ── body: stacked panes; only the active one shows (cached, never re-mounted). */
+.amu-sidepanel-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.amu-sidepanel-pane {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--sp-3);
+}
+.amu-sidepanel-pane.is-active { display: block; }
+
+/* ── collapsed: the body folds away; the strip stays as a thin handle so the
+   chevron can re-open it. Width is driven by the parent region (workspace-
+   panels), so collapsing here just hides the body. ──────────────────────── */
+.amu-sidepanel.is-collapsed .amu-sidepanel-body { display: none; }
+.amu-sidepanel.is-collapsed .amu-sidepanel-tab-label { display: none; }
+/* workspace-panels — the responsive 3-region frame (left · center · right). It owns
+   the responsive @media + the off-canvas side-drawer behavior. Above --bp-lg the
+   regions are a grid; below, the center is the lone column and the sides drawer in
+   over a scrim. Sole owner of every .amu-wsp* class (ui-fork-audit R4).
+   knobs: --wsp-left-w --wsp-right-w */
+
+.amu-wsp {
+  display: grid;
+  grid-template-columns:
+    var(--wsp-left-w, 18rem) minmax(0, 1fr) var(--wsp-right-w, 18rem);
+  min-height: 0;
+  height: 100%;
+}
+
+.amu-wsp-region {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.amu-wsp-left {
+  border-right: 1px solid var(--border);
+}
+.amu-wsp-right {
+  border-left: 1px solid var(--border);
+}
+.amu-wsp-center {
+  min-width: 0;
+}
+
+/* the shared drawer scrim — only ever shown inside the media, when a drawer is
+   open. */
+.amu-wsp-scrim {
+  position: fixed;
+  inset: var(--topbar-h) 0 0 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 60;
+  display: none;
+}
+
+/* ── below --bp-lg (80rem): single column + off-canvas side drawers ────────── */
+@media (max-width: 80rem) { /* --bp-lg */
+  .amu-wsp {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* the sides leave the grid flow and become fixed drawers. */
+  .amu-wsp-left,
+  .amu-wsp-right {
+    position: fixed;
+    top: var(--topbar-h);
+    bottom: 0;
+    width: min(20rem, 85vw);
+    z-index: 61; /* above the scrim (60) */
+    background: var(--bg);
+    transition: transform var(--slow) var(--ease);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+  .amu-wsp-left {
+    left: 0;
+    border-right: 1px solid var(--border);
+    transform: translateX(-100%);
+  }
+  .amu-wsp-right {
+    right: 0;
+    border-left: 1px solid var(--border);
+    transform: translateX(100%);
+  }
+  .amu-wsp-left.is-open,
+  .amu-wsp-right.is-open {
+    transform: translateX(0);
+  }
+  .amu-wsp-scrim.is-open {
+    display: block;
+  }
+}
+/* kindLabel — a column-type annotation (AC-20). Sole owner of every .amu-kind*
+   class (ui-fork-audit R4). Ported from web-kit's kindLabel CSS to amenan token
+   names: mono via --font-mono, per-kind hue via the theme --chart-* palette (so
+   the tints track the active theme, never a hardcoded literal), Bool via --warn,
+   Text via --text-mute. The `--k` custom prop carries the per-kind hue. */
+
+.amu-kind {
+  --k: var(--text-mute);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 400;
+  line-height: 1;
+  color: var(--k);
+  white-space: nowrap;
+}
+
+.amu-kind--text-only {
+  color: var(--text-mute);
+}
+
+.amu-kind--chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  height: 1.25rem;
+  padding: 0 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--k) 28%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--k) 10%, var(--surface));
+  color: var(--k);
+}
+
+.amu-kind-tick {
+  width: 0.34rem;
+  height: 0.34rem;
+  border-radius: 1px;
+  background: var(--k);
+  flex: none;
+}
+
+.amu-kind--int {
+  --k: var(--chart-2);
+}
+
+.amu-kind--float {
+  --k: var(--chart-3);
+}
+
+.amu-kind--bool {
+  --k: var(--warn);
+}
+
+.amu-kind--text {
+  --k: var(--text-mute);
+}

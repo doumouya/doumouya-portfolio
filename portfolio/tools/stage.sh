@@ -16,4 +16,12 @@ cp -r apps               dist/apps
 [ -d cv ] && cp -r cv    dist/cv
 [ -d themes ] && cp -r themes dist/themes
 
+# the cleaner reuses csv-workbench's committed wasm (ONE 17MB blob in git, ever;
+# Firebase content-hash dedup uploads it once too).
+if [ -d dist/apps/cleaner ] && [ -f dist/apps/csv-workbench/wasm/data_bg.wasm ]; then
+  mkdir -p dist/apps/cleaner/engine/wasm
+  cp dist/apps/csv-workbench/wasm/data.js dist/apps/csv-workbench/wasm/data_bg.wasm \
+     dist/apps/cleaner/engine/wasm/
+fi
+
 echo "staged dist/ for firebase hosting: $(ls dist | tr '\n' ' ')"

@@ -237,6 +237,7 @@ const SITE_INDEX: SiteEntry[] = [
   { kind: "page", label: "About", sub: "Bio & CV", hash: "#/about" },
   { kind: "page", label: "Contact", sub: "Get in touch", hash: "#/contact" },
   { kind: "project", label: "csv-workbench", sub: "Polars → wasm CSV tool", hash: "#/demo/csv-workbench" },
+  { kind: "project", label: "cleaner", sub: "Projects · files · non-destructive cleaning", hash: "#/demo/cleaner" },
   { kind: "project", label: "echarts-dashboard", sub: "Client-side analytics", hash: "#/demo/echarts-dashboard" },
   { kind: "project", label: "rbac-explorer", sub: "Scoped-ownership access", hash: "#/demo/rbac-explorer" },
   { kind: "project", label: "redtable", sub: "The data grid", hash: "#/lab/redtable" },

@@ -99,6 +99,21 @@ else
   echo "WARN: ../csv-workbench/web not found — keeping committed apps/csv-workbench"
 fi
 
+# cleaner — SpreadSheet Paper reborn (a projects/files workbench on the same engine).
+# Its runtime + the dossier sample are committed here; the 17MB wasm is NOT — the
+# cleaner REUSES csv-workbench's committed blob (tools/stage.sh shares it into
+# dist/apps/cleaner/engine/wasm/), so exactly one wasm ever lives in git.
+if [ -f "../cleaner/web/index.html" ]; then
+  rm -rf apps/cleaner
+  mkdir -p apps/cleaner/engine apps/cleaner/data
+  cp ../cleaner/web/index.html ../cleaner/web/app.js ../cleaner/web/app.css \
+     ../cleaner/web/tokens.css apps/cleaner/
+  cp ../cleaner/web/engine/worker.js apps/cleaner/engine/worker.js
+  cp ../cleaner/web/data/dossier.csv apps/cleaner/data/dossier.csv
+else
+  echo "WARN: ../cleaner/web not found — keeping committed apps/cleaner"
+fi
+
 echo "built index.html ($(wc -c < index.html) bytes) + apps: $(ls apps 2>/dev/null | tr '\n' ' ')"
 
 # 4. stage the assembled site into dist/ for Firebase Hosting (no rebuild needed downstream)

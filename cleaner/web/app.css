@@ -1,0 +1,135 @@
+/* app.css — Cleaner page frame (.cl-*). Components style themselves via
+   tokens.css (.amu-*); this sheet owns only the page-level layout. */
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+}
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+.cl-spacer { flex: 1; }
+
+/* ── topbar: back · ✨ Cleaner · status · profile/docs/theme ── */
+.cl-topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border-bottom: 1.5px solid var(--rule);
+  background: var(--surface);
+}
+.cl-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.cl-status {
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+  margin-right: var(--sp-3);
+}
+.cl-status.is-error { color: var(--danger); }
+
+/* ── header: file chip · encoding · score · export ── */
+.cl-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  border-bottom: 1px solid var(--border);
+}
+.cl-file {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+.cl-score { display: inline-flex; }
+
+/* ── project / file tab rows ── */
+.cl-tabsrow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-4);
+  border-bottom: 1px solid var(--border);
+}
+.cl-tabsicon { color: var(--text-mute); font-size: var(--text-sm); }
+.cl-tabs { flex: 1; min-width: 0; }
+.cl-filetab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+.cl-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--text-mute);
+  display: inline-block;
+}
+.cl-dot--ok { background: var(--ok); }
+.cl-dot--warn { background: var(--warn); }
+.cl-dot--danger { background: var(--danger); }
+.cl-mode { display: inline-flex; margin-right: var(--sp-2); }
+
+/* ── overview tab ── */
+.cl-overview {
+  padding: var(--sp-4);
+  overflow: auto;
+  height: 100%;
+  box-sizing: border-box;
+}
+.cl-overview-title {
+  font-size: var(--text-lg);
+  margin: 0 0 var(--sp-3);
+}
+.cl-overview-table { margin-bottom: var(--sp-4); }
+.cl-overview-upload { max-width: 32rem; }
+
+/* ── saved views list (left panel tab) ── */
+.cl-views { display: flex; flex-direction: column; gap: var(--sp-1); padding: var(--sp-2); }
+.cl-view { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
+.cl-views-empty { color: var(--text-mute); font-size: var(--text-sm); padding: var(--sp-2); }
+
+/* ── modal forms ── */
+.cl-form { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+/* ── body: the three-region workspace fills the rest ── */
+.cl-body {
+  flex: 1;
+  min-height: 0;
+}
+.cl-body .amu-wsp { height: 100%; }
+.cl-body .amu-wsp-center {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.cl-grid {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.cl-grid[hidden], .cl-overview[hidden] { display: none; }
+.cl-grid .amu-gridview {
+  flex: 1;
+  min-height: 0;
+}
+.cl-pager {
+  flex: none;
+  padding: var(--sp-1) var(--sp-3);
+  border-top: 1px solid var(--border);
+}

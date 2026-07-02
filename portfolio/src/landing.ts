@@ -47,6 +47,16 @@ const PROJECTS: Project[] = [
     docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/csv-workbench/README.md",
   },
   {
+    title: "cleaner",
+    kind: "Data table",
+    blurb:
+      "The workbench grown into a workspace: projects and files, each file a non-destructive cleaning pipeline over a real 101k-row case extract (quote-wrapped, Windows-1252, sentinels — it unwraps live). Filters, saved views, a cleanness score with a breakdown, and a dual metadata plane: the deployed demo persists to your browser, and the same build talks to a birama-engine backend when one answers — projects and files become registered types, every edit an audit event.",
+    stack: "Rust · Polars → wasm · amenan-ui · birama-engine · TypeScript",
+    repo: "https://github.com/doumouya/doumouya-portfolio/tree/main/cleaner",
+    demo: "apps/cleaner/index.html",
+    docs: "https://github.com/doumouya/doumouya-portfolio/blob/main/cleaner/README.md",
+  },
+  {
     title: "echarts-dashboard",
     kind: "Analytics",
     blurb:
